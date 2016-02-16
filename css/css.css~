@@ -1,5 +1,6 @@
-fonas {
+body {
     position: relative;
+
     width: 100%;
     min-height: auto;
     text-align: center;
