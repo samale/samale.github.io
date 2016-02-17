@@ -36,20 +36,29 @@ a:focus {
     color: #eb3812;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    font-family: 'Open Sans','Helvetica Neue',Arial,sans-serif;
-}
-
+h1 {
+    font-family: 'Fjalla One', sans-serif;
+    font-weight: normal;
+    text-transform: uppercase;
+    line-height: 46px;
+    font-size: 7243px;
+    margin: 0 0 23px 0;
+    }
+h2 {
+    font-family: 'Cantarell', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 23px;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    margin: 0 0 23px 0;
+    }
 p {
-    margin-bottom: 20px;
-    font-size: 16px;
-    line-height: 1.5;
-}
+    font-family: 'Cantarell', sans-serif;
+    font-size: 17px;
+    line-height: 23px;
+    margin: 0 0 23px 0;
+    }
 
 .bg-primary {
     background-color: #080808;
