@@ -6565,7 +6565,7 @@ button.close {
 }
 /*# sourceMappingURL=bootstrap.css.map */
 .vfonas {
-position: fixed;
+position: absolute;
 right: 0;
 bottom: 0;
 min-width: 100%;
