@@ -1,0 +1,219 @@
+<!DOCTYPE HTML>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+  <head>
+    <meta charset="utf-8">
+    <title>Improving the Spotify installation experience &mdash; Rasmus Andersson</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- <link href='//fonts.googleapis.com/css?family=Poly:400' rel='stylesheet' type='text/css'> -->
+    <link href='//fonts.googleapis.com/css?family=Roboto+Slab:400,300' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Roboto+Condensed:300,400' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" media="screen, projection" href="/res/screen.css" type="text/css">
+    <link rel="stylesheet" media="print" href="/res/print.css" type="text/css">
+    <link rel="alternate" type="application/atom+xml" title="Rasmus Andersson" href="/atom.xml">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" href="/res/apple-touch-icon-57x57-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/res/apple-touch-icon-72x72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/res/apple-touch-icon-114x114-precomposed.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@rsms">
+    
+    <meta property="fb:admins" content="728642302">
+    <meta property="fb:app_id" content="38027689216">
+    
+    <meta property="og:title" content="Improving the Spotify installation experience">
+      
+      <meta name="description" content="Improving the Spotify installation experience Oct 24, 2009 At the time of writing this, we distribute Spotify for Mac OS X as a regular DMG...">
+      <meta name="og:description" content="Improving the Spotify installation experience Oct 24, 2009 At the time of writing this, we distribute Spotify for Mac OS X as a regular DMG...">
+      
+    
+    
+    
+    
+    <meta property="og:url" content="https://rsms.me/improving-spotify-installation-experience">
+    <meta property="og:site_name" content="rsms.me">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="en_GB" />
+    
+    <meta property="article:published_time" content="2009-10-24">
+    
+    <script>window.initFuncs = [];</script>
+  </head>
+  <body>
+    <header>
+      <h1 class="logo" onclick="document.location.href='/';"><a href="/"><img src="/res/signature-2-2.png" width="160" height="50" alt="Signature"></a></h1>
+      <ul class="navigation">
+        <li><a href="/photos/" title="A selection of recent photography">Photography</a></li>
+        <li><a href="/projects/" title="Projects I am or was involved in">Projects</a></li>
+        <li><a href="/archive/" title="Archived articles">Archive</a></li>
+        <li><a href="/about/">About me</a></li>
+      </ul>
+    </header>
+    <!--div class="wrapper content"-->
+      <div class="content">
+  <div class="post single">
+    
+    <h1>Improving the Spotify installation experience</h1>
+    <info datetime="2009-10-24">
+      Oct 24, 2009
+    </info>
+    
+    <div class="body"><p>At the time of writing this, we distribute <a href="http://www.spotify.com/download/mac/">Spotify for Mac OS X</a> as a regular DMG (disk image). The user experience is not really what I would call smooth:</p>
+
+<ul>
+  <li>Download the DMG file.</li>
+  <li>Open the DMG (implicitly mounting the disk image. Safari does this for you, BTW).</li>
+  <li>Move Spotify to the Applications folder.</li>
+</ul>
+
+<p>Now, for a unexperienced user double clicking the app icon inside the DMG feels like a natural action. It’s there, I’ll just open it then. Later, she restarts her computer, the DMG gets unmounted and <em>“Hey, where’s Spotify?”</em>.</p>
+
+<p>Our solution is to use an <em><a href="http://developer.apple.com/mac/library/documentation/DeveloperTools/Conceptual/SoftwareDistribution/Containers/Containers.html#//apple_ref/doc/uid/10000145i-CH4-SW4">internet-enabled</a> disk image</em> which automatically unpacks Spotify upon download. We then <a href="http://github.com/rsms/lets-move-cocoa">use some magic</a> in the app to check if it was launched from another place than the Applications folder.</p>
+
+<!--more-->
+
+<h2 id="the-new-spotify-installation-experience">The new Spotify installation experience</h2>
+
+<p><img src="//farm3.static.flickr.com/2472/4038969017_62e3d63669_o.png" width="250" alt="Screenshot of the Downloads window in Safari" align="right" /></p>
+
+<ol>
+  <li>Initiate the Spotify download.</li>
+  <li>When download completes, Safari will unpack the disk image, 
+throw away the dmg file, and show a Spotify icon in its 
+download window – as well as selecting it in the Finder 
+in the background.</li>
+  <li>When you double-click the Spotify icon, it gives you the 
+option to move Spotify to the Applications folder.
+This is of course optional.</li>
+</ol>
+
+<p>The user double-clicks the icon – Spotify launches and detects it’s running from the Downloads folder, asking the user if Spotify should move itself into the Applications folder.</p>
+
+<p><img src="//farm4.static.flickr.com/3505/4038968837_61f1fde485_o.png" width="554" height="245" alt="Screenshot of the Move to Applications dialog" class="center" /></p>
+
+<p>Selecting “Move to Application folder” causes Spotify to automatically move itself into <code class="highlighter-rouge">/Applications</code> (or <code class="highlighter-rouge">~/Applications</code> if it exists) while still running.</p>
+
+<p>The “move” logic is based on <a href="http://github.com/potionfactory/LetsMove/">free code</a> by <a href="http://www.potionfactory.com/node/251">Andy Kim at Potion Factory</a>.</p>
+
+<p>But what happens when the DMG is not downloaded and automatically unpacked?</p>
+
+<blockquote>
+  <p>Ie. manually mounting the disk image.<br />
+Example: when using a browser that does not handle internet-enabled DMGs.</p>
+</blockquote>
+
+<p>Well, we need to handle that case too, of course. <a href="http://github.com/rsms/lets-move-cocoa">We created a version of Lets Move</a> which supports moving applications launched from a disk image.</p>
+
+<p>Manually mounting the Spotify DMG will look like this:</p>
+
+<p><img src="//farm4.static.flickr.com/3064/4038968917_606f616863_o.png" width="580" height="402" alt="Screenshot of the new Spotify disk image while mounted" class="center" /></p>
+
+<p>Double-clicking the app will show the same “Move to Applications folder?” dialog.</p>
+
+<h2 id="background">Background</h2>
+
+<p>Recently <a href="http://limi.net/">Alexander Limi</a> (interaction designer at <a href="http://www.mozilla.com/">Mozilla</a>) wrote about <a href="http://limi.net/articles/improving-the-mac-installer-for-firefox/">“Improving the Mac installer for Firefox”</a> where he outlines the problems. <a href="http://daringfireball.net/2009/09/how_should_mac_apps_be_distributed">John Gruber quickly responded</a> by highlighting the problems with an installer, which was Alexanders initial idea of a solution. Alexander and Mozilla <a href="http://limi.net/articles/firefox-mac-installation-experience-revisited">revisited their solution</a>, aiming to use <a href="http://github.com/potionfactory/LetsMove/">LetsMove</a> by <a href="http://www.potionfactory.com/node/251">Andy Kim</a>.</p>
+
+<p>We have published our modified version of LetsMove here: <a href="http://github.com/rsms/lets-move-cocoa">http://github.com/rsms/lets-move-cocoa</a>. It includes the ability to move applications launched from read-only disk images as well as Spanish and French language translations.</p>
+
+<p>For the record, this is how the previous Spotify disk image looked like:</p>
+
+<p><img src="//farm3.static.flickr.com/2564/4038968767_706240b9ae_o.png" width="580" height="402" alt="Screenshot of the previous Spotify disk image" class="center" /></p>
+</div>
+    <!-- <div class="breaker"></div> -->
+    <div class="breaker"></div>
+    <!-- <info class="after">
+<div class="fb-like" data-href="//rsms.me/improving-spotify-installation-experience" data-send="false" data-width="550" data-show-faces="false" data-font="arial"></div>
+    </info> -->
+
+  
+  </div>
+</div>
+
+<!-- During authoring, this automatically reloads the post as its changing -->
+<script type="text/javascript">
+(function() {
+var qs = document.location.search;
+var current_etag = qs.match(/etag=("?[a-zA-Z0-9_-]+)/);
+if (current_etag !== null) { current_etag = current_etag[1]; }
+var scrolly = qs.match(/scrolly=([0-9]+)/);
+if (scrolly) {
+  scrolly = parseInt(scrolly[1]);
+  window.scrollTo(window.scrollX, scrolly);
+  setTimeout(function () {
+    window.scrollTo(window.scrollX, scrolly);
+  }, 10);
+}
+
+function check() {
+  var r = new XMLHttpRequest();
+  var url = document.location.href + ((qs && qs !== '') ? '&' : '?') + 'r=' + Math.random();
+  r.open('GET', url, true);
+  r.onreadystatechange = function() {
+    if (r.readyState == 4){
+      var found_etag = r.getResponseHeader('Etag').replace(/^"|"$/g);
+      //console.log('current_etag:', current_etag, 'found_etag:', found_etag);
+      if (current_etag === null) {
+        current_etag = found_etag;
+      } else if (found_etag !== current_etag) {
+        document.location.search =
+          '?etag=' + encodeURIComponent(found_etag) +
+          '&scrolly=' + window.scrollY;
+        return;
+      }
+      setTimeout(check, 500);
+    }
+  };
+  r.send(null);
+}
+check();
+})();
+</script>
+
+
+    <!--/div-->
+    
+    
+    
+    
+    
+    
+    <footer>
+      <p>
+        <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US" class="cc"><img src="/res/cc-cc.png" class="cc">
+        <img src="/res/cc-by.png" class="cc"></a>
+        This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons License</a>
+      </p>
+    </footer>
+    
+    
+    <script>
+  var n,i,L,cn,v = document.getElementsByTagName('pre');
+  for (i=0,L=v.length;i<L;++i) {
+    n = v.item(i);
+    if ((cn = n.firstChild) && cn.nodeName == 'CODE') {
+      if (cn.className.indexOf("none") !== -1 || cn.className.indexOf("txt") !== -1) {
+        cn.className = 'nohighlight';
+      }
+    }
+  }
+</script>
+<link rel="stylesheet" media="all" href="/res/highlight.css" type="text/css">
+<script src="/res/highlight.js"></script>
+
+    <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-9078556-2']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+    <script>for (var k in window.initFuncs) { window.initFuncs[k](); } delete window.initFuncs;</script>
+  </body>
+</html>

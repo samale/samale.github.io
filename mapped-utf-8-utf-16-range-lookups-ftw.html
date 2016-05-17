@@ -1,0 +1,279 @@
+<!DOCTYPE HTML>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+  <head>
+    <meta charset="utf-8">
+    <title>Mapped UTF-8 → UTF-16 range lookups FTW &mdash; Rasmus Andersson</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- <link href='//fonts.googleapis.com/css?family=Poly:400' rel='stylesheet' type='text/css'> -->
+    <link href='//fonts.googleapis.com/css?family=Roboto+Slab:400,300' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Roboto+Condensed:300,400' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" media="screen, projection" href="/res/screen.css" type="text/css">
+    <link rel="stylesheet" media="print" href="/res/print.css" type="text/css">
+    <link rel="alternate" type="application/atom+xml" title="Rasmus Andersson" href="/atom.xml">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" href="/res/apple-touch-icon-57x57-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/res/apple-touch-icon-72x72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/res/apple-touch-icon-114x114-precomposed.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@rsms">
+    
+    <meta property="fb:admins" content="728642302">
+    <meta property="fb:app_id" content="38027689216">
+    
+    <meta property="og:title" content="Mapped UTF-8 → UTF-16 range lookups FTW">
+      
+      <meta name="description" content="Mapped UTF-8 → UTF-16 range lookups FTW Nov 26, 2010 I’m writing a little OS X app which among other things highlight source code. To...">
+      <meta name="og:description" content="Mapped UTF-8 → UTF-16 range lookups FTW Nov 26, 2010 I’m writing a little OS X app which among other things highlight source code. To...">
+      
+    
+    
+    
+    
+    <meta property="og:url" content="https://rsms.me/mapped-utf-8-utf-16-range-lookups-ftw">
+    <meta property="og:site_name" content="rsms.me">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="en_GB" />
+    
+    <meta property="article:published_time" content="2010-11-26">
+    
+    <script>window.initFuncs = [];</script>
+  </head>
+  <body>
+    <header>
+      <h1 class="logo" onclick="document.location.href='/';"><a href="/"><img src="/res/signature-2-2.png" width="160" height="50" alt="Signature"></a></h1>
+      <ul class="navigation">
+        <li><a href="/photos/" title="A selection of recent photography">Photography</a></li>
+        <li><a href="/projects/" title="Projects I am or was involved in">Projects</a></li>
+        <li><a href="/archive/" title="Archived articles">Archive</a></li>
+        <li><a href="/about/">About me</a></li>
+      </ul>
+    </header>
+    <!--div class="wrapper content"-->
+      <div class="content">
+  <div class="post single">
+    
+    <h1>Mapped UTF-8 → UTF-16 range lookups FTW</h1>
+    <info datetime="2010-11-26">
+      Nov 26, 2010
+    </info>
+    
+    <div class="body"><p>I’m writing <a href="http://kodapp.com/">a little OS X app</a> which among other things highlight source code. To avoid re-inventing the wheel I’m using <a href="http://www.gnu.org/software/src-highlite/">GNU Source-highlight</a><sup id="fnref:1"><a href="#fn:1" class="footnote">1</a></sup> to tokenize the input data. However, <a href="http://www.gnu.org/software/src-highlite/">GNU Source-highlight</a> only accept UTF-8 and Cocoa strings are UTF-16 so conversion is needed, which can be quite expensive.</p>
+
+<p>My first implementation did something like this when an editing occurred and highlighting was performed:</p>
+
+<ol>
+  <li>Get the (UTF-16) range of the modified substring (using various algorithms, not covered here)</li>
+  <li><a href="https://gist.github.com/716819">Convert the UTF-16 substring to a UTF-8 std::string representation</a></li>
+  <li>Feed the tokenizer with the UTF-8 string</li>
+  <li>When the tokenizer returns a token range, <a href="https://gist.github.com/716826">convert that range into a UTF-16 range</a> (but only if the original UTF-16 length differs from the UTF-8 length, i.e. is a multibyte string)</li>
+</ol>
+
+<p>Highlighting the source of <a href="http://hunch.se/stuff/">http://hunch.se/stuff/</a> took a blazing <strong>10 seconds</strong> when compiled with optimizations and auto-vectorization. Not even near OK.</p>
+
+<p><a href="http://farm5.static.flickr.com/4103/5208847545_ed08fb23c4_o.png"><img src="//farm5.static.flickr.com/4103/5208847545_ed08fb23c4_o.png" alt="" /></a></p>
+
+<p>Any programmer – mathematician or not – realize the high complexity of this algorithm. For each time we find a new token, iterate over the UTF-8 part of that edit and build a new range by considering UTF-8 bytes. A few simple optimizations (like <a href="https://gist.github.com/716830">avoiding repeated constant calculations</a>) brought the time down to about 3.5 seconds for the same test case.</p>
+
+<p>So I went to the theatre to see a play with a friend and clear my head. This morning I realized what I already knew but didn’t want to accept: I need a way to lower the complexity of the algorithm. Hmm, an index lookup table from UTF-8 to UTF-16 is probably the way to go.</p>
+
+<p>After about 2 hours worth of googling, reading the <a href="http://icu-project.org/apiref/icu4c/">ICU API</a>, scrubbing Apple dev docs and almost desperately querying <a href="http://codesearch.google.com/">Codesearch</a> I gave up and rolled my own implementation. For my use case, the result was a <strong>14x real speed increase</strong> – the same test which earlier took 10 seconds now only took 0.7 seconds (which given the particular test case is good). Note that most of the 700 ms is spent on waiting for stupid kernel-calling locks, only ~250 ms worth of user+system cycles is actually used.</p>
+
+<p><a href="http://farm5.static.flickr.com/4148/5209445618_65da8a77b8_o.png"><img src="//farm5.static.flickr.com/4148/5209445618_65da8a77b8_o.png" alt="" /></a></p>
+
+<p>What I did was to convert UTF-16 into UTF-8 <em>and build a look-up table at the same time</em>. Now what takes time is the damn kernel-calling spin lock which is used by the Cocoa NSView hierarchy and boost (used by <a href="http://www.gnu.org/software/src-highlite/">GNU Source-highlight</a> for regexp). Don’t mind the “objc_msgSend” in the Instrument screenshot above as it represents the sum of Objective-C overhead for <em>all cocoa calls</em>.</p>
+
+<p>I’m open-sourcing my solution under an MIT license:</p>
+
+<p><a href="https://gist.github.com/716794">https://gist.github.com/716794</a></p>
+
+<!-- more -->
+
+<h2 id="synopsis-of-hutf8mappedutf16string">Synopsis of <code class="highlighter-rouge">HUTF8MappedUTF16String</code></h2>
+
+<p>(<em><a href="https://gist.github.com/716794">See actual source for details</a></em>)</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>class HUTF8MappedUTF16String {
+ public:
+  HUTF8MappedUTF16String(unichar *u16buf=NULL, size_t u16len=0);
+  ~HUTF8MappedUTF16String();
+  
+  // (Re)set to represent UTF-16 string data
+  void setUTF16String(unichar *u16buf, size_t u16len, bool weak=true);
+  
+  /**
+   * (Re)set to represent an NSString. Will make an implicit managed copy of its
+   * UTF-16 characters, thus owning a strong reference meaning you can let |str|
+   * die without messing up the life of |this|.
+   */
+  void setNSString(NSString *str, NSRange range);
+  
+  // The number of UTF-16 characters this object represents
+  inline size_t length() const;
+  
+  // The UTF-16 characters this object represents
+  inline const unichar *characters() const;
+  
+  // Access the UTF-16 character at index. Unchecked.
+  inline unichar const &amp;operator[](size_t u16index) const;
+  
+  // Maximum number of bytes needed to store a UTF-8 representation.
+  inline size_t maximumUTF8Size();
+  
+  /**
+   * Convert the represented Unicode string to UTF-8, returning a (internally
+   * allocated) null-terminated UTF-8 C string, which will be valid as long as
+   * |this| is alive or until |convert| is called. You can find out the length
+   * of the returned string from |UTF8Length|.
+   *
+   * See |convert(uint8_t*, size_t*)| for details.
+   */
+  const uint8_t *convert();
+  
+  // Fill |str| with the UTF-8 representation
+  void convert(std::string &amp;str);
+  
+  /**
+   * Convert the represented Unicode string to UTF-8, filling |u8buf|.
+   *
+   * @param u8buf         A byte buffer to be filled which must be at least
+   *                      |maximumUTF8Size| bytes long.
+   *
+   * @param u8to16_table  A user-allocated lookup table which must have at least
+   *                      |maximumUTF8Size| slots. If |u8to16_table| is NULL the
+   *                      table will be created and managed internally.
+   *
+   * @returns Number of bytes written to |u8buf|
+   */
+  size_t convert(uint8_t *u8buf, size_t *u8to16_table=NULL);
+  
+  // The number of bytes used for the UTF-8 representation
+  inline size_t UTF8Length() const;
+  
+  /**
+   * Return index of UTF-16 character represented by UTF-8 character at
+   * |u8index|. Unchecked and expects an index less than |UTF8Length|.
+   */
+  inline size_t UTF16IndexForUTF8Index(size_t u8index);
+  
+  /**
+   * Convert a UTF-8 range into the range of it's equivalent UTF-16 characters
+   * in |characters|. This has low complexity because a lookup table is
+   * utilized. Automatically expands to cover any pairs.
+   *
+   * @param u8range Range in UTF-8 space
+   * @returns       valid range in UTF-16 space
+   */
+  NSRange UTF16RangeForUTF8Range(NSRange u8range);
+  
+  // Faster version of UTF16RangeForUTF8Range without checks
+  inline NSRange unsafeUTF16RangeForUTF8Range(NSRange u8range);
+};
+</code></pre>
+</div>
+
+<div class="footnotes">
+  <ol>
+    <li id="fn:1">
+      <p>Dynamically linked at runtime since it’s licensed under the dreadful GPL <a href="#fnref:1" class="reversefootnote">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+</div>
+    <!-- <div class="breaker"></div> -->
+    <div class="breaker"></div>
+    <!-- <info class="after">
+<div class="fb-like" data-href="//rsms.me/mapped-utf-8-utf-16-range-lookups-ftw" data-send="false" data-width="550" data-show-faces="false" data-font="arial"></div>
+    </info> -->
+
+  
+  </div>
+</div>
+
+<!-- During authoring, this automatically reloads the post as its changing -->
+<script type="text/javascript">
+(function() {
+var qs = document.location.search;
+var current_etag = qs.match(/etag=("?[a-zA-Z0-9_-]+)/);
+if (current_etag !== null) { current_etag = current_etag[1]; }
+var scrolly = qs.match(/scrolly=([0-9]+)/);
+if (scrolly) {
+  scrolly = parseInt(scrolly[1]);
+  window.scrollTo(window.scrollX, scrolly);
+  setTimeout(function () {
+    window.scrollTo(window.scrollX, scrolly);
+  }, 10);
+}
+
+function check() {
+  var r = new XMLHttpRequest();
+  var url = document.location.href + ((qs && qs !== '') ? '&' : '?') + 'r=' + Math.random();
+  r.open('GET', url, true);
+  r.onreadystatechange = function() {
+    if (r.readyState == 4){
+      var found_etag = r.getResponseHeader('Etag').replace(/^"|"$/g);
+      //console.log('current_etag:', current_etag, 'found_etag:', found_etag);
+      if (current_etag === null) {
+        current_etag = found_etag;
+      } else if (found_etag !== current_etag) {
+        document.location.search =
+          '?etag=' + encodeURIComponent(found_etag) +
+          '&scrolly=' + window.scrollY;
+        return;
+      }
+      setTimeout(check, 500);
+    }
+  };
+  r.send(null);
+}
+check();
+})();
+</script>
+
+
+    <!--/div-->
+    
+    
+    
+    
+    
+    
+    <footer>
+      <p>
+        <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US" class="cc"><img src="/res/cc-cc.png" class="cc">
+        <img src="/res/cc-by.png" class="cc"></a>
+        This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons License</a>
+      </p>
+    </footer>
+    
+    
+    <script>
+  var n,i,L,cn,v = document.getElementsByTagName('pre');
+  for (i=0,L=v.length;i<L;++i) {
+    n = v.item(i);
+    if ((cn = n.firstChild) && cn.nodeName == 'CODE') {
+      if (cn.className.indexOf("none") !== -1 || cn.className.indexOf("txt") !== -1) {
+        cn.className = 'nohighlight';
+      }
+    }
+  }
+</script>
+<link rel="stylesheet" media="all" href="/res/highlight.css" type="text/css">
+<script src="/res/highlight.js"></script>
+
+    <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-9078556-2']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+    <script>for (var k in window.initFuncs) { window.initFuncs[k](); } delete window.initFuncs;</script>
+  </body>
+</html>

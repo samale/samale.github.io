@@ -1,0 +1,259 @@
+<!DOCTYPE HTML>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+  <head>
+    <meta charset="utf-8">
+    <title>How I wrote DroPub in two days &mdash; Rasmus Andersson</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- <link href='//fonts.googleapis.com/css?family=Poly:400' rel='stylesheet' type='text/css'> -->
+    <link href='//fonts.googleapis.com/css?family=Roboto+Slab:400,300' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Roboto+Condensed:300,400' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" media="screen, projection" href="/res/screen.css" type="text/css">
+    <link rel="stylesheet" media="print" href="/res/print.css" type="text/css">
+    <link rel="alternate" type="application/atom+xml" title="Rasmus Andersson" href="/atom.xml">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" href="/res/apple-touch-icon-57x57-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/res/apple-touch-icon-72x72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/res/apple-touch-icon-114x114-precomposed.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@rsms">
+    
+    <meta property="fb:admins" content="728642302">
+    <meta property="fb:app_id" content="38027689216">
+    
+    <meta property="og:title" content="How I wrote DroPub in two days">
+      
+      <meta name="description" content="How I wrote DroPub in two days Sep 20, 2009 Yesterday I wrote DroPub – a simple but powerful little OS X application which transparently...">
+      <meta name="og:description" content="How I wrote DroPub in two days Sep 20, 2009 Yesterday I wrote DroPub – a simple but powerful little OS X application which transparently...">
+      
+    
+    
+    
+    
+    <meta property="og:url" content="https://rsms.me/how-i-wrote-dropub-in-two-days">
+    <meta property="og:site_name" content="rsms.me">
+    <meta property="og:type" content="article">
+    <meta property="og:locale" content="en_GB" />
+    
+    <meta property="article:published_time" content="2009-09-20">
+    
+    <script>window.initFuncs = [];</script>
+  </head>
+  <body>
+    <header>
+      <h1 class="logo" onclick="document.location.href='/';"><a href="/"><img src="/res/signature-2-2.png" width="160" height="50" alt="Signature"></a></h1>
+      <ul class="navigation">
+        <li><a href="/photos/" title="A selection of recent photography">Photography</a></li>
+        <li><a href="/projects/" title="Projects I am or was involved in">Projects</a></li>
+        <li><a href="/archive/" title="Archived articles">Archive</a></li>
+        <li><a href="/about/">About me</a></li>
+      </ul>
+    </header>
+    <!--div class="wrapper content"-->
+      <div class="content">
+  <div class="post single">
+    
+    <h1>How I wrote DroPub in two days</h1>
+    <info datetime="2009-09-20">
+      Sep 20, 2009
+    </info>
+    
+    <div class="body"><p>Yesterday I wrote <a href="http://rsms.me/2009/09/20/dropub-1-0.html">DroPub</a> – a simple but powerful little OS X application which transparently handles file transfers “from the desktop”.</p>
+
+<p>Even though it has a lot of features, have been tested, updates itself and so on, I only spent about two days on the whole project – for me, this is the essence of <a href="http://en.wikipedia.org/wiki/Cocoa_(API)">Cocoa</a>.</p>
+
+<p>DroPub is heavily based on <code class="highlighter-rouge">NSOperation</code>s and uses a hierarchy model for structuring operations. <code class="highlighter-rouge">NSOperation</code> hierarchies are powerful means for writing most types of “service” applications. The code can easily be followed by a Cocoa programmer and the operating system frameworks and libraries can give really good performance.</p>
+
+<!--more-->
+
+<h2 id="practical-implementation-using-nsoperationqueue">Practical implementation using NSOperationQueue</h2>
+
+<p>In almost all cases one process-global NSOperationQueue is enough and makes things much easier for you. In <a href="http://github.com/rsms/dropub/blob/v1.0/src/prefix.pch#L8">prefix.pch</a> we declare the instance and allocate it in <a href="http://github.com/rsms/dropub/blob/v1.0/src/main.m#L9">main.m</a>:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>NSOperationQueue *g_opq;
+
+int main(int argc, const char *argv[]) {
+  g_opq = [[NSOperationQueue alloc] init];
+  NSApplicationMain(argc, argv);
+  return 0;
+}
+</code></pre>
+</div>
+
+<p><small>Note that the code snippets presented here are condensed versions of the actual code, for illustrative purposes</small></p>
+
+<h3 id="dropub-operation-hierarchy">DroPub operation hierarchy</h3>
+
+<p>For each folder which is watched in DroPub, there is one <code>NSOperation</code> called <code><a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSupervisor.h#L1"> DPSupervisor</a></code>. Whenever the main “thread” detects that a folder should be watched (might have been added to the configuration or changed location), it calls <code><a href="http://github.com/rsms/dropub/blob/v1.0/src/DPAppDelegate.m#L520">startSupervising:</a></code> which starts a new <code><a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSupervisor.h#L1"> DPSupervisor</a></code>:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>DPSupervisor *sv = [[DPSupervisor alloc] initWithApp:self conf:conf];
+sv.delegate = self;
+[g_opq addOperation:sv];
+</code></pre>
+</div>
+
+<p>Note here how <code class="highlighter-rouge">g_opq</code> refers to the global <code class="highlighter-rouge">NSOperationQueue</code> mentioned earlier. The <code class="highlighter-rouge">conf</code> argument is simply the per-watched folder configuration containing path, remote host, and so on.</p>
+
+<p>The <code><a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSupervisor.h#L1"> DPSupervisor</a></code>s <code>main</code> method then looks at the designated folder for new files to appear:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>- (void)main {
+  while ( !self.isCancelled &amp;&amp; conf ) {
+    // [sets up a NSDirectoryEnumerator here]
+    while (filename = [dirEnum nextObject]) {
+      // [continues if the file matches certain criteria (isn't hidden etc)]
+      if (![filesInTransit containsObject:path])
+        [self sendFile:path name:filename];
+    }
+    sleep(1);
+  }
+}
+</code></pre>
+</div>
+
+<p>The supervisor uses a <code>NSMutableSet</code> (<code>filesInTransit</code> in the code above) to keep track of which files are currently in transit. Here the question of robustness might occur — yes, this is actually a very robust construction. Since the nature of the application is to atomically transfer (to a temporary location then mv once completed successfully) files, so if a operation crashes or if the whole app crashes (oh noes!) the file will simply be transferred again a few seconds later or when the application is restarted. The only danger here is if we mess with our <code>NSMutableSet</code> of files in transit, then the worst case scenario is probably corrupt files, so let’s not mess with it.</p>
+
+<p>Next step is dispatching yet another <code>NSOperation</code>, subordinate to the <code><a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSupervisor.h#L1"> DPSupervisor</a></code>, which in DroPub is called <a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSendFileOp.m#L1"> <code>DPSendFileOp</code></a>. This is done in <code>DPSupervisor</code>s <a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSupervisor.h#L39"><code>sendFile:name:</code></a></p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>- (void)sendFile:(NSString *)path name:(NSString *)name {
+   // [make sure we can get an exclusive lock on the file here, 
+  //  otherwise try again later]
+  [filesInTransit addObject:path];
+  DPSendFileOp *op = [[DPSendFileOp alloc] initWithPath:path name:name conf:conf];
+  op.delegate = self;
+  [g_opq addOperation:op];
+}
+</code></pre>
+</div>
+
+<p>As you might have figured out, <a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSendFileOp.m#L1"> <code>DPSendFileOp</code></a> takes care of the actual transmission and reports back to it’s parent (technically its delegate) <code><a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSupervisor.h#L61"> DPSupervisor</a></code>.</p>
+
+<p>The <code><a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSendFileOp.m#L59">main</a></code> method of <a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSendFileOp.m#L1"> <code>DPSendFileOp</code></a> is too comprehensive for pasting here in this article but this is a summary of what it does:</p>
+
+<ol>
+<li>Starts a new subordinate operation which watches the file being sent for deletion (called <a href="http://github.com/rsms/dropub/blob/v1.0/src/DSFileExistenceMonitor.m#L1"><code>DSFileExistenceMonitor</code></a>).</li>
+<li>Constructs a temporary filename for the transfer -- basically the original name prefixed with <code>".dpupload_"</code>.</li>
+<li>Constructs the <a href="http://en.wikipedia.org/wiki/Secure_copy" title="Secure Copy">SCP</a> program invocation arguments.</li>
+<li>Executes the SCP program and supervises the process I/O and status -- this is where the actual transmission of the file is taking place and this step might take a long time.</li>
+<li>The <a href="http://github.com/rsms/dropub/blob/v1.0/src/DSFileExistenceMonitor.m#L1"><code>DSFileExistenceMonitor</code></a> is cancelled.</li>
+<li>If the transfer was successful (i.e. not interrupted or corrupted) a remote <code>mv</code> is done over standard SSH.</li>
+</ol>
+
+<p>If the file is removed while being transferred <a href="http://github.com/rsms/dropub/blob/v1.0/src/DSFileExistenceMonitor.m#L1"><code>DSFileExistenceMonitor</code></a> will notify <a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSendFileOp.m#L1"> <code>DPSendFileOp</code></a> which will interrupt (by signalling) SCP and then notify it’s delegate through <a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSendFileOp.h#L19"><code>fileTransmission:didAbortForPath:</code></a>. On the other hand, if the transfer is successful the <a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSendFileOp.m#L1"> <code>DPSendFileOp</code></a>s delegate is notified through <a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSendFileOp.h#L18"><code>fileTransmission:didSucceedForPath:remoteURI:</code></a> in which case the parent <code><a href="http://github.com/rsms/dropub/blob/v1.0/src/DPSupervisor.h#L61"> DPSupervisor</a></code> will move the successfully uploaded file to Trash.</p>
+
+<h3 id="cancellation">Cancellation</h3>
+
+<p>Since we use a hierarchy of operations – running in parallel, thus we can not use the dependency system of <code>NSOperation</code> – we need to take care of cancelling child operations. We do this by keeping an <code>NSMutableArray</code> in each parent in which we store references to any subordinate tasks which have started and not yet exited. When the parents <code>cancel</code> method is invoked, we simply propagate the message to our children:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>- (void)cancel {
+  for (NSOperation *op in childOperations)
+    [op cancel];
+  [super cancel];
+}
+</code></pre>
+</div>
+
+<h2 id="user-interface">User interface</h2>
+
+<p>I’m not going to talk much about the user interface in this article, but to sum it up DroPub uses <a href="http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/CocoaBindings/CocoaBindings.html">bindings</a>, <a href="http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/KeyValueCoding/Concepts/BasicPrinciples.html">key-value coding</a> and <a href="http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/KeyValueObserving/KeyValueObserving.html">key-value observation</a> to communicate with the “background” parts.</p>
+
+<p><img src="/attachments/2009/09-dropub-preferences.png" width="622" style="max-width:622px" alt="Screenshot of DroPub preferences for configuring folders" /></p>
+
+<p>The interface was built almost completely in Interface Builder.</p>
+</div>
+    <!-- <div class="breaker"></div> -->
+    <div class="breaker"></div>
+    <!-- <info class="after">
+<div class="fb-like" data-href="//rsms.me/how-i-wrote-dropub-in-two-days" data-send="false" data-width="550" data-show-faces="false" data-font="arial"></div>
+    </info> -->
+
+  
+  </div>
+</div>
+
+<!-- During authoring, this automatically reloads the post as its changing -->
+<script type="text/javascript">
+(function() {
+var qs = document.location.search;
+var current_etag = qs.match(/etag=("?[a-zA-Z0-9_-]+)/);
+if (current_etag !== null) { current_etag = current_etag[1]; }
+var scrolly = qs.match(/scrolly=([0-9]+)/);
+if (scrolly) {
+  scrolly = parseInt(scrolly[1]);
+  window.scrollTo(window.scrollX, scrolly);
+  setTimeout(function () {
+    window.scrollTo(window.scrollX, scrolly);
+  }, 10);
+}
+
+function check() {
+  var r = new XMLHttpRequest();
+  var url = document.location.href + ((qs && qs !== '') ? '&' : '?') + 'r=' + Math.random();
+  r.open('GET', url, true);
+  r.onreadystatechange = function() {
+    if (r.readyState == 4){
+      var found_etag = r.getResponseHeader('Etag').replace(/^"|"$/g);
+      //console.log('current_etag:', current_etag, 'found_etag:', found_etag);
+      if (current_etag === null) {
+        current_etag = found_etag;
+      } else if (found_etag !== current_etag) {
+        document.location.search =
+          '?etag=' + encodeURIComponent(found_etag) +
+          '&scrolly=' + window.scrollY;
+        return;
+      }
+      setTimeout(check, 500);
+    }
+  };
+  r.send(null);
+}
+check();
+})();
+</script>
+
+
+    <!--/div-->
+    
+    
+    
+    
+    
+    
+    <footer>
+      <p>
+        <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US" class="cc"><img src="/res/cc-cc.png" class="cc">
+        <img src="/res/cc-by.png" class="cc"></a>
+        This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/deed.en_US">Creative Commons License</a>
+      </p>
+    </footer>
+    
+    
+    <script>
+  var n,i,L,cn,v = document.getElementsByTagName('pre');
+  for (i=0,L=v.length;i<L;++i) {
+    n = v.item(i);
+    if ((cn = n.firstChild) && cn.nodeName == 'CODE') {
+      if (cn.className.indexOf("none") !== -1 || cn.className.indexOf("txt") !== -1) {
+        cn.className = 'nohighlight';
+      }
+    }
+  }
+</script>
+<link rel="stylesheet" media="all" href="/res/highlight.css" type="text/css">
+<script src="/res/highlight.js"></script>
+
+    <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-9078556-2']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+    <script>for (var k in window.initFuncs) { window.initFuncs[k](); } delete window.initFuncs;</script>
+  </body>
+</html>
