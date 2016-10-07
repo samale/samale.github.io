@@ -1,12 +1,8 @@
-.jumbotron {
-    background: url(../img/1.jpg) fixed center no-repeat;
-    background-size: cover;
-}
 #hero{
   background-image:url(../img/1.jpg);
   background-size:cover;
   position:relative;
-  height:100vh;
+  height:95vh;
 }
 
 .header{
