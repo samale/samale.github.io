@@ -1,86 +1,644 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="description" content="Responsive Personal One Page Portfolio">
+<meta name="keywords" content="Responsive, Personal, One Page Portfolio, Freelancers, Template">
+<meta name="author" content="peng lam">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-    <title>zenitas</title>
+<!-- site title -->
+<title>Branded - Startup Landing Page Template</title>
 
-    <!-- Bootstrap Core CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/kods.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <style>
-    body {
-        padding-top: 50px;
-        /* Required padding for .navbar-fixed-top. Remove if using .navbar-static-top. Change if height of navigation changes. */
-    }
-    </style>
+<!-- Bootstrap css -->
+<link rel="stylesheet" href="css/bootstrap.min.css">
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+<!-- Animated css -->
+<link rel="stylesheet" href="css/animate.css">
+
+<!-- Font Awesome css -->
+<link rel="stylesheet" href="css/font-awesome.min.css">
+
+<!-- Owl Carousel css -->
+<link rel="stylesheet" href="css/owl.theme.css">
+<link rel="stylesheet" href="css/owl.carousel.css">
+
+<!-- Magnific Popup css -->
+<link rel="stylesheet" href="css/magnific-popup.css">
+
+<!-- Main css -->
+<link rel="stylesheet" href="css/style.css">
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css?family=Hind+Siliguri:300,400,500,700" rel="stylesheet">
+
 
 </head>
+<body data-spy="scroll" data-offset="50" data-target=".navbar-collapse">
 
-<body>
 
-    <!-- Navigation -->
-    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-        <div class="container">
-            <!-- Brand and toggle get grouped for better mobile display -->
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="#">zenitas</a>
-            </div>
-            <!-- Collect the nav links, forms, and other content for toggling -->
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="#">&Zopf;</a>
-                    </li>
-                    <li>
-                        <a href="#">&#9757;</a>
-                    </li>
-                    <li>
-                        <a href="#">&#8505;</a>
-                    </li>
-                </ul>
-            </div>
-            <!-- /.navbar-collapse -->
-        </div>
-        <!-- /.container -->
-    </nav>
-    <!-- Page Content -->
-    <div class="fill" style="background-image:url('img/1.jpg');"></div>
-    <div id="hero">
-    <div class="header">
-      <h1 style="text-shadow: 0px 0px 6px #000"> zenitas </h1>
+<!-- =========================
+     PRE LOADER       
+============================== -->
+
+<div class="preloader">
+	<div class="sk-spinner sk-spinner-pulse"></div>
+</div>
+
+
+
+<!-- =========================
+     NAVIGATION LINKS     
+============================== -->
+
+<div class="navbar navbar-fixed-top custom-navbar" role="navigation">
+	<div class="container">
+
+		<!-- navbar header -->
+		<div class="navbar-header">
+			<button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+				<span class="icon icon-bar"></span>
+				<span class="icon icon-bar"></span>
+				<span class="icon icon-bar"></span>
+			</button>
+			<a href="index.html" class="navbar-brand">Branded.</a>
+		</div>
+
+		<div class="collapse navbar-collapse">
+			<ul class="nav navbar-nav navbar-right">
+				<li><a href="#intro" class="smoothScroll">Intro</a></li>
+				<li><a href="#feature" class="smoothScroll">Features</a></li>
+				<li><a href="#team" class="smoothScroll">Team</a></li>
+				<li><a href="#pricing" class="smoothScroll">Pricing</a></li>
+				<li><a href="#testimonial" class="smoothScroll">Testimonial</a></li>
+				<li><a href="#contact" class="smoothScroll">Contact</a></li>
+			</ul>
+		</div>
+
+	</div>
+</div>
+
+
+
+<!-- =========================
+    INTRO SECTION   
+============================== -->
+
+<section id="intro" class="parallax-section">
+	<div class="gradient-overlay"></div>
+		<div class="container">
+			<div class="row">
+
+				<div class="col-md-12 col-sm-12">
+					<h1 class="wow fadeIn" data-wow-delay="1.6s">Startup Landing Page.</h1>
+					<h5 class="wow fadeInUp" data-wow-delay="2s">The best way to present your Beautiful Website.</h5>
+					<a href="#detail" class="btn btn-lg btn-default smoothScroll wow fadeInUp hidden-xs" data-wow-delay="2.3s">LEARN MORE</a>
+					<a href="#team" class="btn btn-lg btn-danger smoothScroll wow fadeInUp" data-wow-delay="2.3s">MEET OUR PEOPLE</a>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</section>
+
+
+
+<!-- =========================
+    DETAIL SECTION   
+============================== -->
+
+<section id="detail" class="parallax-section">
+	<div class="container">
+		<div class="row">
+
+			<div class="wow fadeInLeft col-md-4 col-sm-6" data-wow-delay="0.3s">
+				<div class="detail-thumb">
+					<i class="fa fa-tablet"></i>
+					<h3>Responsive Design</h3>
+					<hr>
+					<p>Clone is a landing Page template Lorem ipsum dolor sit amet. It is easy to customize and amazing support.</p>
+				</div>
+			</div>
+
+			<div class="wow fadeInUp col-md-4 col-sm-6" data-wow-delay="0.6s">
+				<div class="detail-thumb">
+					<i class="fa fa-html5"></i>
+					<h3>HTML5 & CSS3</h3>
+					<hr>
+					<p>Clone is a landing Page template Lorem ipsum dolor sit amet. It is easy to customize and amazing support.</p>
+				</div>
+			</div>
+
+			<div class="wow fadeInRight col-md-4 col-sm-6" data-wow-delay="0.9s">
+				<div class="detail-thumb">
+					<i class="fa fa-bell-o"></i>
+					<h3>24 Support</h3>
+					<hr>
+					<p>Clone is a landing Page template Lorem ipsum dolor sit amet. It is easy to customize and amazing support.</p>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</section>
+
+
+
+<!-- =========================
+    FEATURE SECTION   
+============================== -->
+
+<section id="feature" class="parallax-section">
+	<div class="container">
+		<div class="row">
+
+			<div class="wow fadeInUp col-md-6 col-sm-10" data-wow-delay="0.3s">
+				<img src="images/feature-img.png" class="img-responsive" alt="feature">
+			</div>
+
+			<div class="wow fadeInUp col-md-5 col-md-offset-0 col-sm-offset-1 col-sm-10" data-wow-delay="0.6s">
+				<h2>Explore the Features</h2>
+				<p>Clone is a landing Page template Lorem ipsum dolor sit amet. It is easy to customize and amazing support.</p>
+
+					<div class="media">
+						<div class="media-object media-left">
+							<i class="fa fa-tablet"></i>
+						</div>
+						<div class="media-body">
+							<h3 class="media-heading">Responsive Design</h3>
+							<p>Clone is a landing Page template Lorem ipsum dolor sit amet. It is easy to customize and amazing support.</p>
+						</div>
+					</div>
+
+					<div class="media">
+						<div class="media-object media-left">
+							<i class="fa fa-clone"></i>
+						</div>
+						<div class="media-body">
+							<h3 class="media-heading">Retina Ready</h3>
+							<p>Clone is a landing Page template Lorem ipsum dolor sit amet. It is easy to customize and amazing support.</p>
+						</div>
+					</div>
+			</div>
+
+		</div>
+	</div>
+</section>
+
+
+
+<!-- =========================
+    VIDEO SECTION   
+============================== -->
+
+<section id="video" class="parallax-section">
+  <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+
+          <div class="col-md-offset-2 col-md-8 col-sm-12">
+              <a class="popup-youtube" href="https://www.youtube.com/watch?v=4EvNxWhskf8"><i class="fa fa-play"></i></a>
+              <h2 class="wow fadeInUp" data-wow-delay="0.9s">Watch Sample Video</h2>
+              <p class="wow fadeInUp" data-wow-delay="1s">Clone is a landing Page template Lorem ipsum dolor sit amet. It is retina ready, very easy to customize and amazing support.</p>
+          </div>
+
+      </div>
     </div>
-  </div>
-        <!-- /.row -->
+</section>
 
-    <!-- /.container -->
 
-    <!-- jQuery Version 1.11.1 -->
-    <script src="js/jquery.js"></script>
 
-    <!-- Bootstrap Core JavaScript -->
-    <script src="js/bootstrap.min.js"></script>
+<!-- =========================
+    TEAM SECTION   
+============================== -->
+
+<section id="team" class="parallax-section">
+	<div class="container">
+		<div class="row">
+
+			<div class=" wow bounceIn col-md-12 col-sm-12">
+				<div class="section-title">
+					<h2>Meet Best People</h2>
+					<p>Clone is a landing Page template.</p>
+				</div>
+			</div>
+
+			<div id="owl-team" class="owl-carousel">
+
+				<div class="item wow fadeInUp col-md-4 col-sm-4" data-wow-delay="0.9s">
+					<div class="team-thumb">
+						<img src="images/team-img1.jpg" class="img-responsive" alt="Team">
+							<div class="team-overlay">
+								<div class="team-item">
+									<ul class="social-icon">
+										<li><a href="#" class="fa fa-facebook"></a></li>
+										<li><a href="#" class="fa fa-twitter"></a></li>
+										<li><a href="#" class="fa fa-google-plus"></a></li>
+									</ul>
+								</div>
+							</div>
+					</div>
+					<h3>Kammil Jessic</h3>
+					<h6>UI Designer</h6>
+				</div>
+
+				<div class="item wow fadeInUp col-md-4 col-sm-4" data-wow-delay="0.6s">
+					<div class="team-thumb">
+						<img src="images/team-img2.jpg" class="img-responsive" alt="Team">
+							<div class="team-overlay">
+								<div class="team-item">
+									<ul class="social-icon">
+										<li><a href="#" class="fa fa-facebook"></a></li>
+										<li><a href="#" class="fa fa-twitter"></a></li>
+										<li><a href="#" class="fa fa-google-plus"></a></li>
+									</ul>
+								</div>
+							</div>
+					</div>
+					<h3>Davida James</h3>
+					<h6>Creative Director</h6>
+				</div>
+
+				<div class="item wow fadeInUp col-md-4 col-sm-4" data-wow-delay="0.9s">
+					<div class="team-thumb">
+						<img src="images/team-img3.jpg" class="img-responsive" alt="Team">
+							<div class="team-overlay">
+								<div class="team-item">
+									<ul class="social-icon">
+										<li><a href="#" class="fa fa-facebook"></a></li>
+										<li><a href="#" class="fa fa-twitter"></a></li>
+										<li><a href="#" class="fa fa-google-plus"></a></li>
+									</ul>
+								</div>
+							</div>
+					</div>
+					<h3>Winslter Monne</h3>
+					<h6>Web Specialist</h6>
+				</div>
+
+				<div class="item wow fadeInUp col-md-4 col-sm-4" data-wow-delay="0.6s">
+					<div class="team-thumb">
+						<img src="images/team-img4.jpg" class="img-responsive" alt="Team">
+							<div class="team-overlay">
+								<div class="team-item">
+									<ul class="social-icon">
+										<li><a href="#" class="fa fa-facebook"></a></li>
+										<li><a href="#" class="fa fa-twitter"></a></li>
+										<li><a href="#" class="fa fa-google-plus"></a></li>
+									</ul>
+								</div>
+							</div>
+					</div>
+					<h3>Johnathan Doe</h3>
+					<h6>Frontend Dev</h6>
+				</div>
+
+				<div class="item wow fadeInUp col-md-4 col-sm-4" data-wow-delay="0.6s">
+					<div class="team-thumb">
+						<img src="images/team-img5.jpg" class="img-responsive" alt="Team">
+							<div class="team-overlay">
+								<div class="team-item">
+									<ul class="social-icon">
+										<li><a href="#" class="fa fa-facebook"></a></li>
+										<li><a href="#" class="fa fa-twitter"></a></li>
+										<li><a href="#" class="fa fa-google-plus"></a></li>
+									</ul>
+								</div>
+							</div>
+					</div>
+					<h3>Bond Leonare Doe</h3>
+					<h6>Marketing Guru</h6>
+				</div>
+
+				<div class="item wow fadeInUp col-md-4 col-sm-4" data-wow-delay="0.6s">
+					<div class="team-thumb">
+						<img src="images/team-img6.jpg" class="img-responsive" alt="Team">
+							<div class="team-overlay">
+								<div class="team-item">
+									<ul class="social-icon">
+										<li><a href="#" class="fa fa-facebook"></a></li>
+										<li><a href="#" class="fa fa-twitter"></a></li>
+										<li><a href="#" class="fa fa-google-plus"></a></li>
+									</ul>
+								</div>
+							</div>
+					</div>
+					<h3>Bond Leonare Doe</h3>
+					<h6>Marketing Guru</h6>
+				</div>
+
+				<div class="item wow fadeInUp col-md-4 col-sm-4" data-wow-delay="0.6s">
+					<div class="team-thumb">
+						<img src="images/team-img7.jpg" class="img-responsive" alt="Team">
+							<div class="team-overlay">
+								<div class="team-item">
+									<ul class="social-icon">
+										<li><a href="#" class="fa fa-facebook"></a></li>
+										<li><a href="#" class="fa fa-twitter"></a></li>
+										<li><a href="#" class="fa fa-google-plus"></a></li>
+									</ul>
+								</div>
+							</div>
+					</div>
+					<h3>Bond Leonare Doe</h3>
+					<h6>Marketing Guru</h6>
+				</div>
+				
+			</div>
+
+		</div>
+	</div>
+</section>
+
+
+
+<!-- =========================
+    FAQ SECTION   
+============================== -->
+
+<section id="faq" class="parallax-section">
+	<div class="container">
+		<div class="row">
+
+			<div class="wow bounceIn col-md-12 col-sm-12 text-center">
+				<div class="section-title">
+					<h2>Have Any Questions?</h2>
+					<p>Responsive HTML5 Landing Page Template.</p>
+				</div>
+			</div>
+
+			<div class="wow fadeInUp col-md-offset-1 col-md-10 col-sm-12" data-wow-delay="0.9s">
+				<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+
+  					<div class="panel panel-default">
+   						<div class="panel-heading" role="tab" id="headingOne">
+      						<h4 class="panel-title">
+        						<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+          							 What is Landing Page template?
+        						</a>
+      						</h4>
+    					</div>
+   						<div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+      						<div class="panel-body">
+        						<p>Lorem ipsum dolor sit amet, maecenas eget vestibulum justo imperdiet, wisi risus purus augue vulputate voluptate neque, curabitur dolor libero sodales vitae elit massa. Lorem ipsum dolor sit amet, maecenas eget vestibulum justo imperdiet.</p>
+								<p>Lorem ipsum dolor sit amet, maecenas eget vestibulum justo imperdiet.</p>
+      						</div>
+   						 </div>
+ 					</div>
+
+    				<div class="panel panel-default">
+   						<div class="panel-heading" role="tab" id="headingTwo">
+      						<h4 class="panel-title">
+        						<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+          							What is Responsive Design?
+        						</a>
+      						</h4>
+    					</div>
+   						<div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+      						<div class="panel-body">
+        						<p>Lorem ipsum dolor sit amet, maecenas eget vestibulum justo imperdiet, wisi risus purus augue vulputate voluptate neque, curabitur dolor libero sodales vitae elit massa. Lorem ipsum dolor sit amet, maecenas eget vestibulum justo imperdiet.</p>
+								<p>Lorem ipsum dolor sit amet, maecenas eget vestibulum justo imperdiet.</p>
+      						</div>
+   						 </div>
+ 					</div>
+
+ 					<div class="panel panel-default">
+   						<div class="panel-heading" role="tab" id="headingThree">
+      						<h4 class="panel-title">
+        						<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+          							Responsive HTLM5 Template
+        						</a>
+      						</h4>
+    					</div>
+   						<div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+      						<div class="panel-body">
+        						<p>Lorem ipsum dolor sit amet, maecenas eget vestibulum justo imperdiet, wisi risus purus augue vulputate voluptate neque, curabitur dolor libero sodales vitae elit massa. Lorem ipsum dolor sit amet, maecenas eget vestibulum justo imperdiet.</p>
+								<p>Lorem ipsum dolor sit amet, maecenas eget vestibulum justo imperdiet.</p>
+      						</div>
+   						 </div>
+ 					 </div>
+
+ 				 </div>
+			</div>
+
+		</div>
+	</div>
+</section>
+
+
+
+<!-- =========================
+    PRICING SECTION   
+============================== -->
+
+<section id="pricing" class="parallax-section">
+	<div class="container">
+		<div class="row">
+
+			<div class=" wow bounceIn col-md-12 col-sm-12">
+				<div class="section-title">
+					<h2>Our Packages</h2>
+					<p>Responsive Landing Page Template.</p>
+				</div>
+			</div>
+
+			<div class="wow fadeInUp col-md-4 col-sm-6" data-wow-delay="0.3s">
+				<div class="pricing-thumb">
+					<div class="pricing-title">
+						<h3>Standard Version</h3>
+					</div>
+					<div class="pricing-month">
+						<h2>$ 400</h2>
+						<h6>Monthly</h6>
+					</div>
+					<p>24 Accounts</p>
+					<p>5 GB Space</p>
+					<p>Lifetime Update</p>
+					<p>Landing Page</p>
+				</div>
+			</div>
+
+			<div class="wow fadeInUp col-md-4 col-sm-6" data-wow-delay="0.3s">
+				<div class="pricing-thumb">
+					<div class="pricing-title">
+						<h3>Business Version</h3>
+					</div>
+					<div class="pricing-month">
+						<h2>$ 650</h2>
+						<h6>Monthly</h6>
+					</div>
+					<p>40 Accounts</p>
+					<p>5 GB Space</p>
+					<p>Lifetime Update</p>
+					<p>Landing Page</p>
+				</div>
+			</div>
+
+			<div class="wow fadeInUp col-md-4 col-sm-6" data-wow-delay="0.3s">
+				<div class="pricing-thumb">
+					<div class="pricing-title">
+						<h3>Professional Version</h3>
+					</div>
+					<div class="pricing-month">
+						<h2>$ 840</h2>
+						<h6>Monthly</h6>
+					</div>
+					<p>100 Accounts</p>
+					<p>40 GB Space</p>
+					<p>Lifetime Update</p>
+					<p>Landing Page</p>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</section>
+
+
+
+<!-- =========================
+    TESTIMONIAL SECTION   
+============================== -->
+
+<section id="testimonial" class="parallax-section">
+	<div class="overlay"></div>
+	<div class="container">
+		<div class="row">
+
+			<div class=" wow bounceIn col-md-12 col-sm-12">
+				<div class="section-title">
+					<h2>Testimonials Words</h2>
+					<p>what people saying about us</p>
+				</div>
+			</div>
+
+			<div id="owl-testimonial" class="owl-carousel">
+
+				<div class="item col-md-offset-2 col-md-8 col-sm-12 wow fadeInUp" data-wow-delay="0.6s">
+					<img src="images/testimonial-img1.jpg" class="img-responsive img-circle" alt="Testimonial">
+          				<h3>Lorem torquatos nec eu, vis detraxit periculis ex, nihil expetendis in mei. Mei an pericula euripidis, hinc partem ei est. Eos ei nisl graecis.</h3>
+          				<p>Bond Leonare Doe</p>
+       			 </div>
+
+       			 <div class="item col-md-offset-2 col-md-8 col-sm-12 wow fadeInUp" data-wow-delay="0.6s">
+					<img src="images/testimonial-img2.jpg" class="img-responsive img-circle" alt="Testimonial">
+          				<h3>Lorem torquatos nec eu, vis detraxit periculis ex, nihil expetendis in mei. Mei an pericula euripidis, hinc partem ei est. Eos ei nisl graecis.</h3>
+          				<p>Bond Leonare Doe</p>
+       			 </div>
+
+       			 <div class="item col-md-offset-2 col-md-8 col-sm-12 wow fadeInUp" data-wow-delay="0.6s">
+					<img src="images/testimonial-img3.jpg" class="img-responsive img-circle" alt="Testimonial">
+          				<h3>Lorem torquatos nec eu, vis detraxit periculis ex, nihil expetendis in mei. Mei an pericula euripidis, hinc partem ei est. Eos ei nisl graecis.</h3>
+          				<p>Bond Leonare Doe</p>
+       			 </div>
+				
+			</div>
+
+		</div>
+	</div>
+</section>
+
+
+
+<!-- =========================
+    CONTACT SECTION   
+============================== -->
+
+<section id="contact" class="parallax-section">
+	<div class="container">
+		<div class="row">
+
+			<div class="wow bounceIn col-md-12 col-sm-12">
+				<div class="section-title text-center">
+					<h2>Contact with Us</h2>
+					<p>we love working together!</p>
+				</div>
+			</div>
+
+			<div class="wow fadeInUp col-md-6 col-sm-7" data-wow-delay="0.9s">
+				<div class="contact_detail">
+					<div class="section-title">
+						<h3>Send Message Here</h3>
+					</div>
+					<form action="contact.php" method="post">
+						<input type="text" class="form-control" placeholder="Name" required>
+						<input type="email" class="form-control" placeholder="Email" required>
+						<textarea class="form-control" placeholder="Message" rows="5" required></textarea>
+						<div class="col-md-6 col-sm-10">
+							<input type="submit" class="form-control" value="Send Now">
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<div class="wow fadeInUp col-md-offset-1 col-md-4 col-sm-5" data-wow-delay="0.9s">
+				<div class="contact_detail">
+					<div class="addr">
+						<h3>Visit Office</h3>
+						<p>1355 Market Street, Suite 900 San Francisco, CA 94103 United States</p>
+					</div>
+					<div class="ph">
+						<h3>Call Us</h3>
+						<p>001 2023432834 / 0234 20342342</p>
+					</div>
+              		<div class="email">
+              			<h3>Send Email</h3>
+              			<p>hello@brandedagency.co</p>
+              		</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</section>
+
+
+
+<!-- =========================
+    FOOTER SECTION   
+============================== -->
+
+<footer>
+	<div class="container">
+		<div class="row">
+
+			<div class="col-md-12 col-sm-12">
+				<p class="wow fadeInUp" data-wow-delay="0.6s">Copyright © 2016 Branded Landing Page | All Rights Reserved.</p>
+
+				<ul class="social-icon">
+					<li><a href="#" class="fa fa-facebook wow fadeInUp" data-wow-delay="1s"></a></li>
+					<li><a href="#" class="fa fa-twitter wow fadeInUp" data-wow-delay="1.3s"></a></li>
+					<li><a href="#" class="fa fa-dribbble wow fadeInUp" data-wow-delay="1.6s"></a></li>
+					<li><a href="#" class="fa fa-behance wow fadeInUp" data-wow-delay="1.9s"></a></li>
+					<li><a href="#" class="fa fa-google-plus wow fadeInUp" data-wow-delay="2s"></a></li>
+				</ul>
+
+			</div>
+			
+		</div>
+	</div>
+</footer>
+
+
+<!-- Back top -->
+<a href="#back-top" class="go-top"><i class="fa fa-angle-up"></i></a>
+
+
+
+<!-- =========================
+     SCRIPTS   
+============================== -->
+
+<script src="js/jquery.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.magnific-popup.min.js"></script>
+<script src="js/jquery.parallax.js"></script>
+<script src="js/owl.carousel.min.js"></script>
+<script src="js/smoothscroll.js"></script>
+<script src="js/wow.min.js"></script>
+<script src="js/custom.js"></script>
 
 </body>
-
 </html>
