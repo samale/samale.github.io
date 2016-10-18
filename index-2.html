@@ -29,7 +29,7 @@
 	<!--  Slippry Slideshow -->
 	<link href="assets/css/slippry.min.css" rel="stylesheet">
 </head>
-<body>
+<body id="font-resize">
     <!-- Navigation -->
     <nav class="navbar navbar-trn navbar-fixed-top" role="navigation" id="navbarSettings">
     <div class="container">
@@ -185,22 +185,19 @@
 
 <!-- If navbar is fixed to top and it has the class navbar-default or navbar-inverse this div will add space below the navbar-->
 <div id="navbarSpaceBottom"></div>
-    <!--  Header Section  -->
-    <section class="bg-7 bg-centerTop70 bg-cover">
+    <!-- Introduction section -->
+    <section class="bg-13 bg-cover bg-centerTop bg-norepeat">
         <div class="bg-filter sTop">
             <div class="container">
                 <div class="jumbotron trn v-center">
-                    <h1>Zenitas.lt</h1>
+                    <h1 class="wow fadeInUp" data-wow-delay="0.1s">zenitas.lt</h1>
                     <div class="space-sm"></div>
-                    <p>Darom svetainikes
-                        <br>Kurios yra fully responsive, easy customize and ready for your business.</p>
+                    <p class="wow fadeInUp" data-wow-delay="0.2s">Naujausios technologijos
+                        <br>svetaines kurios yra fully responsive, easy customize and ready for your business.</p>
                     <div class="space-sm"></div>
-                    <ul class="list-inline">
+                    <ul class="list-inline wow fadeInUp" data-wow-delay="0.3s">
                         <li>
-                            <a href="#" class="btn btn-default-trn btn-xlg scroll">Pirkti</a>
-                        </li>
-                        <li>
-                            <a href="#learn-more" class="btn btn-primary btn-xlg scroll"><i class="fa fa-paper-plane-o"></i>Suzinoti daugiau</a>
+                            <a href="#" class="btn btn-default-trn btn-xlg scroll"><i class="fa fa-bolt"></i>Pirkti</a>
                         </li>
                     </ul>
                 </div>
@@ -208,117 +205,118 @@
         </div>
     </section>
 
-    <!-- Features section -->
-    <div id="learn-more"></div>
-    <section class="section">
-        <div class="container">
-            <div class="row">
-                <div class="col-sm-3">
-                    <div class="text-center">
-                        <i class="fa fa-laptop hovicon effect-3 sub-b easePulse wow" data-wow-delay="0.2s"></i>
-                        <h3 class="wow fadeIn m-10-top" data-wow-delay="0.4s">Fully responsive</h3>
-                        <p class="wow fadeIn" data-wow-delay="0.4s">Nulle omnis iste natus error sit voluptatem accusantium.</p>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <div class="text-center">
-                        <i class="fa fa-globe hovicon effect-3 sub-b easePulse wow" data-wow-delay="0.4s"></i>
-                        <h3 class="wow fadeIn m-10-top" data-wow-delay="0.6s">HTML5 & CSS3</h3>
-                        <p class="wow fadeIn" data-wow-delay="0.6s">Nulle omnis iste natus error sit voluptatem accusantium.</p>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <div class="text-center">
-                        <i class="fa fa-plane hovicon effect-3 sub-b easePulse wow" data-wow-delay="0.6s"></i>
-                        <h3 class="wow fadeIn m-10-top" data-wow-delay="0.8s">Ready for use</h3>
-                        <p class="wow fadeIn" data-wow-delay="0.8s">Nulle omnis iste natus error sit voluptatem accusantium.</p>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <div class="text-center">
-                        <i class="fa fa-lightbulb-o hovicon effect-3 sub-b easePulse wow" data-wow-delay="0.8s"></i>
-                        <h3 class="wow fadeIn m-10-top" data-wow-delay="1s">Shortcodes</h3>
-                        <p class="wow fadeIn" data-wow-delay="1s">Nulle omnis iste natus error sit voluptatem accusantium.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <!-- Features and Services section -->
 
-    <!-- Services section -->
-    <section class="section-lg bg-grey">
+    <div class="section-lg">
         <div class="container">
             <div class="row">
-                <h2 class="lg-title lg-title-border">Ka mes darome?</h2>
-                <!--fadeInLeft-->
-                <div class=" col-sm-6 wow fadeInLeft">
-                    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Etiam sapien elit, consequat eget, tristique non. Venenatis quis ante. Curabitur ligula sapien.</p>
-                    <p>Pulvinar a vestibulum quis, facilisis vel sapien. Cum sociis natoque penatibus et magnis dis parturient montes.</p>
-                    <div class="space-sm"></div>
-                    <ul class="info-list md-list style i-primary">
-                        <li>
-                            <i class="fa fa-play"></i>Pellentesque pretium lectus id.</li>
-                        <li>
-                            <i class="fa fa-play"></i>Excepteur sint occaecat cupidatat non.</li>
-                        <li>
-                            <i class="fa fa-play"></i>Aliquam erat volutpat ufsce.</li>
-                        <li>
-                            <i class="fa fa-play"></i>Vestibulum fermentum tortor id mi.</li>
-                    </ul>
+                <div class="col-md-3 col-sm-6 wow fadeIn" data-wow-delay="1s">
+                    <div class="text-center">
+                        <i class="fa fa-tint icon-o"></i>
+                        <h3 class="text-primary">Creative Design</h3>
+                        <p class="text-grey">Fusce aliquam vestibulum ipsum.
+                            <br>Aenean vel massa quis mauris vehicula.</p>
+                    </div>
+                    <div class="space visible-xs visible-sm"></div>
+                </div>
+
+                <div class="col-md-3 col-sm-6 wow fadeIn" data-wow-delay="1.1s">
+                    <div class="text-center">
+                        <i class="fa fa-paper-plane-o icon-o"></i>
+                        <h3 class="text-primary">HTML5 & CSS3</h3>
+                        <p class="text-grey">Fusce aliquam vestibulum ipsum.
+                            <br>Aenean vel massa quis mauris vehicula.</p>
+                    </div>
+                    <div class="space visible-xs visible-sm"></div>
+                </div>
+                <div class="col-md-3 col-sm-6  wow fadeIn" data-wow-delay="1.2s">
+                    <div class="text-center">
+                        <i class="fa fa-heart-o icon-o"></i>
+                        <h3 class="text-primary">Multi Purpose Using</h3>
+                        <p class="text-grey">Fusce aliquam vestibulum ipsum.
+                            <br>Aenean vel massa quis mauris vehicula.</p>
+                    </div>
                     <div class="space visible-xs"></div>
                 </div>
+                <div class="col-md-3 col-sm-6 wow fadeIn" data-wow-delay="1.3s">
+                    <div class="text-center">
+                        <i class="fa fa-sliders icon-o"></i>
+                        <h3 class="text-primary">Easy-going Setup</h3>
+                        <p class="text-grey">Fusce aliquam vestibulum ipsum.
+                            <br>Aenean vel massa quis mauris vehicula.</p>
+                    </div>
+                </div>
 
-                <div class="col-sm-6 wow fadeInRight">
-                    <img class="img-mw450" src="assets/img/Showcase-Template-Flat-Presentation-Vol-3-portfolio.png" alt="Flat showcase presentation">
+            </div>
+        </div>
+
+    </div>
+
+    <!-- about us section -->
+    <section class="bg-grey  section-lg ">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h2 class="text-primary wow fadeIn" data-wow-delay="0.2s" id="responsive_headline">Who We Are</h2>
+                    <p class="text-block wow fadeIn" data-wow-delay="0.4s">We are excited to launch our website. We know that our product is going to be big. You may have seen us in the Dinosaurs’ Den where we were we told that we didn’t need them because we were already doing it so well ourselves, so that’s what we have continued to do.
+                    </p>
+                    <div class="space-sm visible-xs visible-sm"></div>
+                </div>
+                <div class="col-md-6">
+                    <h2 class="text-primary wow fadeIn" data-wow-delay="0.5s">What We Believe</h2>
+                    <p class="text-block  wow fadeIn" data-wow-delay="0.7s">
+                        We want and do for you the best template what will be ever exist. Our filisofy depend on perfect design and using the products for you, our customers. We don't care about it how many we will sell, we think hard about every detail of our product and we want it to be perfect.
+                    </p>
                 </div>
             </div>
         </div>
     </section>
+    
+    <div class="bg-11 bg-center bg-fixed">
+        <div class="filling-section bg-filter-v1"></div>
+    </div>
 
-    <!-- Our works/ projects section -->
-    <section class="section-lg">
+
+    <!--  Gallery - portfolio  -->
+    <section class="bg-grey-3 section-lg">
         <div class="container">
-
-            <h2 class="lg-title lg-title-border">Musu darbai</h2>
-
+            <h2 class="big-title text-center">Gallery</h2>
+            <p class="big-subtitle text-center">Curabitur bibendum justo non orci. Aenean id metus id velit ullamcorper pulvinar. Proin mattis lacinia justo. Duis bibendum, lectus ut viverra rhoncus, dolor nunc faucibus libero, eget facilisis enim ipsum id lacus.</p>
+            <div class="space-sm"></div>
             <ul class="filter-tabs">
-                <li class="filter active" data-filter="mix"><span>Visi</span>
-                </li>
-                <li class="filter" data-filter="apps"><span>Programavimas</span>
-                </li>
-                <li class="filter" data-filter="devices"><span>Dizainas</span>
-                </li>
-                <li class="filter" data-filter="web"><span>Internetines svetaines</span>
-                </li>
+                <li class="filter active" data-filter="mix">All</li>
+                <li class="filter" data-filter="apps">Application</li>
+                <li class="filter" data-filter="devices">Devices</li>
+                <li class="filter" data-filter="web">Webdesign</li>
             </ul>
 
-            <ul class="row  filter-grid-v2" id="Grid">
+            <ul class="row filter-grid-v2" id="Grid">
+                <!-- mix - select all, devices - filter only devices -->
                 <!-- Item 1 -->
-                <li class="col-md-4 col-sm-6 mix devices ">
+                <li class="col-md-4 col-sm-6 mix devices">
                     <a href="portfolio-item-v2.html" title="View portfolio item">
-                        <div class="hover-content wow easeUp" data-wow-delay="0.5s">
+                        <div class="hover-content  wow easePulse" data-wow-delay="0s">
                             <img src="assets/img/sign-up-sketch.jpg" class="img-responsive" alt="Portfolio - application">
                             <div class="top-part hidden-xs">
                                 <i class="fa fa-eye"></i>
                             </div>
                             <div class="bottom-part hidden-xs">
-                                <h3>Some Title</h3>
+                                <h3>Title</h3>
                             </div>
                         </div>
                     </a>
                 </li>
-                <!-- mix - select all, devices - filter only devices -->
 
                 <!-- Item 2 -->
                 <li class="col-md-4 col-sm-6 mix apps web ">
                     <a href="portfolio-item-v2.html" title="View portfolio item">
-                        <div class="hover-content wow easeUp" data-wow-delay="0.25s">
+                        <div class="hover-content wow easePulse" data-wow-delay="0.3s">
                             <img src="assets/img/minimal-wireframe-assets.jpg" class="img-responsive" alt="Websites Layout">
                             <div class="top-part hidden-xs">
                                 <i class="fa fa-eye"></i>
                             </div>
                             <div class="bottom-part hidden-xs">
-                                <h3>Some Title</h3>
+                                <h3>Title</h3>
                             </div>
                         </div>
                     </a>
@@ -327,13 +325,13 @@
                 <!-- Item 3 -->
                 <li class="col-md-4 col-sm-6 mix apps ">
                     <a href="portfolio-item-v2.html" title="View portfolio item">
-                        <div class="hover-content wow easeUp" data-wow-delay="0.75s">
+                        <div class="hover-content wow easePulse" data-wow-delay="0.6s">
                             <img src="assets/img/App-Preview.jpg" class="img-responsive" alt="Portfolio - application">
                             <div class="top-part hidden-xs">
                                 <i class="fa fa-eye"></i>
                             </div>
                             <div class="bottom-part hidden-xs">
-                                <h3>Some Title</h3>
+                                <h3>Title</h3>
                             </div>
                         </div>
                     </a>
@@ -342,13 +340,13 @@
                 <!-- Item 4 -->
                 <li class="col-md-4 col-sm-6 mix devices ">
                     <a href="portfolio-item-v2.html" title="View portfolio item">
-                        <div class="hover-content wow easeUp" data-wow-delay="0.6s">
+                        <div class="hover-content wow easePulse" data-wow-delay="0.3s">
                             <img src="assets/img/macbook.jpg" class="img-responsive" alt="Apple Macbook Pro">
                             <div class="top-part hidden-xs">
                                 <i class="fa fa-eye"></i>
                             </div>
                             <div class="bottom-part hidden-xs">
-                                <h3>Some Title</h3>
+                                <h3>Title</h3>
                             </div>
                         </div>
                     </a>
@@ -357,13 +355,13 @@
                 <!-- Item 5 -->
                 <li class="col-md-4 col-sm-6 mix web ">
                     <a href="portfolio-item-v2.html" title="View portfolio item">
-                        <div class="hover-content wow easeUp" data-wow-delay="0.35s">
+                        <div class="hover-content wow easePulse" data-wow-delay="0.6s">
                             <img src="assets/img/webdesign.jpg" class="img-responsive" alt="Webdesign">
                             <div class="top-part hidden-xs">
                                 <i class="fa fa-eye"></i>
                             </div>
                             <div class="bottom-part hidden-xs">
-                                <h3>Some Title</h3>
+                                <h3>Title</h3>
                             </div>
                         </div>
                     </a>
@@ -372,201 +370,216 @@
                 <!-- Item 6 -->
                 <li class="col-md-4 col-sm-6 mix apps ">
                     <a href="portfolio-item-v2.html" title="View portfolio item">
-                        <div class="hover-content wow easeUp" data-wow-delay="0.85s">
+                        <div class="hover-content wow easePulse" data-wow-delay="0.9s">
                             <img src="assets/img/app-screen.jpg" class="img-responsive" alt="application">
                             <div class="top-part hidden-xs">
                                 <i class="fa fa-eye"></i>
                             </div>
                             <div class="bottom-part hidden-xs">
-                                <h3>Some Title</h3>
+                                <h3>Title</h3>
                             </div>
                         </div>
                     </a>
                 </li>
+
             </ul>
 
         </div>
     </section>
 
-    <div class="bg-11 bg-cover bg-center">
-        <div class="section-lg bg-filter-v2">
-            <div class="container">
-                <div id="testimonial" class="carousel slide" data-ride="carousel" data-interval="9000">
-                    <!-- Wrapper for slides -->
-                    <div class="carousel-inner">
-                        <div class="item active">
-                            <div class="testimonial">
+    <!--  Pricing Tables  -->
+    <section class="section-lg">
+        <div class="container">
+            <h2 class="big-title text-center">Prices</h2>
+            <p class="big-subtitle text-center">Curabitur bibendum justo non orci. Aenean id metus id velit ullamcorper pulvinar. Proin mattis lacinia justo. Duis bibendum.</p>
+            <div class="space"></div>
+            <div class="row">
+                <div class="col-md-4 wow fadeIn" data-wow-delay="0.5s">
+                    <div class="panel panel-default">
+                        <div class="panel-body text-center">
+                            <div class="hover-content">
+                                <div class="visible-part">
+                                    <h4 class="type">Basic</h4>
+                                    <h3 class="price text-primary">$5</h3>
+                                    <small class="text-grey month">per month</small>
+                                    <h5 class="text-primary details">View Details</h5>
+                                </div>
+                                <div class="hidden-part">
+                                    <h4 class="type">Details</h4>
+                                    <ul class="list-unstyled info-list md-list">
+                                        <li><span class="text-primary">5Gb</span> Storage</li>
+                                        <li><span class="text-primary">1</span> Email account</li>
+                                        <li><span class="text-primary">2</span> Hosted domains</li>
+                                        <li><span class="text-primary">24/7</span> Email support</li>
+                                    </ul>
+                                    <a href="pricing-tables.html" title="Start Trial Version"><h5 class="text-primary details">Start Trial</h5></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                                <p>"It’s just brilliant. I will recommend the product to everyone I know!"</p>
-                                <div class="space-sm"></div>
-                                <em>- Nicola Perry</em>
+                <div class="col-md-4 wow fadeIn" data-wow-delay="0.25s">
+                    <div class="panel panel-default">
+                        <div class="panel-body text-center">
+                            <div class="hover-content">
+                                <div class="visible-part">
+                                    <h4 class="type">Premium</h4>
+                                    <h3 class="price text-primary">$10</h3>
+                                    <small class="text-grey month">per month</small>
+                                    <h5 class="text-primary details">View Details</h5>
+                                </div>
+                                <div class="hidden-part">
+                                    <h4 class="type">Details</h4>
+                                    <ul class="list-unstyled info-list md-list">
+                                        <li><span class="text-primary">20Gb</span> Storage</li>
+                                        <li><span class="text-primary">10</span> Email account</li>
+                                        <li><span class="text-primary">15</span> Hosted domains</li>
+                                        <li><span class="text-primary">24/7</span> Email support</li>
+                                    </ul>
+                                    <a href="pricing-tables.html" title="Start Trial Version"><h5 class="text-primary details">Start Trial</h5></a>
+                                </div>
                             </div>
                         </div>
-                        <div class="item">
-                            <div class="testimonial">
-                                <p>
-                                    "What a product. Why didn’t someone think of it sooner?"
-                                </p>
-                                <div class="space-sm"></div>
-                                <em>- Jack Brown</em>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="testimonial">
-                                <p>
-                                    "I’ve bought it and now think perhaps I should have invested!""
-                                </p>
-                                <div class="space-sm"></div>
-                                <em>- Ben Berry</em>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="testimonial">
-                                <p>
-                                    "What a product. Why didn’t someone think of it sooner?"
-                                </p>
-                                <div class="space-sm"></div>
-                                <em>- Adele Taylor</em>
+                    </div>
+                </div>
+
+                <div class="col-md-4 wow fadeIn" data-wow-delay="0.75s">
+                    <div class="panel panel-default">
+                        <div class="panel-body text-center">
+                            <div class="hover-content">
+                                <div class="visible-part">
+                                    <h4 class="type">Platinum</h4>
+                                    <h3 class="price text-primary">$25</h3>
+                                    <small class="text-grey month">per month</small>
+                                    <h5 class="text-primary details">View Details</h5>
+                                </div>
+                                <div class="hidden-part">
+                                    <h4 class="type">Details</h4>
+                                    <ul class="list-unstyled info-list md-list">
+                                        <li><span class="text-primary">100Gb</span> Storage</li>
+                                        <li><span class="text-primary">20</span> Email account</li>
+                                        <li><span class="text-primary">25</span> Hosted domains</li>
+                                        <li><span class="text-primary">24/7</span> Email support</li>
+                                    </ul>
+                                    <a href="pricing-tables.html" title="Start Trial Version"><h5 class="text-primary details">Start Trial</h5></a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Pricing tables -->
-    <div id="get-started"></div>
-    <section class="section">
-        <div class="container">
-            <h2 class="lg-title lg-title-border">Paketai</h2>
-            <div class="space-sm"></div>
-            <div class="row">
-                <div class="col-sm-4 wow fadeIn" data-wow-delay="0.2s">
-                    <div class="panel panel-default prices first">
-                        <div class="panel-body">
-                            <i class="fa fa-paper-plane icon-u"></i>
-
-                            <h2 class="val">$15<small>/month</small></h2>
-
-                            <ul class="info-list md-list primary">
-                                <li>
-                                    <span>5Gb</span>Storage</li>
-                                <li>
-                                    <span>1</span>Email account</li>
-                                <li>
-                                    <span>2</span>Hosted domains</li>
-                                <li>
-                                    <span>24/7</span>Email support</li>
-                            </ul>
-                            <div class="space-md"></div>
-                            <a href="#" class="btn btn-default">Start Trial</a>
-                        </div>
-                    </div>
+            <div class="space"></div>
+            <div class="panel panel-default bg-grey-4 text-center wow fadeIn" data-wow-delay="0s">
+                <div class="panel-body">
+                    <h4 class="wow fadeIn" data-wow-delay="0.25s">Feel free to contact us, we will advise you and we will find together the right choice for you!</h4>
+                    <div class="space-sm"></div>
+                    <ul class="list-inline wow fadeIn" data-wow-delay="0.5s">
+                        <li>
+                            <a href="#contact-us" class="btn btn-primary scroll">
+                                <i class="fa fa-envelope"></i>zenitas@gmail.com
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="btn btn-primary-trn">
+                                <i class="fa fa-phone"></i>+370 666 99999
+                            </a>
+                        </li>
+                    </ul>
                 </div>
-                <div class="col-sm-4 wow fadeIn" data-wow-delay="0.4s">
-                    <div class="panel panel-default prices  bg-primary">
-                        <div class="panel-body ">
-                            <div class="ribbon">Favorite</div>
-
-                            <i class="fa fa-plane icon-u"></i>
-
-                            <h2 class="val">$30<small>/month</small></h2>
-
-                            <ul class="info-list md-list default">
-                                <li>
-                                    <span>20Gb</span>Storage</li>
-                                <li>
-                                    <span>10</span>Email account</li>
-                                <li>
-                                    <span>15</span>Hosted domains</li>
-                                <li>
-                                    <span>24/7</span>Email support</li>
-                            </ul>
-                            <div class="space-md"></div>
-                            <a href="#" class="btn btn-default-trn">Start Trial</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-4 wow fadeIn" data-wow-delay="0.6s">
-                    <div class="panel panel-default prices last">
-                        <div class="panel-body">
-                            <i class="fa fa-rocket icon-u"></i>
-
-                            <h2 class="val">$50<small>/month</small></h2>
-
-                            <ul class="info-list md-list primary">
-                                <li>
-                                    <span>100Gb</span>Storage</li>
-                                <li>
-                                    <span>20</span>Email account</li>
-                                <li>
-                                    <span>25</span>Hosted domains</li>
-                                <li>
-                                    <span>24/7</span>Email support</li>
-                            </ul>
-                            <div class="space-md"></div>
-                            <a href="#" class="btn btn-default">Start Trial</a>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
     </section>
 
-    <!-- Breaking news -->
-    <section class="section bg-grey">
-        <div class="container">
-            <h2 class="lg-title lg-title-border">Naujienos</h2>
+    <section class="bg-9 bg-center bg-fixed">
+        <h5 class="sr-only">Photo of Macbook Pro</h5>
+        <div class="filling-section bg-filter-v1"></div>
+    </section>
+
+    <!--  Contact us  -->
+    <span id="contact-us"></span>
+    <section class="section-lg">
+        <div class="container ">
+            <h2 class="big-title text-center">Contact Us</h2>
+            <p class="big-subtitle text-center">Curabitur bibendum justo non orci. Aenean id metus id velit ullamcorper pulvinar. Proin mattis lacinia justo. Duis bibendum, lectus ut viverra rhoncus, dolor nunc faucibus libero, eget facilisis enim ipsum id lacus.</p>
+            <div class="space"></div>
             <div class="row">
-                <div class="col-md-3 col-lg-3 col-sm-6 wow fadeInLeft" data-wow-delay="0.8s">
-                    <div class="news">
-                        <img class="img-responsive" src="assets/img/768w/011.jpg" alt="camera">
-                        <h3>Post title</h3>
-                        <em>January 26, 2016 by John</em>
-                        <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis condimentum augue id magna semper rutrum. In enim a arcu imperdiet malesuada.</p>
-                        <a href="blog-page.html" class="btn btn-default-trn-v2">Read more
-                            <i class="fa fa-angle-double-right"></i>
-						</a>
-                    </div>
-                </div>
-                <div class="col-md-3 col-lg-3 col-sm-6 wow fadeInLeft" data-wow-delay="0.6s">
-                    <div class="news">
-                        <img class="img-responsive" src="assets/img/768w/31f6.JPG" alt="macbook">
-                        <h3>Post title</h3>
-                        <em>January 10, 2016 by Ben</em>
-                        <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis condimentum augue id magna semper rutrum. In enim a arcu imperdiet malesuada.</p>
-                        <a href="blog-page.html" class="btn btn-default-trn-v2">Read more
-							<i class="fa fa-angle-double-right"></i>
-						</a>
-                    </div>
-                </div>
-                <div class="col-md-3 col-lg-3 col-sm-6 wow fadeInLeft" data-wow-delay="0.4s">
-                    <div class="news">
-                        <img class="img-responsive" src="assets/img/768w/picjumbo.com.jpg" alt="devices">
-                        <h3>Post title</h3>
-                        <em>December 27, 2016 by Nicole</em>
-                        <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis condimentum augue id magna semper rutrum. In enim a arcu imperdiet malesuada.</p>
-                        <a href="blog-page.html" class="btn btn-default-trn-v2">Read more
-                            <i class="fa fa-angle-double-right"></i>
-                        </a>
-                    </div>
-                </div>
-                <div class="col-md-3 col-lg-3 col-sm-6 wow fadeInLeft" data-wow-delay="0.2s">
-                    <div class="news">
-                        <img class="img-responsive" src="assets/img/768w/macbook-air.jpg" alt="macbook">
-                        <h3>Post title</h3>
-                        <em>December 13, 2016 by Adele</em>
-                        <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis condimentum augue id magna semper rutrum. In enim a arcu imperdiet malesuada.</p>
-                        <a href="blog-page.html" class="btn btn-default-trn-v2">Read more
-                            <i class="fa fa-angle-double-right"></i>
-                        </a>
-                    </div>
+                <div class="col-md-6 col-sm-7">
+
+                    <!-- Contact Form -->
+                    <div id="form-messages"></div>
+                    <form class="form-horizontal" role="form" id="ajax-contact" method="post" action="assets/php/mailer.html">
+                        <div class="form-group icon">
+                            <label for="name" class="col-sm-3 control-label">Full name</label>
+                            <div class="col-sm-9 ">
+                                <div class="control">
+                                    <input type="text" class="form-control" id="name" placeholder="Full name" name="name" required>
+                                    <i class="fa fa-user"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group icon">
+                            <label for="email" class="col-sm-3 control-label">Email</label>
+                            <div class="col-sm-9 ">
+                                <div class="control">
+                                    <input type="email" class="form-control" id="email" placeholder="Enter email" name="email" required>
+                                    <i class="fa fa-envelope"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group icon">
+                            <label for="Message" class="col-sm-3 control-label">Message</label>
+                            <div class="col-sm-9 ">
+                                <div class="control">
+                                    <textarea class="form-control" rows="8" id="Message" placeholder="Message" name="message" required></textarea>
+                                    <i class="fa fa-comment"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group icon">
+                            <div class="col-sm-offset-3 col-sm-9">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-paper-plane-o"></i>Send Message</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="space visible-xs"></div>
                 </div>
 
+                <div class="col-md-6 col-sm-5">
+                    <ul class="list-unstyled info-bar">
+                        <li>
+                            <h4>Additional info</h4>
+                            <p>If you have any questiong about our products or something else, please email us or call us. We'll get in touch with you as soon as possible.</p>
+                        </li>
+                        <li>
+                            <h4>Our Location</h4>
+                            <p>Lietuva</p>
+                        </li>
+                        <li>
+                            <h4>Email Us</h4>
+                            <p>
+                                <a href="mailto:#">email@email.com</a>
+                            </p>
+                        </li>
+                        <li>
+                            <h4>Business Hours</h4>
+                            <ul class="list-unstyled">
+                                <li>Mo - Fr: 9am to 6pm</li>
+                                <li>Sa, Su: 9am to 2pm</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
+    </section>
+
+    <section class="map">
+        <h4 class="sr-only">Google Maps</h4>
+        <div id="map"></div>
     </section>
 
     <!-- Scripts-->
@@ -636,44 +649,9 @@
 			</div>
 		</a>-->
 
-        <!--<div class="form-lg">
-            <div class="input-group all-trn" role="search">
-                <input type="text" class="form-control" placeholder="Search">
-                <span class="input-group-btn">
-						<button class="btn btn-all-trn" title="Search" type="button">
-							<i class="fa fa-search"></i>
-                    </button>
-            		</span> 
-            </div>
-        </div>-->
 
-        <!--<div class="space-sm"></div>
+        <div class="space-sm"></div>
 
-        <h4>Languages</h4>
-        <ul class="info-list sm-list lang">
-            <li class="active">
-                <i class="fa fa-angle-right fa-fw"></i>
-                <a href="#">English</a>
-                <i class="fa fa-check fa-fw"></i>
-            </li>
-            <li>
-                <i class="fa fa-angle-right fa-fw"></i>
-                <a href="#">Germany</a>
-                <i class="fa fa-check fa-fw"></i>
-            </li>
-            <li>
-                <i class="fa fa-angle-right fa-fw"></i>
-                <a href="#">Spanish</a>
-                <i class="fa fa-check fa-fw"></i>
-            </li>
-            <li>
-                <i class="fa fa-angle-right fa-fw"></i>
-                <a href="#">French</a>
-                <i class="fa fa-check fa-fw"></i>
-            </li>
-        </ul> -->
-
-        <div class="space"></div>
 
         <h4>Social Media</h4>
         <ul class="icons-list circle-icons m-no-bottom">
@@ -710,7 +688,7 @@
         <ul class="info-list sm-list">
             <li>
                 <i class="fa fa-envelope fa-fw"></i>
-                <a class="text-muted" href="mailto:andriusvx@gmail.com">zenitas@pastas.lt</a>
+                <a class="text-muted" href="mailto:andriusvx@gmail.com">support@example.com</a>
             </li>
             <li>
                 <i class="fa fa-phone fa-fw"></i>
@@ -718,7 +696,7 @@
             </li>
             <li>
                 <i class="fa fa-map-marker fa-fw"></i>
-                Kapu 12 duobiu 13
+                Siauliai
             </li>
         </ul>
     </div>
@@ -737,11 +715,11 @@
                         </li>
                         <li>
                             <i class="fa fa-phone fa-fw"></i>
-                            +21 902 920 889
+                            +370 666 99999
                         </li>
                         <li>
                             <i class="fa fa-map-marker fa-fw"></i>
-                            885 3rd Ave, NY 10022
+                            Lietuva
                         </li>
                     </ul>
                 </div>
@@ -821,6 +799,26 @@
     </div>
 </footer>
 
+    <!-- Google Maps-->
+    <script src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <script src="assets/js/min/initmap.min.js"></script>
+    <script>
+        $('#map').initMap({
+            markers: {
+                marker1: {
+                    position: [55.811736, 23.550890, 17]
+                }
+            },
+            options: {
+                zoom: 17,
+                scrollwheel: false
+            },
+            type: 'roadmap',
+            center: [55.484222, 23.330316]
+        });
+    </script>
+
 </body>
 
 </html>
+
