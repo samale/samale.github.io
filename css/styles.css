@@ -10925,7 +10925,14 @@ hr.divider-light {
     color: #f4623a;
   }
 }
-
+video {
+  object-fit: cover;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
 header.masthead {
   padding-top: 10rem;
   padding-bottom: calc(10rem - 4.5rem);
