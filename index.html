@@ -1,607 +1,261 @@
 <!DOCTYPE html>
-<!--[if IE 9]> <html lang="en" class="js-no ie9"> <![endif]-->
-<!--[if IE 10]> <html lang="en" class="js-no ie10"> <![endif]-->
-<!--[if !IE]><!-->
-<html lang="lt">
-<!--<![endif]-->
-
-<head>
-	<title>zenitas.lt</title>
-
-	<!-- Meta Tags -->
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="">
-	<meta name="author" content="">
-
-	<!--  Boostrap Framework  -->
-	<link href="assets/css/bootstrap.min.css" rel="stylesheet">
-	<link href="assets/css/themes/light-blue.css" rel="stylesheet" id="colors">
-	<!-- Google Fonts - Lato -->
-	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400&amp;subset=latin-ext" rel="stylesheet"> 
-
-	<!-- Font Awesome Icons -->
-	<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
-
-	<!-- CSS Animations -->
-	<link href="http://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" rel="stylesheet">
-
-	<!--  Slippry Slideshow -->
-	<link href="assets/css/slippry.min.css" rel="stylesheet">
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-trn navbar-fixed-top" role="navigation" id="navbarSettings">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-navbar-collapse-1">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="../">zenitas<span class="text-primary">.lt</span></a>
-        </div>
-
-        <div class="collapse navbar-collapse" id="bs-navbar-collapse-1">
-            <ul class="nav navbar-nav navbar-right ">
-                <li> <a href=../apie-mus/>Mes</a>
-                    </li>
-                    <li> <a href=../paslaugos/>Paslaugos</a>
-                    </li>
-                    <li> <a href=../atlikti-darbai/>Darbai</a>
-                    </li>
-                    <li> <a href=../kainu-paketai/>Kainos</a>
-                    </li>
-                    <li> <a href=../kontaktai/>Kontaktai</a>
-                    </li>
-                    <li class="dropdown hidden-xs">
-                    <a href="javascript:void(0);" id="sidebar-btn">
-                        <i class="fa fa-bars"></i>
-                    </a>
-                </li>
-            </ul>
-        </div>
-        <!-- /.navbar-collapse -->
-    </div>
-</nav>
-
-<!-- If navbar is fixed to top and it has the class navbar-default or navbar-inverse this div will add space below the navbar-->
-<div id="navbarSpaceBottom"></div>
-    <!--  Header Section  -->
-    <section class="bg-7 bg-centerTop70 bg-cover">
-        <div class="bg-filter sTop">
-            <div class="container">
-                <div class="jumbotron trn v-center">
-                    <h1>Kuriame ateitį</h1>
-                    <div class="space-sm"></div>
-                    <p>Programuojame internetines svetaines.
-                        <br>Prisitaikome prie bet kokio verslo bei įrenginio.</p>
-                    <div class="space-sm"></div>
-                    <ul class="list-inline">
-                        <li>
-                            <a href="#" class="btn btn-default-trn btn-xlg scroll">Susisiekti</a>
-                        </li>
-                        <li>
-                            <a href="#learn-more" class="btn btn-primary btn-xlg scroll"><i class="fa fa-paper-plane-o"></i>Daugiau info</a>
-                        </li>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Creative - Start Bootstrap Theme</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Bootstrap Icons-->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Merriweather+Sans:400,700" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css?family=Merriweather:400,300,300italic,400italic,700,700italic" rel="stylesheet" type="text/css" />
+        <!-- SimpleLightbox plugin CSS-->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.css" rel="stylesheet" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body id="page-top">
+        <!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" id="mainNav">
+            <div class="container px-4 px-lg-5">
+                <a class="navbar-brand" href="#page-top">Start Bootstrap</a>
+                <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ms-auto my-2 my-lg-0">
+                        <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#portfolio">Portfolio</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
                     </ul>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- Features section -->
-    <div id="learn-more"></div>
-    <section class="section">
-        <div class="container">
-            <div class="row">
-                <div class="col-sm-3">
-                    <div class="text-center">
-                        <i class="fa fa-laptop hovicon effect-3 sub-b easePulse wow" data-wow-delay="0.2s"></i>
-                        <h3 class="wow fadeIn m-10-top" data-wow-delay="0.4s">Lankstumas</h3>
-                        <p class="wow fadeIn" data-wow-delay="0.4s">Visi įrenginiai <i class="fa fa-heart"></i>
- mūsų svetaines.</p>
+        </nav>
+        <!-- Masthead-->
+        <header class="masthead">
+            <div class="container px-4 px-lg-5 h-100">
+                <div class="row gx-4 gx-lg-5 h-100 align-items-center justify-content-center text-center">
+                    <div class="col-lg-8 align-self-end">
+                        <h1 class="text-white font-weight-bold">Your Favorite Place for Free Bootstrap Themes</h1>
+                        <hr class="divider" />
                     </div>
-                </div>
-                <div class="col-sm-3">
-                    <div class="text-center">
-                        <i class="fa fa-globe hovicon effect-3 sub-b easePulse wow" data-wow-delay="0.4s"></i>
-                        <h3 class="wow fadeIn m-10-top" data-wow-delay="0.6s">HTML5/CSS3/JS</h3>
-                        <p class="wow fadeIn" data-wow-delay="0.6s">Naujausios technologijos bei standartai.</p>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <div class="text-center">
-                        <i class="fa fa-plane hovicon effect-3 sub-b easePulse wow" data-wow-delay="0.6s"></i>
-                        <h3 class="wow fadeIn m-10-top" data-wow-delay="0.8s">Sparta</h3>
-                        <p class="wow fadeIn" data-wow-delay="0.8s">Svetainės optimizuotos ir negaišta brangaus laiko.</p>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <div class="text-center">
-                        <i class="fa fa-lightbulb-o hovicon effect-3 sub-b easePulse wow" data-wow-delay="0.8s"></i>
-                        <h3 class="wow fadeIn m-10-top" data-wow-delay="1s">Idėjos</h3>
-                        <p class="wow fadeIn" data-wow-delay="1s">Mūsų komanda visada atvira naujoms idėjoms.</p>
+                    <div class="col-lg-8 align-self-baseline">
+                        <p class="text-white-75 mb-5">Start Bootstrap can help you build better websites using the Bootstrap framework! Just download a theme and start customizing, no strings attached!</p>
+                        <a class="btn btn-primary btn-xl" href="#about">Find Out More</a>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- Services section -->
-    <section class="section-lg bg-grey">
-        <div class="container">
-            <div class="row">
-                <h2 class="lg-title lg-title-border">Kuo mes užsiimame?</h2>
-                <!--fadeInLeft-->
-                <div class=" col-sm-6 wow fadeInLeft">
-                    <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Etiam sapien elit, consequat eget, tristique non. Venenatis quis ante. Curabitur ligula sapien.</p>
-                    <p>Pulvinar a vestibulum quis, facilisis vel sapien. Cum sociis natoque penatibus et magnis dis parturient montes.</p>
-                    <div class="space-sm"></div>
-                    <ul class="info-list md-list style i-primary">
-                        <li>
-                            <i class="fa fa-play"></i>Pellentesque pretium lectus id.</li>
-                        <li>
-                            <i class="fa fa-play"></i>Excepteur sint occaecat cupidatat non.</li>
-                        <li>
-                            <i class="fa fa-play"></i>Aliquam erat volutpat ufsce.</li>
-                        <li>
-                            <i class="fa fa-play"></i>Vestibulum fermentum tortor id mi.</li>
-                    </ul>
-                    <div class="space visible-xs"></div>
-                </div>
-
-                <div class="col-sm-6 wow fadeInRight">
-                    <img class="img-mw450" src="assets/img/Showcase-Template-Flat-Presentation-Vol-3-portfolio.png" alt="Flat showcase presentation">
+        </header>
+        <!-- About-->
+        <section class="page-section bg-primary" id="about">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-lg-8 text-center">
+                        <h2 class="text-white mt-0">We've got what you need!</h2>
+                        <hr class="divider divider-light" />
+                        <p class="text-white-75 mb-4">Start Bootstrap has everything you need to get your new website up and running in no time! Choose one of our open source, free to download, and easy to use themes! No strings attached!</p>
+                        <a class="btn btn-light btn-xl" href="#services">Get Started!</a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- Our works/ projects section -->
-    <section class="section-lg">
-        <div class="container">
-
-            <h2 class="lg-title lg-title-border">Mūsų darbai</h2>
-
-            <ul class="filter-tabs">
-                <li class="filter active" data-filter="mix"><span>Visi</span>
-                </li>
-                <li class="filter" data-filter="apps"><span>Programavimas</span>
-                </li>
-                <li class="filter" data-filter="devices"><span>Dizainas</span>
-                </li>
-                <li class="filter" data-filter="web"><span>Internetinės svetaines</span>
-                </li>
-            </ul>
-
-            <ul class="row  filter-grid-v2" id="Grid">
-                <!-- Item 1 -->
-                <li class="col-md-4 col-sm-6 mix devices ">
-                    <a href="portfolio-item-v2.html" title="View portfolio item">
-                        <div class="hover-content wow easeUp" data-wow-delay="0.5s">
-                            <img src="assets/img/sign-up-sketch.jpg" class="img-responsive" alt="Portfolio - application">
-                            <div class="top-part hidden-xs">
-                                <i class="fa fa-eye"></i>
-                            </div>
-                            <div class="bottom-part hidden-xs">
-                                <h3>Pavadinimas</h3>
-                            </div>
+        </section>
+        <!-- Services-->
+        <section class="page-section" id="services">
+            <div class="container px-4 px-lg-5">
+                <h2 class="text-center mt-0">At Your Service</h2>
+                <hr class="divider" />
+                <div class="row gx-4 gx-lg-5">
+                    <div class="col-lg-3 col-md-6 text-center">
+                        <div class="mt-5">
+                            <div class="mb-2"><i class="bi-gem fs-1 text-primary"></i></div>
+                            <h3 class="h4 mb-2">Sturdy Themes</h3>
+                            <p class="text-muted mb-0">Our themes are updated regularly to keep them bug free!</p>
                         </div>
-                    </a>
-                </li>
-                <!-- mix - select all, devices - filter only devices -->
-
-                <!-- Item 2 -->
-                <li class="col-md-4 col-sm-6 mix apps web ">
-                    <a href="portfolio-item-v2.html" title="View portfolio item">
-                        <div class="hover-content wow easeUp" data-wow-delay="0.25s">
-                            <img src="assets/img/minimal-wireframe-assets.jpg" class="img-responsive" alt="Websites Layout">
-                            <div class="top-part hidden-xs">
-                                <i class="fa fa-eye"></i>
-                            </div>
-                            <div class="bottom-part hidden-xs">
-                                <h3>Pavadinimas</h3>
-                            </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 text-center">
+                        <div class="mt-5">
+                            <div class="mb-2"><i class="bi-laptop fs-1 text-primary"></i></div>
+                            <h3 class="h4 mb-2">Up to Date</h3>
+                            <p class="text-muted mb-0">All dependencies are kept current to keep things fresh.</p>
                         </div>
-                    </a>
-                </li>
-
-                <!-- Item 3 -->
-                <li class="col-md-4 col-sm-6 mix apps ">
-                    <a href="portfolio-item-v2.html" title="View portfolio item">
-                        <div class="hover-content wow easeUp" data-wow-delay="0.75s">
-                            <img src="assets/img/App-Preview.jpg" class="img-responsive" alt="Portfolio - application">
-                            <div class="top-part hidden-xs">
-                                <i class="fa fa-eye"></i>
-                            </div>
-                            <div class="bottom-part hidden-xs">
-                                <h3>Pavadinimas</h3>
-                            </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 text-center">
+                        <div class="mt-5">
+                            <div class="mb-2"><i class="bi-globe fs-1 text-primary"></i></div>
+                            <h3 class="h4 mb-2">Ready to Publish</h3>
+                            <p class="text-muted mb-0">You can use this design as is, or you can make changes!</p>
                         </div>
-                    </a>
-                </li>
-
-                <!-- Item 4 -->
-                <li class="col-md-4 col-sm-6 mix devices ">
-                    <a href="portfolio-item-v2.html" title="View portfolio item">
-                        <div class="hover-content wow easeUp" data-wow-delay="0.6s">
-                            <img src="assets/img/macbook.jpg" class="img-responsive" alt="Apple Macbook Pro">
-                            <div class="top-part hidden-xs">
-                                <i class="fa fa-eye"></i>
-                            </div>
-                            <div class="bottom-part hidden-xs">
-                                <h3>Pavadinimas</h3>
-                            </div>
-                        </div>
-                    </a>
-                </li>
-
-                <!-- Item 5 -->
-                <li class="col-md-4 col-sm-6 mix web ">
-                    <a href="portfolio-item-v2.html" title="View portfolio item">
-                        <div class="hover-content wow easeUp" data-wow-delay="0.35s">
-                            <img src="assets/img/webdesign.jpg" class="img-responsive" alt="Webdesign">
-                            <div class="top-part hidden-xs">
-                                <i class="fa fa-eye"></i>
-                            </div>
-                            <div class="bottom-part hidden-xs">
-                                <h3>Pavadinimas</h3>
-                            </div>
-                        </div>
-                    </a>
-                </li>
-
-                <!-- Item 6 -->
-                <li class="col-md-4 col-sm-6 mix apps ">
-                    <a href="portfolio-item-v2.html" title="View portfolio item">
-                        <div class="hover-content wow easeUp" data-wow-delay="0.85s">
-                            <img src="assets/img/app-screen.jpg" class="img-responsive" alt="application">
-                            <div class="top-part hidden-xs">
-                                <i class="fa fa-eye"></i>
-                            </div>
-                            <div class="bottom-part hidden-xs">
-                                <h3>Pavadinimas</h3>
-                            </div>
-                        </div>
-                    </a>
-                </li>
-            </ul>
-
-        </div>
-    </section>
-
-    <div class="bg-11 bg-cover bg-center">
-        <div class="section-lg bg-filter-v2">
-            <div class="container">
-                <div id="testimonial" class="carousel slide" data-ride="carousel" data-interval="9000">
-                    <!-- Wrapper for slides -->
-                    <div class="carousel-inner">
-                        <div class="item active">
-                            <div class="testimonial">
-
-                                <p>"Geriausias būdas nuspėti ateitį - kurti ją!"</p>
-                                <div class="space-sm"></div>
-                                <em>- Abraomas Linkolnas</em>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="testimonial">
-                                <p>
-                                    "Jei planas A neveikia, abecelėje liko dar 31 raidė!"
-                                </p>
-                                <div class="space-sm"></div>
-                                <em>- Claire Cook</em>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="testimonial">
-                                <p>
-                                    "Daryk taip, kad tai būtų paprasta, bet reikšminga!""
-                                </p>
-                                <div class="space-sm"></div>
-                                <em>- Don Draper</em>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="testimonial">
-                                <p>
-                                    "Atlikti darbus gerai, trunka kur kas greičiau, nei teisintis, kodėl juos atlikai blogai!"
-                                </p>
-                                <div class="space-sm"></div>
-                                <em>- Henry Wadsworth Longfellow</em>
-                            </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 text-center">
+                        <div class="mt-5">
+                            <div class="mb-2"><i class="bi-heart fs-1 text-primary"></i></div>
+                            <h3 class="h4 mb-2">Made with Love</h3>
+                            <p class="text-muted mb-0">Is it really open source if it's not made with love?</p>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-   <section class="section-lg">
-        <div class="container">
-            <h2 class="big-title text-center">Kainos</h2>
-            <p class="big-subtitle text-center">Verslo susitarimai vadinami sėkmingais, kai abi susitarimo pusės - laimingos. Siūlome pasidalinti darbais per pusę:</p>
-            <div class="space"></div>
-            <div class="row">
-                <div class="col-md-4 wow fadeIn" data-wow-delay="0.5s">
-                    <div class="panel panel-default">
-                        <div class="panel-body text-center">
-                            <div class="hover-content">
-                                <div class="visible-part">
-                                    <h4 class="type">Sidabrinis</h4>
-                                    <h3 class="price text-primary">&euro;334</h3>
-                                    <small class="text-grey month">..nuo</small>
-                                    <h5 class="text-primary details">Detaliau</h5>
-                                </div>
-                                <div class="hidden-part">
-                                    <h4 class="type">Detalės</h4>
-                                    <ul class="list-unstyled info-list md-list">
-                                        <li><span class="text-primary">Mūsų</span> Sparta</li>
-                                        <li><span class="text-primary">Jūsų</span> Tekstas</li>
-                                        <li><span class="text-primary">Mūsų</span> Dizainas</li>
-                                        <li><span class="text-primary">Jūsų</span> Tolerancija</li>
-                                    </ul>
-                                    <a href="pricing-tables.html" title="Start Trial Version"><h5 class="text-primary details">Užsisakyti jau dabar</h5></a>
-                                </div>
+        </section>
+        <!-- Portfolio-->
+        <div id="portfolio">
+            <div class="container-fluid p-0">
+                <div class="row g-0">
+                    <div class="col-lg-4 col-sm-6">
+                        <a class="portfolio-box" href="assets/img/portfolio/fullsize/1.jpg" title="Project Name">
+                            <img class="img-fluid" src="assets/img/portfolio/thumbnails/1.jpg" alt="..." />
+                            <div class="portfolio-box-caption">
+                                <div class="project-category text-white-50">Category</div>
+                                <div class="project-name">Project Name</div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-                </div>
-
-                <div class="col-md-4 wow fadeIn" data-wow-delay="0.25s">
-                    <div class="panel panel-default">
-                        <div class="panel-body text-center">
-                            <div class="hover-content">
-                                <div class="visible-part">
-                                    <h4 class="type">Auksinis</h4>
-                                    <h3 class="price text-primary">&euro;753</h3>
-                                    <small class="text-grey month">..nuo</small>
-                                    <h5 class="text-primary details">Detaliau</h5>
-                                </div>
-                                <div class="hidden-part">
-                                    <h4 class="type">Detalės</h4>
-                                    <ul class="list-unstyled info-list md-list">
-                                        <li><span class="text-primary">Mūsų</span> Idėja</li>
-                                        <li><span class="text-primary">Jūsų</span> Kantrybė</li>
-                                        <li><span class="text-primary">Mūsų</span> Dizainas</li>
-                                        <li><span class="text-primary">Jūsų</span> Džiaugsmas</li>
-                                    </ul>
-                                    <a href="pricing-tables.html" title="Start Trial Version"><h5 class="text-primary details">Užsisakyti jau dabar</h5></a>
-                                </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <a class="portfolio-box" href="assets/img/portfolio/fullsize/2.jpg" title="Project Name">
+                            <img class="img-fluid" src="assets/img/portfolio/thumbnails/2.jpg" alt="..." />
+                            <div class="portfolio-box-caption">
+                                <div class="project-category text-white-50">Category</div>
+                                <div class="project-name">Project Name</div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-                </div>
-
-                <div class="col-md-4 wow fadeIn" data-wow-delay="0.75s">
-                    <div class="panel panel-default">
-                        <div class="panel-body text-center">
-                            <div class="hover-content">
-                                <div class="visible-part">
-                                    <h4 class="type">Platininis</h4>
-                                    <h3 class="price text-primary">&euro;1096</h3>
-                                    <small class="text-grey month">..nuo</small>
-                                    <h5 class="text-primary details">Detaliau</h5>
-                                </div>
-                                <div class="hidden-part">
-                                    <h4 class="type">Detalės</h4>
-                                    <ul class="list-unstyled info-list md-list">
-                                        <li><span class="text-primary">Mūsų</span> Kruopštumas</li>
-                                        <li><span class="text-primary">Jūsų</span> Poilsis</li>
-                                        <li><span class="text-primary">Mūsų</span> Dizainas</li>
-                                        <li><span class="text-primary">Jūsų</span> Tobulėjimas</li>
-                                    </ul>
-                                    <a href="pricing-tables.html" title="Start Trial Version"><h5 class="text-primary details">Užsisakyti jau dabar</h5></a>
-                                </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <a class="portfolio-box" href="assets/img/portfolio/fullsize/3.jpg" title="Project Name">
+                            <img class="img-fluid" src="assets/img/portfolio/thumbnails/3.jpg" alt="..." />
+                            <div class="portfolio-box-caption">
+                                <div class="project-category text-white-50">Category</div>
+                                <div class="project-name">Project Name</div>
                             </div>
-                        </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <a class="portfolio-box" href="assets/img/portfolio/fullsize/4.jpg" title="Project Name">
+                            <img class="img-fluid" src="assets/img/portfolio/thumbnails/4.jpg" alt="..." />
+                            <div class="portfolio-box-caption">
+                                <div class="project-category text-white-50">Category</div>
+                                <div class="project-name">Project Name</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <a class="portfolio-box" href="assets/img/portfolio/fullsize/5.jpg" title="Project Name">
+                            <img class="img-fluid" src="assets/img/portfolio/thumbnails/5.jpg" alt="..." />
+                            <div class="portfolio-box-caption">
+                                <div class="project-category text-white-50">Category</div>
+                                <div class="project-name">Project Name</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-lg-4 col-sm-6">
+                        <a class="portfolio-box" href="assets/img/portfolio/fullsize/6.jpg" title="Project Name">
+                            <img class="img-fluid" src="assets/img/portfolio/thumbnails/6.jpg" alt="..." />
+                            <div class="portfolio-box-caption p-3">
+                                <div class="project-category text-white-50">Category</div>
+                                <div class="project-name">Project Name</div>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
-            <div class="space"></div>
         </div>
-    </section>
-    <!-- Scripts-->
-    <!--Back to top-->
-<a href="#" class="back-to-top">
-    <i class="fa fa-angle-up"></i>
-</a>
-
-<!-- Modernizr -->
-<script src="assets/js/min/modernizr.custom.min.js"></script>
-
-<!-- jQuery -->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
-
-<!--<script src="http://cdnjs.cloudflare.com/ajax/libs/less.js/2.1.0/less.min.js"></script>-->
-
-<!-- Bootstrap JS -->
-<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-
-<!-- Bootstrap Plugin - open dropdown on hover -->
-<script src="assets/js/min/bootstrap-hover-dropdown.min.js"></script>
-
-<!-- LESS preprocessor -->
-<script src="http://cdnjs.cloudflare.com/ajax/libs/less.js/1.7.4/less.min.js"></script>
-
-<!-- WOW.js - loading animations -->
-<script src="http://cdnjs.cloudflare.com/ajax/libs/wow/0.1.6/wow.min.js"></script>
-
-<!-- Knobs - our skills -->
-<script src="http://cdn.jsdelivr.net/jquery.knob/1.2.9/jquery.knob.min.js"></script>
-
-<!-- Slippry - Slideshow -->
-<script src="assets/js/min/slippry.min.js"></script>
-
-<!-- Mixitup plugin - Portfolio Filter Grid -->
-<script src="http://cdnjs.cloudflare.com/ajax/libs/mixitup/1.5.6/jquery.mixitup.min.js"></script>
-
-<!-- Make sticky whatever elements -->
-<script src="http://cdn.jsdelivr.net/jquery.sticky/1.0.0/jquery.sticky.min.js"></script>
-
-<!-- Smooth sroll -->
-<script src="http://cdn.jsdelivr.net/jquery.nicescroll/3.5.4/jquery.nicescroll.min.js"></script>
-
-<!-- Contact Form -->
-<script src="assets/js/min/contact-form.min.js"></script>
-
-<!-- Must be last of all scripts -->
-<script src="assets/js/min/scripts.min.js"></script>
-
-<!--[if lt IE 9]>
-      <script src="http://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script>
-      <script src="http://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
-<![endif]-->
-
-<!-- Side Menu -->
-<div class="sidebar-off hidden-xs sidebar">
-    <div class="wrap">
-
-        <div class="space"></div>
-
-        <h4>Socialiniai tinklai</h4>
-        <ul class="icons-list circle-icons m-no-bottom">
-            <li>
-                <a href="#" title="Follow us">
-                    <i class="fa fa-google-plus"></i>
-                </a>
-            </li>
-            <li>
-                <a href="#" title="Follow us">
-                    <i class="fa fa-twitter"></i>
-                </a>
-            </li>
-            <li>
-                <a href="#" title="Follow us">
-                    <i class="fa fa-tumblr"></i>
-                </a>
-            </li>
-            <li>
-                <a href="#" title="Follow us">
-                    <i class="fa fa-facebook"></i>
-                </a>
-            </li>
-            <li>
-                <a href="#" title="Follow us">
-                    <i class="fa fa-youtube-play"></i>
-                </a>
-            </li>
-        </ul>
-
-        <div class="space"></div>
-
-        <h4>Kontaktai</h4>
-        <ul class="info-list sm-list">
-            <li>
-                <i class="fa fa-envelope fa-fw"></i>
-                <a class="text-muted" href="mailto:andriusvx@gmail.com">zenitas@pastas.lt</a>
-            </li>
-            <li>
-                <i class="fa fa-phone fa-fw"></i>
-                +370 666 99999
-            </li>
-            <li>
-                <i class="fa fa-map-marker fa-fw"></i>
-                Lietuva
-            </li>
-        </ul>
-    </div>
-</div>
-    <!-- Footer-->
-    <footer class="footer">
-    <div class="footer-top">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 col-lg-4 col-sm-12 col-xs-12">
-                    <h4>Kontaktai</h4>
-                    <ul class="info-list md-list i-primary">
-                        <li>
-                            <i class="fa fa-envelope fa-fw"></i>
-                            <a href="mailto:example@email.com">zenitas@pastas.lt</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-phone fa-fw"></i>
-                            +370 666 99999
-                        </li>
-                        <li>
-                            <i class="fa fa-map-marker fa-fw"></i>
-                            Lietuva
-                        </li>
-                    </ul>
+        <!-- Call to action-->
+        <section class="page-section bg-dark text-white">
+            <div class="container px-4 px-lg-5 text-center">
+                <h2 class="mb-4">Free Download at Start Bootstrap!</h2>
+                <a class="btn btn-light btn-xl" href="https://startbootstrap.com/theme/creative/">Download Now!</a>
+            </div>
+        </section>
+        <!-- Contact-->
+        <section class="page-section" id="contact">
+            <div class="container px-4 px-lg-5">
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-lg-8 col-xl-6 text-center">
+                        <h2 class="mt-0">Let's Get In Touch!</h2>
+                        <hr class="divider" />
+                        <p class="text-muted mb-5">Ready to start your next project with us? Send us a messages and we will get back to you as soon as possible!</p>
+                    </div>
                 </div>
-                <div class="space-sm visible-sm visible-xs"></div>
-                <div class="col-md-4 col-lg-4 col-xs-12">
-                    <h4>Nuorodos</h4>
-                    <ul class="info-list md-list i-primary">
-                        <li>
-                            <i class="fa fa-angle-right fa-fw"></i>
-                            <a href="#">
-                                <span class="link-title">Mes</span> - Apie įmonę</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-angle-right fa-fw"></i>
-                            <a href="#">
-                                <span class="link-title">Paslaugos</span> - Ką mes atliekame</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-angle-right fa-fw"></i>
-                            <a href="#">
-                                <span class="link-title">Komanda</span> - Susipažinkite su komandos nariais</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-angle-right fa-fw"></i>
-                            <a href="#">
-                                <span class="link-title">Portfolio</span> - Atlikti darbai</a>
-                        </li>
-                    </ul>
+                <div class="row gx-4 gx-lg-5 justify-content-center mb-5">
+                    <div class="col-lg-6">
+                        <!-- * * * * * * * * * * * * * * *-->
+                        <!-- * * SB Forms Contact Form * *-->
+                        <!-- * * * * * * * * * * * * * * *-->
+                        <!-- This form is pre-integrated with SB Forms.-->
+                        <!-- To make this form functional, sign up at-->
+                        <!-- https://startbootstrap.com/solution/contact-forms-->
+                        <!-- to get an API token!-->
+                        <form id="contactForm" data-sb-form-api-token="API_TOKEN">
+                            <!-- Name input-->
+                            <div class="form-floating mb-3">
+                                <input class="form-control" id="name" type="text" placeholder="Enter your name..." data-sb-validations="required" />
+                                <label for="name">Full name</label>
+                                <div class="invalid-feedback" data-sb-feedback="name:required">A name is required.</div>
+                            </div>
+                            <!-- Email address input-->
+                            <div class="form-floating mb-3">
+                                <input class="form-control" id="email" type="email" placeholder="name@example.com" data-sb-validations="required,email" />
+                                <label for="email">Email address</label>
+                                <div class="invalid-feedback" data-sb-feedback="email:required">An email is required.</div>
+                                <div class="invalid-feedback" data-sb-feedback="email:email">Email is not valid.</div>
+                            </div>
+                            <!-- Phone number input-->
+                            <div class="form-floating mb-3">
+                                <input class="form-control" id="phone" type="tel" placeholder="(123) 456-7890" data-sb-validations="required" />
+                                <label for="phone">Phone number</label>
+                                <div class="invalid-feedback" data-sb-feedback="phone:required">A phone number is required.</div>
+                            </div>
+                            <!-- Message input-->
+                            <div class="form-floating mb-3">
+                                <textarea class="form-control" id="message" type="text" placeholder="Enter your message here..." style="height: 10rem" data-sb-validations="required"></textarea>
+                                <label for="message">Message</label>
+                                <div class="invalid-feedback" data-sb-feedback="message:required">A message is required.</div>
+                            </div>
+                            <!-- Submit success message-->
+                            <!---->
+                            <!-- This is what your users will see when the form-->
+                            <!-- has successfully submitted-->
+                            <div class="d-none" id="submitSuccessMessage">
+                                <div class="text-center mb-3">
+                                    <div class="fw-bolder">Form submission successful!</div>
+                                    To activate this form, sign up at
+                                    <br />
+                                    <a href="https://startbootstrap.com/solution/contact-forms">https://startbootstrap.com/solution/contact-forms</a>
+                                </div>
+                            </div>
+                            <!-- Submit error message-->
+                            <!---->
+                            <!-- This is what your users will see when there is-->
+                            <!-- an error submitting the form-->
+                            <div class="d-none" id="submitErrorMessage"><div class="text-center text-danger mb-3">Error sending message!</div></div>
+                            <!-- Submit Button-->
+                            <div class="d-grid"><button class="btn btn-primary btn-xl disabled" id="submitButton" type="submit">Submit</button></div>
+                        </form>
+                    </div>
                 </div>
-                <div class="space-sm visible-sm visible-xs"></div>
-                <div class="col-md-4 col-lg-4  col-xs-12">
-                    <h4>Apie mus</h4>
-                    <p>Temporibus autem quibusdam et aut officiis debitis ut et voluptates repudiandae sint et molestiae non recusandae.</p>
-                    <div class="space-sm"></div>
-                    <h4>Mus rasite</h4>
-                    <ul class="circle-icons icons-list">
-                        <li>
-                            <a href="#" title="Follow us">
-                                <i class="fa fa-google-plus"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" title="Follow us">
-                                <i class="fa fa-twitter"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" title="Follow us">
-                                <i class="fa fa-tumblr"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" title="Follow us">
-                                <i class="fa fa-facebook"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" title="Follow us">
-                                <i class="fa fa-youtube-play"></i>
-                            </a>
-                        </li>
-                    </ul>
+                <div class="row gx-4 gx-lg-5 justify-content-center">
+                    <div class="col-lg-4 text-center mb-5 mb-lg-0">
+                        <i class="bi-phone fs-2 mb-3 text-muted"></i>
+                        <div>+1 (555) 123-4567</div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div class="footer-bottom">
-        <div class="container">
-            <p>© 2016 zenitas.lt Visos teisės saugomos.</p>
-        </div>
-    </div>
-</footer>
-</body>
-
+        </section>
+        <!-- Footer-->
+        <footer class="bg-light py-5">
+            <div class="container px-4 px-lg-5"><div class="small text-center text-muted">Copyright &copy; 2023 - Company Name</div></div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- SimpleLightbox plugin JS-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/SimpleLightbox/2.1.0/simpleLightbox.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+        <!-- * *                               SB Forms JS                               * *-->
+        <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
+        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+        <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+    </body>
 </html>
