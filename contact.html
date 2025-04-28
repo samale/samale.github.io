@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="Neem contact op met DakDeng voor uw dakwerken." />
+    <meta name="author" content="DakDeng" />
+    <title>Contact - DakDeng</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="css/styles.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Navigatiebalk -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container px-5">
+            <a class="navbar-brand" href="index.html">DakDeng</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Navigatie wisselen">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#over-ons">Over Ons</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html#diensten">Diensten</a></li>
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="bg-dark py-5">
+        <div class="container px-5">
+            <div class="row gx-5 justify-content-center">
+                <div class="col-lg-6">
+                    <div class="text-center my-5">
+                        <h1 class="display-5 fw-bolder text-white mb-2">Neem Contact Met Ons Op</h1>
+                        <p class="lead text-white-50 mb-4">Heeft u vragen? Wij staan voor u klaar!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contactformulier -->
+    <section class="py-5">
+        <div class="container px-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <form id="contactForm" data-sb-form-api-token="API_TOKEN">
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="naam" type="text" placeholder="Vul uw naam in..." required />
+                            <label for="naam">Naam</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="email" type="email" placeholder="naam@example.com" required />
+                            <label for="email">E-mailadres</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input class="form-control" id="telefoon" type="tel" placeholder="06-12345678" />
+                            <label for="telefoon">Telefoonnummer</label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <textarea class="form-control" id="bericht" placeholder="Typ hier uw bericht..." style="height: 10rem" required></textarea>
+                            <label for="bericht">Bericht</label>
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-primary btn-lg" id="verzendButton" type="submit">Verzend Bericht</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-5 bg-dark">
+        <div class="container px-5">
+            <p class="m-0 text-center text-white">Copyright &copy; DakDeng 2025</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Eigen JavaScript -->
+    <script src="js/scripts.js"></script>
+</body>
+</html>
