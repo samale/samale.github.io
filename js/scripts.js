@@ -8,15 +8,24 @@
 
 document.addEventListener('DOMContentLoaded', function () {
     const encoded = [43, 51, 49, 54, 51, 51, 57, 57, 54, 53, 52, 55];
-    const telefoon = String.fromCharCode(...encoded);
-
-    const belKnop = document.createElement('a');
-    belKnop.href = 'tel:' + telefoon;
-    belKnop.className = 'btn btn-light btn-lg';
-    belKnop.innerText = 'Bel ons nu';
-
     const knopContainer = document.getElementById('telefoon-knop');
+
     if (knopContainer) {
-        knopContainer.appendChild(belKnop);
+        const revealBtn = document.createElement('button');
+        revealBtn.className = 'btn btn-light btn-lg';
+        revealBtn.innerText = 'Toon Telefoonnummer';
+
+        revealBtn.addEventListener('click', function () {
+            const telefoon = String.fromCharCode(...encoded);
+            const belKnop = document.createElement('a');
+            belKnop.href = 'tel:' + telefoon;
+            belKnop.className = 'btn btn-light btn-lg ms-2';
+            belKnop.innerText = 'Bel ons nu';
+
+            knopContainer.innerHTML = '';
+            knopContainer.appendChild(belKnop);
+        });
+
+        knopContainer.appendChild(revealBtn);
     }
 });
