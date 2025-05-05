@@ -7,7 +7,9 @@
 // Use this file to add JavaScript to your project
 
 document.addEventListener('DOMContentLoaded', function () {
-    const telefoon = '+31' + '633996547'; // Obfuscated format
+    const encoded = [43, 51, 49, 54, 51, 51, 57, 57, 54, 53, 52, 55];
+    const telefoon = String.fromCharCode(...encoded);
+
     const belKnop = document.createElement('a');
     belKnop.href = 'tel:' + telefoon;
     belKnop.className = 'btn btn-light btn-lg';
