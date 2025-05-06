@@ -28,3 +28,12 @@ document.addEventListener('DOMContentLoaded', function () {
         knopContainer.appendChild(button);
     }
 });
+document.addEventListener('DOMContentLoaded', function () {
+    const audio = document.getElementById('bg-music');
+    if (audio) {
+        document.body.addEventListener('click', function () {
+            audio.muted = false;
+            audio.play();
+        }, { once: true });
+    }
+});
