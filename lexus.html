@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Win95 LEXUS Calc</title>
+    <style>
+        /* Basic Reset & Global Styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: "MS Sans Serif", Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #008080; /* Classic Win95 Teal */
+            color: #000;
+            user-select: none; /* Prevent text selection globally */
+        }
+
+        /* --- Win95 Style Elements --- */
+        .win95-border-raised {
+            border: 2px solid;
+            border-color: #ffffff #808080 #808080 #ffffff; /* Top/Left highlight, Bottom/Right shadow */
+            box-shadow: 1px 1px 0px #000000;
+        }
+
+        .win95-border-lowered {
+            border: 2px solid;
+            border-color: #808080 #ffffff #ffffff #808080; /* Top/Left shadow, Bottom/Right highlight */
+        }
+
+        .win95-button {
+            background-color: #c0c0c0;
+            padding: 5px 10px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .win95-button:active {
+            border-color: #808080 #ffffff #ffffff #808080;
+            box-shadow: none;
+            transform: translate(1px, 1px);
+        }
+
+        /* Desktop Area */
+        #desktop {
+            position: relative;
+            width: 100%;
+            height: calc(100% - 32px); /* Full height minus taskbar */
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Taskbar Styling */
+        #taskbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background-color: #c0c0c0; /* Win95 Grey */
+            border-top: 2px solid #ffffff; /* Top highlight */
+            display: flex;
+            align-items: center;
+            padding: 2px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        /* Start Button Styling (Cosmetic) */
+        #start-button {
+             margin-left: 2px;
+             font-weight: bold;
+             padding: 2px 10px 2px 5px; /* Adjust padding */
+        }
+
+        /* --- Spinning Lexus Text --- */
+        #lexus-spinner {
+            font-size: 12vw; /* Huge text, scales with viewport width */
+            font-weight: bold;
+            color: #e0e0e0; /* Light grey */
+            text-shadow: 3px 3px 0px #555, 5px 5px 8px rgba(0,0,0,0.5);
+            cursor: pointer;
+            animation: spin 15s linear infinite;
+            z-index: 10;
+        }
+
+        @keyframes spin {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+
+        /* --- Calculator App --- */
+        #calculator-app {
+            display: none; /* Hidden by default */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            background-color: #c0c0c0;
+            padding: 3px;
+            z-index: 100;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+        }
+
+        #calculator-title-bar {
+            background-color: #000080; /* Dark blue title */
+            color: #ffffff;
+            padding: 3px 5px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: default; /* Usually title bars aren't pointers */
+        }
+
+        #calculator-close-button {
+             background-color: #c0c0c0;
+             color: #000;
+             font-family: monospace; /* For a simple 'X' */
+             font-weight: bold;
+             padding: 0 4px;
+             line-height: 1;
+             cursor: default; /* Non-functional */
+        }
+
+        #calculator-display {
+            width: calc(100% - 14px); /* Account for padding/border */
+            margin: 5px;
+            padding: 8px 5px;
+            background-color: #ffffff;
+            text-align: right;
+            font-size: 1.5em;
+            box-sizing: border-box;
+            overflow: hidden;
+            white-space: nowrap;
+            height: 30px; /* Fixed height */
+        }
+
+        #calculator-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            padding: 5px;
+        }
+
+        #calculator-buttons button {
+            font-size: 1.1em;
+            font-weight: bold;
+            padding: 10px 5px;
+        }
+        #calculator-buttons .operator {
+            /* Slightly different style? Optional */
+        }
+        #calculator-buttons .equals {
+            grid-column: span 2; /* Make equals wider */
+            background-color: #a0a0a0; /* Slightly different grey */
+        }
+         #calculator-buttons .clear {
+            background-color: #e0a0a0; /* Reddish tint for clear */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="desktop">
+        <!-- Spinning Lexus Text -->
+        <div id="lexus-spinner">LEXUS</div>
+
+        <!-- Calculator App (Initially Hidden) -->
+        <div id="calculator-app" class="win95-border-raised">
+            <div id="calculator-title-bar">
+                <span>Lexus Calc</span>
+                <span id="calculator-close-button" class="win95-border-raised win95-button">X</span>
+            </div>
+            <input type="text" id="calculator-display" class="win95-border-lowered" readonly>
+            <div id="calculator-buttons">
+                <!-- Row 1 -->
+                <button class="win95-border-raised win95-button letter">L</button>
+                <button class="win95-border-raised win95-button letter">E</button>
+                <button class="win95-border-raised win95-button letter">X</button>
+                <button class="win95-border-raised win95-button operator">/</button>
+                <!-- Row 2 -->
+                <button class="win95-border-raised win95-button letter">U</button>
+                <button class="win95-border-raised win95-button letter">S</button>
+                <button class="win95-border-raised win95-button clear">C</button>
+                <button class="win95-border-raised win95-button operator">*</button>
+                 <!-- Row 3 -->
+                 <button class="win95-border-raised win95-button operator">+</button>
+                 <button class="win95-border-raised win95-button operator">-</button>
+                 <button class="win95-border-raised win95-button equals">=</button>
+                 <!-- Note: Equals spans 2 columns -->
+            </div>
+        </div>
+    </div>
+
+    <div id="taskbar">
+        <button id="start-button" class="win95-border-raised win95-button">
+            Start
+        </button>
+        <!-- Other taskbar items could go here -->
+    </div>
+
+    <script>
+        const lexusSpinner = document.getElementById('lexus-spinner');
+        const calculatorApp = document.getElementById('calculator-app');
+        const display = document.getElementById('calculator-display');
+        const buttonsContainer = document.getElementById('calculator-buttons');
+
+        // Show calculator when spinner is clicked
+        lexusSpinner.addEventListener('click', () => {
+            // Hide the spinner temporarily? Optional.
+            // lexusSpinner.style.display = 'none';
+            calculatorApp.style.display = 'block';
+            display.value = ''; // Clear display when opening
+        });
+
+        // Handle button clicks using event delegation
+        buttonsContainer.addEventListener('click', (event) => {
+            if (event.target.tagName !== 'BUTTON') {
+                return; // Ignore clicks not on buttons
+            }
+
+            const buttonValue = event.target.textContent;
+
+            if (buttonValue === '=') {
+                display.value = 'GULBINAS';
+            } else if (buttonValue === 'C') {
+                display.value = '';
+            } else {
+                // Append letter or operator
+                // Prevent multiple operators? Basic version just appends.
+                display.value += buttonValue;
+            }
+        });
+
+        // Make the fake close button hide the calculator (optional)
+        const closeButton = document.getElementById('calculator-close-button');
+        closeButton.addEventListener('click', () => {
+             calculatorApp.style.display = 'none';
+             // Optional: Bring back spinner if it was hidden
+             // lexusSpinner.style.display = 'block';
+        });
+
+    </script>
+
+</body>
+</html>
