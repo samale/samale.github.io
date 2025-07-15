@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Win95 Mushroom Trip</title>
+    <style>
+        /* Basic Reset & Global Styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            font-family: "MS Sans Serif", Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #008080; /* Default Teal */
+            color: #000;
+            user-select: none;
+        }
+
+        /* Desktop Area */
+        #desktop {
+            position: relative;
+            width: 100%;
+            height: calc(100% - 32px); /* Full height minus taskbar */
+            overflow: hidden;
+            cursor: pointer; /* Make the background clickable */
+
+            /* --- BACKGROUND IMAGE --- */
+            /* !!! REPLACE this background-image url with your Base64 mushroom image !!! */
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARMAAAC3CAMAAAAGjUrGAAAAA1BMVEX/AAAZ4kxjAAAASElEQVR4nO3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD+BsXoAAG6fsciAAAAAElFTkSuQmCC'); /* Placeholder solid color */
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+        }
+
+        /* Taskbar Styling */
+        #taskbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background-color: #c0c0c0; /* Win95 Grey */
+            border-top: 2px solid #ffffff; /* Top highlight */
+            display: flex;
+            align-items: center;
+            padding: 2px;
+            box-sizing: border-box;
+            z-index: 1000;
+        }
+
+        /* Start Button Styling (Cosmetic) */
+        #start-button {
+             margin-left: 2px;
+             font-weight: bold;
+             padding: 2px 10px 2px 5px;
+             border: 2px solid;
+             border-color: #ffffff #808080 #808080 #ffffff;
+             background-color: #c0c0c0;
+             cursor: default; /* Not functional */
+        }
+        #start-button:active {
+             border-color: #808080 #ffffff #ffffff #808080;
+        }
+
+        /* Desktop Icon Styling */
+        .desktop-icon {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            cursor: pointer;
+            text-align: center;
+            padding-top: 5px;
+        }
+
+        .icon-image {
+            width: 48px; /* Standard icon size */
+            height: 48px;
+            margin-bottom: 5px;
+            object-fit: contain; /* Ensure image scales nicely */
+            /* Prevent image drag ghost */
+            -webkit-user-drag: none;
+             user-select: none;
+             -moz-user-select: none;
+             -webkit-user-select: none;
+             -ms-user-select: none;
+        }
+
+        .icon-label {
+            color: #ffffff; /* White text */
+            background-color: transparent; /* Transparent background initially */
+            padding: 1px 3px;
+            font-size: 0.9em;
+            width: 100%;
+            /* Add outline/shadow for readability on complex backgrounds */
+             text-shadow: 1px 1px 1px #000000, -1px -1px 1px #000000, 1px -1px 1px #000000, -1px 1px 1px #000000;
+        }
+
+        /* Highlight effect when hovering/clicking an icon */
+         .desktop-icon:hover .icon-label,
+         .desktop-icon:focus .icon-label /* For potential future focus states */
+         {
+             background-color: #000080; /* Win95 selection blue */
+             outline: 1px dotted #ffffff; /* Selection outline */
+         }
+
+
+        /* --- Trip Animation Overlay --- */
+        #trip-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000; /* Black background */
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            perspective: 300px; /* Lower perspective for more intense warp? */
+            overflow: hidden;
+            z-index: 2000; /* Ensure it's on top */
+            opacity: 0; /* Start faded out */
+            transition: opacity 0.7s ease-in; /* Fade in transition */
+        }
+
+        #trip-animation.active {
+            display: flex; /* Use flex for centering */
+            opacity: 1; /* Fade in */
+        }
+
+        /* Starfield Effect */
+        #stars-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            width: 12px; /* Longer streaks */
+            height: 1.5px;
+            background: linear-gradient(to right, rgba(255,255,255,0), rgba(255, 255, 255, 0.9), rgba(180, 180, 255, 0.8)); /* White/Blueish tint */
+            animation: fly linear infinite;
+            border-radius: 1px; /* Slightly rounded ends */
+        }
+
+        @keyframes fly {
+             from {
+                transform: translateZ(-80px) translateY(-50%) translateX(-50%);
+                opacity: 0;
+            }
+            10% {
+                 opacity: 1;
+            }
+            90% {
+                 opacity: 1;
+            }
+            to {
+                transform: translateZ(700px) translateY(-50%) translateX(-50%);
+                opacity: 0;
+            }
+        }
+
+        /* "TRIP" Text Styling */
+        #trip-text {
+            font-size: 18vw; /* Very large text */
+            font-weight: bold;
+            color: #ff00ff; /* Magenta */
+            text-shadow: 0 0 10px #ffffff, 0 0 20px #ff00ff, 0 0 30px #ff00ff, 0 0 40px #ff00ff; /* Neon glow */
+            z-index: 20; /* Above stars */
+            animation: pulse 2s infinite ease-in-out;
+            opacity: 0; /* Initially hidden, wait for container fade */
+            animation-delay: 0.5s; /* Delay pulse slightly */
+        }
+
+        #trip-animation.active #trip-text {
+            opacity: 1; /* Make visible when container is active */
+            transition: opacity 1s ease-in 0.5s; /* Fade in after container */
+        }
+
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <div id="desktop">
+        <!-- Desktop Icons -->
+        <!-- !!! REPLACE these src attributes with your Base64 icon images !!! -->
+
+        <div class="desktop-icon" style="top: 30px; left: 30px;" data-icon-name="My Computer">
+            <img class="icon-image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAA1BMVEX///+nxBvIAAAAAXRSTlMAQObYZgAAABJJREFUeNpjYBgFo2AUjIJRMAoAAAQAAAEAALvoG/4AAAAASUVORK5CYII=" alt="My Computer">
+            <span class="icon-label">My Computer</span>
+        </div>
+
+        <div class="desktop-icon" style="top: 130px; left: 30px;" data-icon-name="Recycle Bin">
+            <img class="icon-image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAA1BMVEX///+nxBvIAAAAAXRSTlMAQObYZgAAABJJREFUeNpjYBgFo2AUjIJRMAoAAAQAAAEAALvoG/4AAAAASUVORK5CYII=" alt="Recycle Bin">
+            <span class="icon-label">Recycle Bin</span>
+        </div>
+
+         <div class="desktop-icon" style="top: 30px; left: 130px;" data-icon-name="Internet">
+            <img class="icon-image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAA1BMVEX///+nxBvIAAAAAXRSTlMAQObYZgAAABJJREFUeNpjYBgFo2AUjIJRMAoAAAQAAAEAALvoG/4AAAAASUVORK5CYII=" alt="Internet">
+            <span class="icon-label">Internet</span>
+        </div>
+
+         <div class="desktop-icon" style="top: 130px; left: 130px;" data-icon-name="Notepad">
+            <img class="icon-image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAA1BMVEX///+nxBvIAAAAAXRSTlMAQObYZgAAABJJREFUeNpjYBgFo2AUjIJRMAoAAAQAAAEAALvoG/4AAAAASUVORK5CYII=" alt="Notepad">
+            <span class="icon-label">Notepad</span>
+        </div>
+
+         <div class="desktop-icon" style="top: 230px; left: 30px;" data-icon-name="Documents">
+            <img class="icon-image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAA1BMVEX///+nxBvIAAAAAXRSTlMAQObYZgAAABJJREFUeNpjYBgFo2AUjIJRMAoAAAQAAAEAALvoG/4AAAAASUVORK5CYII=" alt="Documents">
+            <span class="icon-label">Documents</span>
+        </div>
+
+        <!-- Add more icons as needed -->
+
+    </div>
+
+     <!-- Trip Animation Overlay -->
+    <div id="trip-animation">
+            <div id="stars-container">
+                <!-- Stars will be added here by JavaScript -->
+            </div>
+            <div id="trip-text">TRIP</div>
+    </div>
+
+
+    <div id="taskbar">
+        <button id="start-button">
+            Start
+        </button>
+        <!-- Other taskbar items could go here -->
+    </div>
+
+    <script>
+        const desktop = document.getElementById('desktop');
+        const tripAnimation = document.getElementById('trip-animation');
+        const starsContainer = document.getElementById('stars-container');
+
+        // --- Star Generation ---
+        const numberOfStars = 250; // Adjust density
+
+        function createStars() {
+            starsContainer.innerHTML = ''; // Clear existing stars if resetting
+            for (let i = 0; i < numberOfStars; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * 60; // Start relatively central
+                star.style.top = `calc(50% + ${Math.sin(angle) * radius}vh)`;
+                star.style.left = `calc(50% + ${Math.cos(angle) * radius}vw)`;
+
+                const duration = Math.random() * 0.7 + 0.15; // Very fast: 0.15s to 0.85s
+                const delay = Math.random() * 0.4;
+
+                star.style.animationDuration = `${duration}s`;
+                star.style.animationDelay = `${delay}s`;
+
+                starsContainer.appendChild(star);
+            }
+        }
+
+         // --- Click Listener on Desktop ---
+         desktop.addEventListener('click', (event) => {
+            // Check if the click target is an icon or the desktop background itself
+            const clickedIcon = event.target.closest('.desktop-icon');
+
+            // Trigger if clicked directly on desktop OR on an icon/its children
+            if (event.target === desktop || clickedIcon) {
+                 console.log('Trip Triggered!'); // For debugging
+                if (!tripAnimation.classList.contains('active')) {
+                    createStars(); // Regenerate stars each time for variation
+                    tripAnimation.classList.add('active');
+                }
+             }
+         });
+
+        // --- Optional: Click anywhere on trip screen to return (or add a button) ---
+        tripAnimation.addEventListener('click', () => {
+             console.log('Ending Trip.'); // For debugging
+             tripAnimation.classList.remove('active');
+             // Optional: Clear stars immediately to save performance when hidden
+             // setTimeout(() => { starsContainer.innerHTML = ''; }, 700); // Delay matching fade out
+        });
+
+        // --- Initialisation ---
+        // Pre-generate stars once on load? Or generate on demand?
+        // Generating on demand (in click listener) gives variation each time.
+        // createStars(); // Uncomment to create stars on page load
+
+    </script>
+
+</body>
+</html>
