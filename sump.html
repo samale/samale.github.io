@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truck Splitter (TP vs m³ Logic)</title>
+    <style>
+        :root { --primary: #2563eb; --bg: #f8fafc; --card: #ffffff; --border: #e2e8f0; --text: #1e293b; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 2rem; max-width: 1200px; margin: 0 auto; }
+        
+        h1 { font-size: 1.5rem; margin-bottom: 1rem; color: var(--primary); }
+        .subtitle { font-size: 0.9rem; color: #64748b; margin-bottom: 1.5rem; }
+
+        /* Layout */
+        .container { display: grid; grid-template-columns: 350px 1fr; gap: 2rem; }
+        @media (max-width: 800px) { .container { grid-template-columns: 1fr; } }
+
+        /* Inputs */
+        .panel { background: var(--card); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        textarea { width: 100%; height: 150px; padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-family: monospace; font-size: 0.85rem; resize: vertical; margin-bottom: 1rem; }
+        label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; }
+        
+        .control-group { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+        select { padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; }
+        
+        button { background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+
+        /* Results */
+        .truck-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem; }
+        .truck-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        
+        .truck-header { padding: 1rem; background: #f1f5f9; border-bottom: 1px solid var(--border); }
+        .truck-title { font-weight: 700; margin-bottom: 0.5rem; display: flex; justify-content: space-between; }
+        
+        .stats-row { display: flex; gap: 1rem; font-size: 0.9rem; }
+        .stat { display: flex; flex-direction: column; }
+        .stat span:first-child { font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
+        .stat span:last-child { font-weight: 600; font-size: 1.1rem; }
+
+        /* Table inside truck */
+        .table-container { max-height: 300px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { text-align: left; padding: 8px 12px; background: #f8fafc; position: sticky; top: 0; border-bottom: 1px solid var(--border); }
+        td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+        tr:last-child td { border-bottom: none; }
+
+        /* Status Messages */
+        .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.8rem; font-weight: 600; margin-top: 1rem; }
+        .status-success { background: #dcfce7; color: #166534; }
+        .status-fail { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+    <h1>Truck Load Optimizer</h1>
+    <p class="subtitle">Balances load so trucks with MORE Transport Numbers get LESS m³.</p>
+
+    <div class="container">
+        <div class="panel">
+            <label>1. Paste Excel Data</label>
+            <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">
+                Columns: <b>TP Number | Weight | m³ | Destination</b><br>
+                (No headers, just data)
+            </div>
+            <textarea id="inputData" placeholder="100583	1200	3.5	Berlin&#10;100583	400	1.2	Berlin&#10;100584	800	2.0	Paris"></textarea>
+            
+            <div class="control-group">
+                <label style="margin:0">Number of Trucks:</label>
+                <select id="truckCount">
+                    <option value="2">2 Trucks</option>
+                    <option value="3">3 Trucks</option>
+                    <option value="4">4 Trucks</option>
+                    <option value="5">5 Trucks</option>
+                </select>
+            </div>
+
+            <button onclick="runOptimization()">Calculate Layout</button>
+
+            <div id="globalStats" style="margin-top: 1.5rem; font-size: 0.9rem; color: #64748b;"></div>
+        </div>
+
+        <div id="outputArea">
+            <div class="panel" style="text-align: center; color: #94a3b8;">
+                Results will appear here...
+            </div>
+        </div>
+    </div>
+
+<script>
+    // --- MAIN LOGIC ---
+
+    function runOptimization() {
+        const rawText = document.getElementById('inputData').value;
+        const numTrucks = parseInt(document.getElementById('truckCount').value);
+        const outputDiv = document.getElementById('outputArea');
+
+        // 1. Parse Data
+        const items = parseInput(rawText);
+        if (items.length === 0) {
+            alert("Please paste data first!");
+            return;
+        }
+
+        // 2. Grouping
+        // Level 1: Group by TP Number (Strict rule: TP cannot split)
+        const tpGroups = groupItemsByTP(items);
+        // Level 2: Group TP Groups by Destination (Strict rule: Dest cannot split)
+        const destGroups = groupTPsByDestination(tpGroups);
+
+        // 3. Calculation & Assignment
+        const result = calculateTrucks(destGroups, numTrucks);
+
+        // 4. Render
+        renderResults(result, numTrucks);
+    }
+
+    // --- PARSING & GROUPING ---
+
+    function parseInput(text) {
+        const lines = text.trim().split('\n');
+        const parsed = [];
+        
+        lines.forEach(line => {
+            // Split by Tab (Excel default) or Comma
+            const cols = line.split(/[\t,]/).map(c => c.trim());
+            if(cols.length < 4) return; // Skip empty/bad lines
+
+            parsed.push({
+                tp: cols[0],
+                kg: parseFloat(cols[1].replace(',', '.')) || 0,
+                m3: parseFloat(cols[2].replace(',', '.')) || 0,
+                dest: cols[3],
+                originalLine: line
+            });
+        });
+        return parsed;
+    }
+
+    function groupItemsByTP(items) {
+        const map = new Map();
+        items.forEach(item => {
+            if (!map.has(item.tp)) {
+                map.set(item.tp, { tp: item.tp, dest: item.dest, kg: 0, m3: 0, lines: [] });
+            }
+            const group = map.get(item.tp);
+            // Validation: Ideally a TP shouldn't have mixed destinations. 
+            // If it does, we take the first one found to keep them together.
+            group.kg += item.kg;
+            group.m3 += item.m3;
+            group.lines.push(item);
+        });
+        return Array.from(map.values());
+    }
+
+    function groupTPsByDestination(tpGroups) {
+        const map = new Map();
+        tpGroups.forEach(tpGroup => {
+            const d = tpGroup.dest.toUpperCase();
+            if (!map.has(d)) {
+                map.set(d, { 
+                    dest: tpGroup.dest, 
+                    kg: 0, 
+                    m3: 0, 
+                    tpCount: 0, 
+                    tpList: [] 
+                });
+            }
+            const destBlock = map.get(d);
+            destBlock.kg += tpGroup.kg;
+            destBlock.m3 += tpGroup.m3;
+            destBlock.tpCount += 1; // Increment unique TP count
+            destBlock.tpList.push(tpGroup);
+        });
+        return Array.from(map.values());
+    }
+
+    // --- ALGORITHM ---
+
+    function calculateTrucks(destBlocks, numTrucks) {
+        // Init Trucks
+        let trucks = Array.from({length: numTrucks}, (_, i) => ({
+            id: i + 1,
+            kg: 0,
+            m3: 0,
+            tpCount: 0,
+            blocks: [] // Holds destination blocks
+        }));
+
+        // SORT blocks by m3 Descending (Fit biggest volumes first)
+        destBlocks.sort((a, b) => b.m3 - a.m3);
+
+        // 1. Initial Greedy Assignment (Balance m3 primarily)
+        destBlocks.forEach(block => {
+            // Find truck with lowest m3 currently
+            trucks.sort((a, b) => a.m3 - b.m3);
+            const t = trucks[0];
+            
+            addBlockToTruck(t, block);
+        });
+
+        // 2. OPTIMIZATION LOOP
+        // Rule: Truck with Higher TP Count -> Must have Lower m3
+        // We run multiple passes to fix violations
+        let isBalanced = false;
+        let iterations = 0;
+        
+        while(!isBalanced && iterations < 200) {
+            isBalanced = true;
+            iterations++;
+
+            // Sort trucks by TP Count Descending (Most complex first)
+            trucks.sort((a, b) => b.tpCount - a.tpCount);
+
+            // Compare adjacent trucks in sorted list
+            // If T[i] has more TPs than T[i+1], it MUST have less m3.
+            for(let i = 0; i < numTrucks - 1; i++) {
+                let heavy = trucks[i];   // Higher TP Count
+                let light = trucks[i+1]; // Lower TP Count
+
+                // CHECK VIOLATION
+                // Violation if: HeavyTP truck also has Higher (or equal) m3
+                if (heavy.tpCount > light.tpCount && heavy.m3 >= light.m3) {
+                    
+                    isBalanced = false; 
+
+                    // FIX: Try to move a block from Heavy to Light 
+                    // that reduces Heavy's m3 significantly but keeps TP counts relative (or swaps them).
+                    const move = findBestMove(heavy, light);
+                    
+                    if(move) {
+                        applyMove(heavy, light, move);
+                        break; // Restart loop to resort and re-evaluate
+                    } else {
+                        // If one-way move fails, try SWAP (Exchange blocks)
+                        const swap = findBestSwap(heavy, light);
+                        if(swap) {
+                            applySwap(heavy, light, swap);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Final sort by ID for display
+        trucks.sort((a, b) => a.id - b.id);
+        return trucks;
+    }
+
+    function addBlockToTruck(truck, block) {
+        truck.blocks.push(block);
+        truck.kg += block.kg;
+        truck.m3 += block.m3;
+        truck.tpCount += block.tpCount;
+    }
+
+    function removeBlockFromTruck(truck, index) {
+        const block = truck.blocks.splice(index, 1)[0];
+        truck.kg -= block.kg;
+        truck.m3 -= block.m3;
+        truck.tpCount -= block.tpCount;
+        return block;
+    }
+
+    function applyMove(fromT, toT, index) {
+        const block = removeBlockFromTruck(fromT, index);
+        addBlockToTruck(toT, block);
+    }
+    
+    function applySwap(t1, t2, indices) {
+        const b1 = removeBlockFromTruck(t1, indices.idx1);
+        const b2 = removeBlockFromTruck(t2, indices.idx2); // Note: index might shift if swapping within same truck, but here they are diff trucks
+        addBlockToTruck(t2, b1);
+        addBlockToTruck(t1, b2);
+    }
+
+    // Heuristic: Find a block in 'HighTP' truck to move to 'LowTP' truck
+    // Goal: Reduce m3 of HighTP truck.
+    function findBestMove(highTpTruck, lowTpTruck) {
+        for(let i=0; i<highTpTruck.blocks.length; i++) {
+            const block = highTpTruck.blocks[i];
+            
+            // Simulation
+            const h_m3 = highTpTruck.m3 - block.m3;
+            const l_m3 = lowTpTruck.m3 + block.m3;
+            const h_tp = highTpTruck.tpCount - block.tpCount;
+            const l_tp = lowTpTruck.tpCount + block.tpCount;
+
+            // Condition to accept move:
+            // 1. It must actually lower the m3 of the heavy truck (always true here)
+            // 2. It shouldn't create a REVERSE violation where the other truck now has more TPs but also more m3?
+            //    Actually, simple greedy check: Just verify if it solves the immediate relation.
+            
+            // Ideally: If h_tp > l_tp, then h_m3 < l_m3.
+            // Or if they flip counts (l_tp > h_tp), then l_m3 < h_m3.
+            
+            if (h_tp > l_tp && h_m3 < l_m3) return i; // Perfect fix
+            if (l_tp > h_tp && l_m3 < h_m3) return i; // Flipped fix
+            if (h_tp === l_tp) return i; // Equalizing TPs is also good, m3 can be anything (roughly equal)
+        }
+        return null;
+    }
+
+    function findBestSwap(t1, t2) {
+        // Try to swap a heavy block from t1 with a light block from t2
+        for(let i=0; i<t1.blocks.length; i++) {
+            for(let j=0; j<t2.blocks.length; j++) {
+                const b1 = t1.blocks[i];
+                const b2 = t2.blocks[j];
+
+                // Delta m3
+                const m3_change = b1.m3 - b2.m3; // Amount t1 loses, t2 gains
+                if(m3_change <= 0) continue; // We want t1 to lose m3
+
+                // Sim
+                const t1_new_m3 = t1.m3 - m3_change;
+                const t2_new_m3 = t2.m3 + m3_change;
+                
+                // If this swap makes t1.m3 < t2.m3 (solving the volume issue)
+                // We just need to check if TP counts don't get messed up
+                if(t1_new_m3 < t2_new_m3) return {idx1: i, idx2: j};
+            }
+        }
+        return null;
+    }
+
+    // --- RENDERING ---
+
+    function renderResults(trucks, numTrucks) {
+        const container = document.getElementById('outputArea');
+        container.innerHTML = '';
+
+        let html = `<div class="truck-grid">`;
+        
+        let validRule = true;
+        
+        // Check Global Rules for UI feedback
+        // Sort temp copy to check the relation
+        const sorted = [...trucks].sort((a,b) => b.tpCount - a.tpCount);
+        for(let i=0; i<sorted.length-1; i++) {
+            if(sorted[i].tpCount > sorted[i+1].tpCount && sorted[i].m3 >= sorted[i+1].m3) {
+                validRule = false;
+            }
+        }
+
+        trucks.forEach(t => {
+            html += `
+            <div class="truck-card">
+                <div class="truck-header">
+                    <div class="truck-title">
+                        <span>TRUCK ${t.id}</span>
+                        ${validRule ? '✅' : '⚠️'}
+                    </div>
+                    <div class="stats-row">
+                        <div class="stat"><span>TP Count</span><span>${t.tpCount}</span></div>
+                        <div class="stat"><span>m³</span><span>${t.m3.toFixed(2)}</span></div>
+                        <div class="stat"><span>KG</span><span>${t.kg.toFixed(0)}</span></div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>TP #</th><th>Dest</th><th>KG</th><th>m³</th></tr></thead>
+                        <tbody>`;
+            
+            // Flatten blocks back to lines
+            t.blocks.forEach(b => {
+                b.tpList.forEach(tp => {
+                    // Just showing one row per TP for cleaner view, or all rows?
+                    // Let's show all original rows
+                    tp.lines.forEach(l => {
+                         html += `<tr>
+                            <td>${l.tp}</td>
+                            <td>${l.dest}</td>
+                            <td>${l.kg}</td>
+                            <td>${l.m3}</td>
+                         </tr>`;
+                    });
+                });
+            });
+
+            html += `</tbody></table></div></div>`;
+        });
+        html += `</div>`;
+
+        // Status Message
+        if(validRule) {
+            html = `<div class="status-badge status-success">Rule Satisfied: Higher TP Count has Lower m³</div>` + html;
+        } else {
+            html = `<div class="status-badge status-fail">Warning: Could not perfectly satisfy Volume/Complexity rule</div>` + html;
+        }
+
+        container.innerHTML = html;
+    }
+
+</script>
+</body>
+</html>
