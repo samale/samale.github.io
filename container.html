@@ -3,65 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Container Number Validator</title>
+    <title>ISO 6346 Container Validator</title>
+    
     <meta name="robots" content="noindex, nofollow">
+
     <style>
-        body { font-family: Arial, sans-serif; margin: 50px; }
-        input, button { padding: 8px; font-size: 16px; }
-        .result { margin-top: 20px; font-weight: bold; }
-        .valid { color: green; }
-        .invalid { color: red; }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f9;
+            margin: 0;
+        }
+        .container-validator {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-size: 1.1em;
+            text-align: center;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            min-height: 20px;
+        }
+        .valid {
+            background-color: #e6ffe6;
+            color: #008000;
+            border: 1px solid #008000;
+        }
+        .invalid {
+            background-color: #ffe6e6;
+            color: #cc0000;
+            border: 1px solid #cc0000;
+        }
     </style>
 </head>
 <body>
-    <h1>Container Number Validator (ISO 6346)</h1>
-    <form id="containerForm">
-        <label for="containerNumber">Container Number:</label>
-        <input type="text" id="containerNumber" name="containerNumber" placeholder="e.g., ABCD1234567" required>
-        <button type="submit">Validate</button>
-    </form>
-    <div class="result" id="result"></div>
+
+    <div class="container-validator">
+        <h2>🚢 ISO 6346 Container Number Validator</h2>
+        <p>Enter an 11-character container number (e.g., **ABCD1234567**)</p>
+
+        <input type="text" id="containerNumber" placeholder="Enter container number">
+        <button onclick="validateContainer()">Validate</button>
+
+        <div id="result"></div>
+    </div>
 
     <script>
-        function validateContainerNumber(number) {
-            number = number.replace(/\s+/g, '').toUpperCase();
+        /**
+         * ISO 6346 Letter-to-Numeric Value Map
+         * Note: Values 11, 22, and 33 are skipped per the standard.
+         */
+        const charMap = {
+            '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
+            'A': 10, 'B': 12, 'C': 13, 'D': 14, 'E': 15, 'F': 16, 'G': 17, 'H': 18, 'I': 19, 'J': 20,
+            'K': 21, 'L': 23, 'M': 24, 'N': 25, 'O': 26, 'P': 27, 'Q': 28, 'R': 29, 'S': 30, 'T': 31,
+            'U': 32, 'V': 34, 'W': 35, 'X': 36, 'Y': 37, 'Z': 38
+        };
 
-            // ISO 6346 format: 4 letters + 6 digits + 1 check digit
-            if (!/^[A-Z]{4}\d{7}$/.test(number)) {
+        /**
+         * Validates a container number against the ISO 6346 check-digit algorithm.
+         * @param {string} containerNumber The 11-character container number.
+         * @returns {boolean} True if the check digit is correct, false otherwise.
+         */
+        function isValidISO6346(containerNumber) {
+            // 1. Pre-process and basic structure check (4 letters, 7 digits)
+            const normalized = containerNumber.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+            if (normalized.length !== 11 || !/^[A-Z]{4}[0-9]{7}$/.test(normalized)) {
                 return false;
             }
 
-            // Letter values according to ISO 6346
-            const letterValues = {
-                A:10,B:12,C:13,D:14,E:15,F:16,G:17,H:18,I:19,J:20,
-                K:21,L:23,M:24,N:25,O:26,P:27,Q:28,R:29,S:30,T:31,
-                U:32,V:34,W:35,X:36,Y:37,Z:38
-            };
+            // Separate the data part (10 chars) from the user's check digit (11th char)
+            const dataPart = normalized.substring(0, 10);
+            const expectedCheckDigit = parseInt(normalized.charAt(10), 10);
 
-            let sum = 0;
+            let weightedSum = 0;
+
+            // 2. Mapping, Weighting (2^i), and Summation
             for (let i = 0; i < 10; i++) {
-                const char = number[i];
-                const value = isNaN(char) ? letterValues[char] : parseInt(char, 10);
-                sum += value * Math.pow(2, i);
+                const char = dataPart.charAt(i);
+                const mappedValue = charMap[char];
+
+                if (mappedValue === undefined) {
+                    return false; // Invalid character found
+                }
+
+                // Weight is 2 raised to the power of the position index i (0 to 9)
+                const weight = Math.pow(2, i);
+                weightedSum += mappedValue * weight;
             }
 
-            const checkDigit = sum % 11 % 10;
-            return checkDigit === parseInt(number[10], 10);
+            // 3. Modulo 11
+            const remainder = weightedSum % 11;
+
+            // 4. Check Digit Calculation: If remainder is 10, the check digit is 0. Otherwise, it is the remainder.
+            const calculatedCheckDigit = (remainder === 10) ? 0 : remainder;
+
+            // 5. Validation
+            return calculatedCheckDigit === expectedCheckDigit;
         }
 
-        document.getElementById('containerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const number = document.getElementById('containerNumber').value;
-            const resultDiv = document.getElementById('result');
 
-            if (validateContainerNumber(number)) {
-                resultDiv.textContent = 'Valid container number ✅';
-                resultDiv.className = 'result valid';
-            } else {
-                resultDiv.textContent = 'Invalid container number ❌';
-                resultDiv.className = 'result invalid';
+        function validateContainer() {
+            const inputElement = document.getElementById('containerNumber');
+            const resultElement = document.getElementById('result');
+            // Remove leading/trailing whitespace and convert to uppercase for cleaner input
+            const containerNumber = inputElement.value.trim().toUpperCase(); 
+
+            // Clear previous results
+            resultElement.textContent = '';
+            resultElement.className = '';
+
+            if (containerNumber === '') {
+                resultElement.textContent = 'Please enter a container number.';
+                resultElement.className = 'invalid';
+                return;
             }
-        });
+
+            if (isValidISO6346(containerNumber)) {
+                resultElement.textContent = `✅ VALID: The number "${containerNumber}" is correct according to ISO 6346.`;
+                resultElement.className = 'valid';
+            } else {
+                resultElement.textContent = `❌ INVALID: The number "${containerNumber}" is NOT correct or the format is wrong (must be 4 letters + 7 digits).`;
+                resultElement.className = 'invalid';
+            }
+        }
     </script>
 </body>
 </html>
