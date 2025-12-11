@@ -1,144 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fixed Functional QR Code Generator</title>
+<script>
+let qrcode = null;
+
+function generateQRCode() {
+    const dataInput = document.getElementById("qr-data");
+    const data = dataInput.value.trim();
+    const errorMessage = document.getElementById("error-message");
+    const qrCodeContainer = document.getElementById("qrcode-output");
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.0.0/qrcode.min.js"></script>
+    errorMessage.textContent = ''; // Clear error
 
-    <style>
-        /* ... (CSS remains the same for styling) ... */
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-            background-color: #f4f4f9;
-        }
-        .container {
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            max-width: 450px;
-            width: 100%;
-            text-align: center;
-        }
-        h2 {
-            margin-top: 0;
-            color: #333;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            box-sizing: border-box; 
-            font-size: 16px;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-            width: 100%;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #qrcode-output {
-            margin-top: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 200px;
-            padding: 10px;
-        }
-        #qrcode-output > canvas, #qrcode-output > table {
-            border: 5px solid #fff;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-            border-radius: 4px;
-        }
-        #error-message {
-            margin-top: 15px;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
+    if (!data) {
+        errorMessage.textContent = 'Please enter a value to generate a QR code.';
+        qrCodeContainer.innerHTML = '';
+        return;
+    }
 
-    <div class="container">
-        <h2>QR Code Generator</h2>
-        
-        <input type="text" id="qr-data" placeholder="Enter text or URL here..." value="https://example.com">
-        
-        <button id="generate-button">Generate QR Code</button>
+    qrCodeContainer.innerHTML = ''; // Clear previous QR code
 
-        <div id="qrcode-output">
-            </div>
+    // Recreate QRCode object for each generation (safer)
+    qrcode = new QRCode(qrCodeContainer, {
+        text: data,
+        width: 200,
+        height: 200,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+}
 
-        <p id="error-message" style="color: red;"></p>
-    </div>
+document.addEventListener('DOMContentLoaded', () => {
+    // Generate initial QR code
+    generateQRCode();
 
-    <script>
-        // Global variable to hold the initialized QR code object
-        let qrcode = null;
-
-        // Function to handle the QR code generation
-        function generateQRCode() {
-            const dataInput = document.getElementById("qr-data");
-            const data = dataInput.value.trim();
-            const errorMessage = document.getElementById("error-message");
-            const qrCodeContainer = document.getElementById("qrcode-output");
-            
-            errorMessage.textContent = ''; // Clear error
-
-            if (data) {
-                // IMPORTANT: The makeCode method is the ONLY thing we call inside the click handler.
-                // It handles clearing and redrawing the code internally.
-                if (qrcode) {
-                    qrcode.makeCode(data);
-                }
-            } else {
-                errorMessage.textContent = 'Please enter a value to generate a QR code.';
-                // If data is empty, clear the container manually
-                qrCodeContainer.innerHTML = '';
-            }
-        }
-        
-        // This function runs once the entire HTML document is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            const qrCodeContainer = document.getElementById("qrcode-output");
-            const initialData = document.getElementById("qr-data").value;
-
-            // 1. INITIALIZE the QRCode object ONCE.
-            // This is the correct pattern for qrcode.js.
-            qrcode = new QRCode(qrCodeContainer, {
-                text: initialData, // Pass the default text to generate the code immediately
-                width: 200, 
-                height: 200,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-
-            // 2. ATTACH the click listener to the button
-            document.getElementById('generate-button').addEventListener('click', generateQRCode);
-            
-            // Note: Since we passed initialData to the constructor, we don't need
-            // to call generateQRCode() here. The code is already displayed.
-        });
-    </script>
-
-</body>
-</html>
+    document.getElementById('generate-button').addEventListener('click', generateQRCode);
+});
+</script>
