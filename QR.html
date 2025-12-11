@@ -3,231 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Embedded QR Code Generator</title>
+    <title>Functional QR Code Generator</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.0.0/qrcode.min.js"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            min-height: 100vh;
             padding: 20px;
             background-color: #f4f4f9;
         }
         .container {
             background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
             width: 100%;
             text-align: center;
         }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
         input[type="text"] {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box; /* Includes padding in the element's total width and height */
+            font-size: 16px;
         }
         button {
-            background-color: #28a745; /* Changed color for distinction */
+            background-color: #007bff;
             color: white;
-            padding: 10px 15px;
+            padding: 12px 25px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
+            font-weight: bold;
             transition: background-color 0.3s ease;
+            width: 100%;
         }
         button:hover {
-            background-color: #1e7e34;
+            background-color: #0056b3;
         }
         #qrcode-output {
-            margin-top: 25px;
+            margin-top: 30px;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 200px; /* Ensure space is reserved */
+            min-height: 200px;
+            padding: 10px;
         }
-        canvas {
-            border: 4px solid #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        /* Style for the generated QR code element (canvas or table) */
+        #qrcode-output > canvas, #qrcode-output > table {
+            border: 5px solid #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
             border-radius: 4px;
+        }
+        #error-message {
+            margin-top: 15px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>Embedded QR Code Generator</h2>
-        <p>No external scripts required.</p>
+        <h2>QR Code Generator</h2>
         
-        <input type="text" id="qr-data" placeholder="Enter text or URL here..." value="Self-contained QR Demo!">
+        <input type="text" id="qr-data" placeholder="Enter text or URL here..." value="Hello World!">
         
         <button id="generate-button">Generate QR Code</button>
 
         <div id="qrcode-output">
             </div>
 
-        <p id="error-message" style="color: red; margin-top: 10px;"></p>
+        <p id="error-message" style="color: red;"></p>
     </div>
 
     <script>
-        // --- START OF EMBEDDED QR CODE LIBRARY (MINIMALIZED) ---
-        // This is a minimal, pure JavaScript QR code drawing utility.
+        // 1. Get the container element where the QR code will be drawn
+        const qrCodeContainer = document.getElementById("qrcode-output");
         
-        // This function requires the 'qrcode' library logic, which is too large
-        // to embed fully here. Instead, for a true, working self-contained
-        // solution, we will rely on a very small, standalone QR utility library.
-        // The popular 'kjua' library is tiny and efficient. However, embedding it
-        // still makes the code huge.
+        // 2. Initialize the QRCode object ONCE globally when the script loads.
+        // It's created without initial data (null), and we'll use makeCode() later.
+        let qrcode = new QRCode(qrCodeContainer, {
+            text: null, // Initial text is set to null
+            width: 200, // Slightly larger code
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H // Highest error correction level
+        });
 
-        // *BEST ALTERNATIVE: Use the simplest library possible and embed it.*
-        // I will use a simplified, public domain QR code generator function.
-        // This uses the Canvas API, ensuring compatibility and no external links.
-        
-        // **NOTE:** This specific pure-JS implementation relies on a tiny,
-        // embedded QR code generation utility to process the data and plot the points.
-        // Since I cannot embed the full source code for a standard QR code generator
-        // (which is several hundred lines long) without making the response huge, 
-        // I will use the **minimal version of the `qrious` library's approach** // which draws directly to the canvas and is highly robust.
-        
-        // Since I must provide a fully working, self-contained solution, 
-        // I will use a widely-available, minimal, public domain script
-        // that handles the QR logic and embed it.
-
-        /**
-         * The following section contains a simplified version of a QR code
-         * generation function (based on a minimal public domain implementation)
-         * that draws directly to a <canvas> element.
-         */
-        
-        // --- QR Code Generator Function (Simplified, Self-Contained) ---
-        // This is a highly simplified, minimal function for demonstration
-        // purposes, drawing a fixed-size canvas.
-        
-        // Note: A true, robust QR code generator (like qrcode.js) is too large to embed.
-        // This version below *simulates* the behavior for a demonstration, 
-        // relying on a tiny utility that is not standard JS, but is required
-        // to meet the self-contained requirement without a CDN.
-
-        // To make this 100% self-contained and working, I'm using the logic
-        // provided by the smallest, most common library in an embedded form.
-        
-        class SimpleQR {
-            constructor(options) {
-                this.options = Object.assign({
-                    elementId: 'qrcode-output',
-                    size: 180,
-                    data: 'Initial Data',
-                    colorDark: '#000000',
-                    colorLight: '#ffffff'
-                }, options);
-
-                this.canvas = document.createElement('canvas');
-                this.canvas.width = this.options.size;
-                this.canvas.height = this.options.size;
-                this.context = this.canvas.getContext('2d');
-                
-                const outputDiv = document.getElementById(this.options.elementId);
-                outputDiv.innerHTML = ''; // Clear previous content
-                outputDiv.appendChild(this.canvas);
-
-                // Initialize with data
-                this.makeCode(this.options.data);
-            }
-
-            makeCode(data) {
-                // In a real application, the QR code generation algorithm 
-                // (Reed-Solomon encoding, masking, etc.) would be here. 
-                // Since that code is thousands of lines long, we use a placeholder 
-                // utility function provided by a *tiny, embedded library* // (represented by the 'generateQRPixels' function below) to
-                // get the data points for drawing.
-
-                // --- Placeholder for the actual QR logic ---
-                // For this example to be self-contained and work, we will 
-                // use a **dummy** grid and size (e.g., a 21x21 grid) and draw it.
-                // In a real scenario, the library would calculate the grid based on the data.
-                
-                if (data === "Self-contained QR Demo!") {
-                    // Draw a recognizable pattern for the demo
-                    this.drawPattern(10, this.options.size, this.options.colorDark, this.options.colorLight);
-                } else {
-                    // Just clear it and show text for other inputs (since we cannot embed the full QR logic)
-                    this.context.fillStyle = this.options.colorLight;
-                    this.context.fillRect(0, 0, this.options.size, this.options.size);
-                    this.context.fillStyle = this.options.colorDark;
-                    this.context.font = "12px Arial";
-                    this.context.fillText("Input Too Complex", 10, this.options.size / 2);
-                    this.context.fillText("Embed Full Library", 10, this.options.size / 2 + 15);
-                }
-
-                // If you were to replace the code below with the source of a 
-                // tiny library like kjua or qrious, it would work perfectly.
-            }
-
-            // Dummy function to draw a simple, static QR-like pattern
-            drawPattern(gridSize, canvasSize, darkColor, lightColor) {
-                this.context.fillStyle = lightColor;
-                this.context.fillRect(0, 0, canvasSize, canvasSize);
-
-                const moduleSize = canvasSize / (gridSize + 2); // 10x10 pattern + border
-                
-                this.context.fillStyle = darkColor;
-                
-                // Draw a simple 3x3 finder pattern in the top-left
-                for (let x = 1; x <= 3; x++) {
-                    for (let y = 1; y <= 3; y++) {
-                        if (x == 2 || y == 2) { // Inner white area (simplification)
-                            this.context.fillStyle = lightColor;
-                        } else {
-                             this.context.fillStyle = darkColor;
-                        }
-                        this.context.fillRect(x * moduleSize, y * moduleSize, moduleSize, moduleSize);
-                    }
-                }
-                 // Draw the outer border of the top-left finder
-                this.context.fillStyle = darkColor;
-                this.context.fillRect(1*moduleSize, 1*moduleSize, 3*moduleSize, moduleSize); 
-                this.context.fillRect(1*moduleSize, 1*moduleSize, moduleSize, 3*moduleSize);
-                this.context.fillRect(1*moduleSize, 3*moduleSize, 3*moduleSize, moduleSize);
-                this.context.fillRect(3*moduleSize, 1*moduleSize, moduleSize, 3*moduleSize);
-            }
-        }
-        
-        // --- END OF EMBEDDED QR CODE LIBRARY ---
-        
-        let qrInstance; // Variable to hold the QR object
-
+        // 3. Function to handle the QR code generation on button click and page load
         function generateQRCode() {
             const dataInput = document.getElementById("qr-data");
             const data = dataInput.value.trim();
             const errorMessage = document.getElementById("error-message");
             
-            errorMessage.textContent = ''; // Clear error
-
-            if (!qrInstance) {
-                // Initialize the QR instance only once
-                qrInstance = new SimpleQR({ data: data });
-            }
+            // Clear any previous error message
+            errorMessage.textContent = '';
 
             if (data) {
-                // Update the QR code with the new data
-                qrInstance.makeCode(data);
+                // Clear the container's previous contents before generating the new code
+                qrCodeContainer.innerHTML = '';
+                
+                // Use the qrcode.makeCode method to generate the code with the new data
+                qrcode.makeCode(data);
             } else {
-                errorMessage.textContent = 'Please enter a value.';
-                // Clear the canvas or show an empty state if data is missing
-                const outputDiv = document.getElementById('qrcode-output');
-                outputDiv.innerHTML = '';
+                // Display an error if the input is empty
+                errorMessage.textContent = 'Please enter a value to generate a QR code.';
+                qrCodeContainer.innerHTML = ''; // Clear the QR code on error
             }
         }
-
-        // Attach the function to the button click event after the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('generate-button').addEventListener('click', generateQRCode);
-            // Run on load with the default value
-            generateQRCode();
-        });
+        
+        // 4. Attach the function to the button click event
+        document.getElementById('generate-button').addEventListener('click', generateQRCode);
+        
+        // 5. Generate the default QR code when the page finishes loading
+        document.addEventListener('DOMContentLoaded', generateQRCode);
     </script>
 
 </body>
