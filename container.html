@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Container Number Validator</title>
+    <!-- Prevent search engines from indexing this page -->
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; }
+        input, button { padding: 8px; font-size: 16px; }
+        .result { margin-top: 20px; font-weight: bold; }
+        .valid { color: green; }
+        .invalid { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Container Number Validator (ISO 6346)</h1>
+    <form id="containerForm">
+        <label for="containerNumber">Container Number:</label>
+        <input type="text" id="containerNumber" name="containerNumber" placeholder="e.g., ABCD1234567" required>
+        <button type="submit">Validate</button>
+    </form>
+    <div class="result" id="result"></div>
+
+    <script>
+        function validateContainerNumber(number) {
+            // Remove spaces and make uppercase
+            number = number.replace(/\s+/g, '').toUpperCase();
+
+            // ISO 6346 format: 4 letters + 6 digits + 1 check digit
+            if (!/^[A-Z]{4}\d{7}$/.test(number)) {
+                return false;
+            }
+
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const letterValues = {};
+            let value = 10;
+            for (let i = 0; i < letters.length; i++) {
+                letterValues[letters[i]] = value;
+                value = (value % 10 === 0) ? value + 2 : value + 1; // skip multiples of 11
+            }
+
+            let sum = 0;
+            for (let i = 0; i < 10; i++) {
+                let char = number[i];
+                let charValue = isNaN(char) ? letterValues[char] : parseInt(char, 10);
+                sum += charValue * Math.pow(2, i);
+            }
+
+            const checkDigit = sum % 11 % 10;
+
+            return checkDigit === parseInt(number[10], 10);
+        }
+
+        document.getElementById('containerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const number = document.getElementById('containerNumber').value;
+            const resultDiv = document.getElementById('result');
+
+            if (validateContainerNumber(number)) {
+                resultDiv.textContent = 'Valid container number ✅';
+                resultDiv.className = 'result valid';
+            } else {
+                resultDiv.textContent = 'Invalid container number ❌';
+                resultDiv.className = 'result invalid';
+            }
+        });
+    </script>
+</body>
+</html>
