@@ -17,7 +17,7 @@ h1 { color:var(--primary); }
 .panel { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:1.5rem; }
 label { font-weight:600; font-size:0.9rem; display:block; margin-top:0.75rem; }
 
-textarea { width:100%; height:120px; font-family:monospace; font-size:0.85rem; padding:0.5rem; border:1px solid var(--border); border-radius:4px; }
+textarea { width:100%; height:110px; font-family:monospace; font-size:0.85rem; padding:0.5rem; border:1px solid var(--border); border-radius:4px; }
 
 select, button { width:100%; margin-top:1rem; padding:0.75rem; font-weight:600; border-radius:6px; }
 button { background:var(--primary); color:white; border:none; cursor:pointer; }
@@ -26,9 +26,19 @@ button:hover { opacity:0.9; }
 .truck-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1.5rem; }
 .truck-card { border:1px solid var(--border); border-radius:8px; background:var(--card); }
 .truck-header { padding:1rem; background:#f1f5f9; border-bottom:1px solid var(--border); }
-.stats { display:flex; gap:1rem; font-size:0.9rem; }
+.stats { display:flex; gap:1rem; font-size:0.9rem; margin-bottom:0.5rem; }
 .stat span:first-child { font-size:0.7rem; color:#64748b; text-transform:uppercase; display:block; }
 .stat span:last-child { font-weight:600; }
+
+.tp-list {
+    font-size:0.8rem;
+    background:#f8fafc;
+    border:1px solid var(--border);
+    padding:0.5rem;
+    border-radius:4px;
+    white-space:pre-wrap;
+    font-family:monospace;
+}
 
 .status { display:inline-block; padding:0.4rem 0.8rem; border-radius:99px; font-size:0.8rem; font-weight:600; margin-bottom:1rem; }
 .ok { background:#dcfce7; color:#166534; }
@@ -44,17 +54,16 @@ button:hover { opacity:0.9; }
 <div class="container">
 
 <div class="panel">
-
 <label>Transport Numbers (space separated)</label>
 <textarea id="tpInput"></textarea>
 
 <label>m³ (space separated)</label>
 <textarea id="m3Input"></textarea>
 
-<label>Weight (space separated)</label>
+<label>Weight KG (European format)</label>
 <textarea id="kgInput"></textarea>
 
-<label>Destinations (paste as ONE block – ends with *)</label>
+<label>Destinations (paste as ONE block, ends with *)</label>
 <textarea id="destInput"></textarea>
 
 <label>Number of Trucks</label>
@@ -75,112 +84,99 @@ button:hover { opacity:0.9; }
 </div>
 
 <script>
+function parseEuroNumber(v) {
+    return parseFloat(v.replace(/\./g,'').replace(',','.'));
+}
+
 function collectItems() {
     const tp = tpInput.value.trim().split(/\s+/);
     const m3 = m3Input.value.trim().split(/\s+/);
     const kg = kgInput.value.trim().split(/\s+/);
 
-    // 🔑 DESTINATION SPLIT LOGIC
-    const destRaw = destInput.value.trim();
-    const dest = destRaw
+    const dest = destInput.value
+        .trim()
         .split('*')
         .map(d => d.trim())
-        .filter(d => d.length);
+        .filter(Boolean);
 
-    const len = tp.length;
-
-    if (![m3.length, kg.length, dest.length].every(l => l === len)) {
-        alert(
-            "Column size mismatch:\n" +
-            `TP: ${tp.length}\n` +
-            `m³: ${m3.length}\n` +
-            `KG: ${kg.length}\n` +
-            `Dest: ${dest.length}`
-        );
+    if (![m3.length, kg.length, dest.length].every(l => l === tp.length)) {
+        alert("Column length mismatch");
         return [];
     }
 
-    return tp.map((_, i) => ({
+    return tp.map((_,i)=>({
         tp: tp[i],
-        m3: parseFloat(m3[i].replace(',', '.')),
-        kg: parseFloat(kg[i].replace(',', '.')),
-        dest: dest[i],
-        originalLine: ""
+        m3: parseEuroNumber(m3[i]),
+        kg: parseEuroNumber(kg[i]),
+        dest: dest[i]
     }));
 }
 
-/* ===== OPTIMIZATION LOGIC (UNCHANGED) ===== */
-
 function runOptimization() {
     const items = collectItems();
-    if (items.length === 0) return;
+    if (!items.length) return;
 
-    const numTrucks = parseInt(truckCount.value);
     const tpGroups = groupItemsByTP(items);
     const destGroups = groupTPsByDestination(tpGroups);
-    const trucks = calculateTrucks(destGroups, numTrucks);
+    const trucks = calculateTrucks(destGroups, parseInt(truckCount.value));
     renderResults(trucks);
 }
 
 function groupItemsByTP(items) {
     const map = new Map();
-    items.forEach(i => {
-        if (!map.has(i.tp))
-            map.set(i.tp,{tp:i.tp,dest:i.dest,kg:0,m3:0,tpCount:1,lines:[]});
-        const g = map.get(i.tp);
-        g.kg+=i.kg; g.m3+=i.m3; g.lines.push(i);
+    items.forEach(i=>{
+        if(!map.has(i.tp))
+            map.set(i.tp,{tp:i.tp,dest:i.dest,kg:0,m3:0,tpCount:1});
+        const g=map.get(i.tp);
+        g.kg+=i.kg; g.m3+=i.m3;
     });
     return [...map.values()];
 }
 
 function groupTPsByDestination(tps) {
     const map = new Map();
-    tps.forEach(t => {
-        if (!map.has(t.dest))
+    tps.forEach(t=>{
+        if(!map.has(t.dest))
             map.set(t.dest,{dest:t.dest,kg:0,m3:0,tpCount:0,tpList:[]});
-        const d = map.get(t.dest);
+        const d=map.get(t.dest);
         d.kg+=t.kg; d.m3+=t.m3; d.tpCount++; d.tpList.push(t);
     });
     return [...map.values()];
 }
 
-function calculateTrucks(blocks, n) {
-    const trucks = Array.from({length:n},(_,i)=>({id:i+1,kg:0,m3:0,tpCount:0,blocks:[]}));
+function calculateTrucks(blocks,n) {
+    const trucks=Array.from({length:n},(_,i)=>({id:i+1,kg:0,m3:0,tpCount:0,blocks:[]}));
     blocks.sort((a,b)=>b.m3-a.m3);
     blocks.forEach(b=>{
         trucks.sort((a,b)=>a.m3-b.m3);
-        addBlock(trucks[0],b);
+        t=trucks[0];
+        t.blocks.push(b);
+        t.kg+=b.kg;
+        t.m3+=b.m3;
+        t.tpCount+=b.tpCount;
     });
     return trucks;
 }
 
-function addBlock(t,b){
-    t.blocks.push(b);
-    t.kg+=b.kg;
-    t.m3+=b.m3;
-    t.tpCount+=b.tpCount;
-}
-
 function renderResults(trucks) {
-    const sorted=[...trucks].sort((a,b)=>b.tpCount-a.tpCount);
-    let ok=true;
-    for(let i=0;i<sorted.length-1;i++)
-        if(sorted[i].tpCount>sorted[i+1].tpCount && sorted[i].m3>=sorted[i+1].m3) ok=false;
-
-    let html=`<div class="status ${ok?'ok':'fail'}">
-    ${ok?'Rule satisfied':'Rule violated'}
-    </div><div class="truck-grid">`;
+    let html=`<div class="truck-grid">`;
 
     trucks.forEach(t=>{
+        const tpSet = new Set();
+        t.blocks.forEach(b=>b.tpList.forEach(tp=>tpSet.add(tp.tp)));
+
         html+=`
         <div class="truck-card">
         <div class="truck-header">
-        <strong>Truck ${t.id}</strong>
-        <div class="stats">
-        <div class="stat"><span>TP</span><span>${t.tpCount}</span></div>
-        <div class="stat"><span>m³</span><span>${t.m3.toFixed(2)}</span></div>
-        <div class="stat"><span>KG</span><span>${t.kg.toFixed(0)}</span></div>
-        </div></div></div>`;
+            <strong>Truck ${t.id}</strong>
+            <div class="stats">
+                <div class="stat"><span>TP Count</span><span>${tpSet.size}</span></div>
+                <div class="stat"><span>m³</span><span>${t.m3.toFixed(2)}</span></div>
+                <div class="stat"><span>KG</span><span>${t.kg.toFixed(0)}</span></div>
+            </div>
+            <div class="tp-list">${[...tpSet].join('\n')}</div>
+        </div>
+        </div>`;
     });
 
     outputArea.innerHTML=html+"</div>";
