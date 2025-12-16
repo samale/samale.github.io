@@ -44,6 +44,7 @@ button:hover { opacity:0.9; }
 <div class="container">
 
 <div class="panel">
+
 <label>Transport Numbers (space separated)</label>
 <textarea id="tpInput"></textarea>
 
@@ -53,7 +54,7 @@ button:hover { opacity:0.9; }
 <label>Weight (space separated)</label>
 <textarea id="kgInput"></textarea>
 
-<label>Destination (ONE PER LINE)</label>
+<label>Destinations (paste as ONE block – ends with *)</label>
 <textarea id="destInput"></textarea>
 
 <label>Number of Trucks</label>
@@ -78,12 +79,24 @@ function collectItems() {
     const tp = tpInput.value.trim().split(/\s+/);
     const m3 = m3Input.value.trim().split(/\s+/);
     const kg = kgInput.value.trim().split(/\s+/);
-    const dest = destInput.value.trim().split('\n');
+
+    // 🔑 DESTINATION SPLIT LOGIC
+    const destRaw = destInput.value.trim();
+    const dest = destRaw
+        .split('*')
+        .map(d => d.trim())
+        .filter(d => d.length);
 
     const len = tp.length;
 
     if (![m3.length, kg.length, dest.length].every(l => l === len)) {
-        alert("All columns must contain the same number of entries.");
+        alert(
+            "Column size mismatch:\n" +
+            `TP: ${tp.length}\n` +
+            `m³: ${m3.length}\n` +
+            `KG: ${kg.length}\n` +
+            `Dest: ${dest.length}`
+        );
         return [];
     }
 
@@ -91,12 +104,12 @@ function collectItems() {
         tp: tp[i],
         m3: parseFloat(m3[i].replace(',', '.')),
         kg: parseFloat(kg[i].replace(',', '.')),
-        dest: dest[i].trim(),
+        dest: dest[i],
         originalLine: ""
     }));
 }
 
-/* ===== ORIGINAL LOGIC (UNCHANGED) ===== */
+/* ===== OPTIMIZATION LOGIC (UNCHANGED) ===== */
 
 function runOptimization() {
     const items = collectItems();
