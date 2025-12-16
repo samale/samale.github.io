@@ -23,7 +23,7 @@ select, button { width:100%; margin-top:1rem; padding:0.75rem; font-weight:600; 
 button { background:var(--primary); color:white; border:none; cursor:pointer; }
 button:hover { opacity:0.9; }
 
-.truck-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1.5rem; }
+.truck-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:1.5rem; }
 .truck-card { border:1px solid var(--border); border-radius:8px; background:var(--card); }
 .truck-header { padding:1rem; background:#f1f5f9; border-bottom:1px solid var(--border); }
 .stats { display:flex; gap:1rem; font-size:0.9rem; margin-bottom:0.5rem; }
@@ -42,7 +42,6 @@ button:hover { opacity:0.9; }
 
 .status { display:inline-block; padding:0.4rem 0.8rem; border-radius:99px; font-size:0.8rem; font-weight:600; margin-bottom:1rem; }
 .ok { background:#dcfce7; color:#166534; }
-.fail { background:#fee2e2; color:#991b1b; }
 </style>
 </head>
 
@@ -53,7 +52,9 @@ button:hover { opacity:0.9; }
 
 <div class="container">
 
+<!-- INPUT -->
 <div class="panel">
+
 <label>Transport Numbers (space separated)</label>
 <textarea id="tpInput"></textarea>
 
@@ -62,9 +63,6 @@ button:hover { opacity:0.9; }
 
 <label>Weight KG (European format)</label>
 <textarea id="kgInput"></textarea>
-
-<label>Destinations (paste as ONE block, ends with *)</label>
-<textarea id="destInput"></textarea>
 
 <label>Number of Trucks</label>
 <select id="truckCount">
@@ -77,6 +75,7 @@ button:hover { opacity:0.9; }
 <button onclick="runOptimization()">Calculate Layout</button>
 </div>
 
+<!-- OUTPUT -->
 <div id="outputArea">
 <div class="panel" style="text-align:center;color:#94a3b8;">Results will appear here</div>
 </div>
@@ -84,8 +83,11 @@ button:hover { opacity:0.9; }
 </div>
 
 <script>
+// ---------- HELPERS ----------
 function parseEuroNumber(v) {
-    return parseFloat(v.replace(/\./g,'').replace(',','.'));
+    return parseFloat(
+        v.replace(/\./g,'').replace(',','.')
+    );
 }
 
 function collectItems() {
@@ -93,88 +95,79 @@ function collectItems() {
     const m3 = m3Input.value.trim().split(/\s+/);
     const kg = kgInput.value.trim().split(/\s+/);
 
-    const dest = destInput.value
-        .trim()
-        .split('*')
-        .map(d => d.trim())
-        .filter(Boolean);
-
-    if (![m3.length, kg.length, dest.length].every(l => l === tp.length)) {
-        alert("Column length mismatch");
+    if (![m3.length, kg.length].every(l => l === tp.length)) {
+        alert("TP, m³ and KG counts must match");
         return [];
     }
 
     return tp.map((_,i)=>({
         tp: tp[i],
         m3: parseEuroNumber(m3[i]),
-        kg: parseEuroNumber(kg[i]),
-        dest: dest[i]
+        kg: parseEuroNumber(kg[i])
     }));
 }
 
+// ---------- MAIN ----------
 function runOptimization() {
     const items = collectItems();
     if (!items.length) return;
 
     const tpGroups = groupItemsByTP(items);
-    const destGroups = groupTPsByDestination(tpGroups);
-    const trucks = calculateTrucks(destGroups, parseInt(truckCount.value));
+    const trucks = calculateTrucks(tpGroups, parseInt(truckCount.value));
     renderResults(trucks);
 }
 
+// ---------- GROUPING ----------
 function groupItemsByTP(items) {
     const map = new Map();
     items.forEach(i=>{
         if(!map.has(i.tp))
-            map.set(i.tp,{tp:i.tp,dest:i.dest,kg:0,m3:0,tpCount:1});
+            map.set(i.tp,{tp:i.tp,kg:0,m3:0,tpCount:1});
         const g=map.get(i.tp);
-        g.kg+=i.kg; g.m3+=i.m3;
+        g.kg+=i.kg;
+        g.m3+=i.m3;
     });
     return [...map.values()];
 }
 
-function groupTPsByDestination(tps) {
-    const map = new Map();
-    tps.forEach(t=>{
-        if(!map.has(t.dest))
-            map.set(t.dest,{dest:t.dest,kg:0,m3:0,tpCount:0,tpList:[]});
-        const d=map.get(t.dest);
-        d.kg+=t.kg; d.m3+=t.m3; d.tpCount++; d.tpList.push(t);
-    });
-    return [...map.values()];
-}
-
+// ---------- OPTIMIZER ----------
 function calculateTrucks(blocks,n) {
-    const trucks=Array.from({length:n},(_,i)=>({id:i+1,kg:0,m3:0,tpCount:0,blocks:[]}));
+    const trucks=Array.from({length:n},(_,i)=>({
+        id:i+1,kg:0,m3:0,tpCount:0,blocks:[]
+    }));
+
+    // largest volumes first
     blocks.sort((a,b)=>b.m3-a.m3);
+
     blocks.forEach(b=>{
         trucks.sort((a,b)=>a.m3-b.m3);
-        t=trucks[0];
+        const t=trucks[0];
         t.blocks.push(b);
         t.kg+=b.kg;
         t.m3+=b.m3;
         t.tpCount+=b.tpCount;
     });
+
     return trucks;
 }
 
+// ---------- RENDER ----------
 function renderResults(trucks) {
     let html=`<div class="truck-grid">`;
 
     trucks.forEach(t=>{
-        const tpSet = new Set();
-        t.blocks.forEach(b=>b.tpList.forEach(tp=>tpSet.add(tp.tp)));
+        const tpList = t.blocks.map(b=>b.tp).join('\n');
 
         html+=`
         <div class="truck-card">
         <div class="truck-header">
             <strong>Truck ${t.id}</strong>
             <div class="stats">
-                <div class="stat"><span>TP Count</span><span>${tpSet.size}</span></div>
+                <div class="stat"><span>TP Count</span><span>${t.blocks.length}</span></div>
                 <div class="stat"><span>m³</span><span>${t.m3.toFixed(2)}</span></div>
                 <div class="stat"><span>KG</span><span>${t.kg.toFixed(0)}</span></div>
             </div>
-            <div class="tp-list">${[...tpSet].join('\n')}</div>
+            <div class="tp-list">${tpList}</div>
         </div>
         </div>`;
     });
