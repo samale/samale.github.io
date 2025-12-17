@@ -1,71 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="robots" content="noindex, nofollow, noarchive">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code 128 Barcode Generator</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code 128 Barcode Generator with Combined Download</title>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #f4f4f9;
-            margin: 0;
-        }
-        .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 380px;
-        }
-        textarea {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            resize: vertical;
-        }
-        label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            border: none;
-            background-color: #007bff;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #barcodes {
-            margin-top: 20px;
-        }
-        svg {
-            display: block;          /* IMPORTANT FIX */
-            margin: 0 auto 20px;     /* Stack vertically + spacing */
-        }
-        #error {
-            color: red;
-            margin-top: 10px;
-        }
-    </style>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #f4f4f9;
+        margin: 0;
+    }
+    .container {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        text-align: center;
+        width: 400px;
+    }
+    textarea {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        resize: vertical;
+    }
+    label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+    button {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-bottom: 10px;
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+    #barcodes {
+        margin-top: 20px;
+    }
+    svg {
+        display: block;
+        margin: 0 auto 20px;
+    }
+    #error {
+        color: red;
+        margin-top: 10px;
+    }
+</style>
 </head>
 <body>
 
@@ -80,68 +80,107 @@
     </label>
 
     <button id="generate-btn">Generate Barcode</button>
+    <button id="download-btn">Download Barcode(s)</button>
 
     <div id="barcodes"></div>
     <div id="error"></div>
 </div>
 
 <script>
-    const input = document.getElementById("text-input");
-    const button = document.getElementById("generate-btn");
-    const barcodeContainer = document.getElementById("barcodes");
-    const errorMsg = document.getElementById("error");
-    const multipleCheckbox = document.getElementById("multiple-checkbox");
+const input = document.getElementById("text-input");
+const button = document.getElementById("generate-btn");
+const downloadBtn = document.getElementById("download-btn");
+const barcodeContainer = document.getElementById("barcodes");
+const errorMsg = document.getElementById("error");
+const multipleCheckbox = document.getElementById("multiple-checkbox");
 
-    button.addEventListener("click", () => {
-        const text = input.value.trim();
-        barcodeContainer.innerHTML = "";
-        errorMsg.textContent = "";
+// Generate barcodes
+button.addEventListener("click", () => {
+    const text = input.value.trim();
+    barcodeContainer.innerHTML = "";
+    errorMsg.textContent = "";
 
-        if (!text) {
-            errorMsg.textContent = "Please enter a value to generate the barcode.";
-            return;
-        }
+    if (!text) {
+        errorMsg.textContent = "Please enter a value to generate the barcode.";
+        return;
+    }
 
-        try {
-            if (multipleCheckbox.checked) {
-                const lines = text
-                    .split("\n")
-                    .map(line => line.trim())
-                    .filter(Boolean);
-
-                if (lines.length === 0) {
-                    errorMsg.textContent = "Please enter at least one valid line.";
-                    return;
-                }
-
-                lines.forEach(value => {
-                    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                    barcodeContainer.appendChild(svg);
-
-                    JsBarcode(svg, value, {
-                        format: "code128",
-                        lineColor: "#000",
-                        width: 2,
-                        height: 80,
-                        displayValue: true
-                    });
-                });
-            } else {
+    try {
+        if (multipleCheckbox.checked) {
+            const lines = text.split("\n").map(line => line.trim()).filter(Boolean);
+            if (lines.length === 0) {
+                errorMsg.textContent = "Please enter at least one valid line.";
+                return;
+            }
+            lines.forEach(value => {
                 const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                 barcodeContainer.appendChild(svg);
-
-                JsBarcode(svg, text, {
-                    format: "code128",
-                    lineColor: "#000",
-                    width: 2,
-                    height: 80,
-                    displayValue: true
-                });
-            }
-        } catch (e) {
-            errorMsg.textContent = "Error generating barcode(s).";
+                JsBarcode(svg, value, { format: "code128", lineColor: "#000", width: 2, height: 80, displayValue: true });
+            });
+        } else {
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            barcodeContainer.appendChild(svg);
+            JsBarcode(svg, text, { format: "code128", lineColor: "#000", width: 2, height: 80, displayValue: true });
         }
+    } catch (e) {
+        errorMsg.textContent = "Error generating barcode(s).";
+    }
+});
+
+// Download barcodes (single or combined)
+downloadBtn.addEventListener("click", () => {
+    const svgs = barcodeContainer.querySelectorAll("svg");
+    if (svgs.length === 0) {
+        errorMsg.textContent = "No barcodes to download. Please generate first.";
+        return;
+    }
+
+    // Convert each SVG to an image and calculate total height
+    const images = [];
+    let totalHeight = 0;
+    let maxWidth = 0;
+
+    svgs.forEach(svg => {
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const img = new Image();
+        img.src = "data:image/svg+xml;base64," + btoa(svgData);
+        images.push(img);
+        const bbox = svg.getBBox();
+        totalHeight += bbox.height || 100;
+        if ((bbox.width || 300) > maxWidth) maxWidth = bbox.width || 300;
     });
+
+    // Wait for all images to load
+    let loadedCount = 0;
+    images.forEach(img => {
+        img.onload = () => {
+            loadedCount++;
+            if (loadedCount === images.length) {
+                // Draw all images onto one canvas
+                const canvas = document.createElement("canvas");
+                canvas.width = maxWidth + 20; // small padding
+                canvas.height = totalHeight + 20 * images.length; // add spacing between barcodes
+                const ctx = canvas.getContext("2d");
+                ctx.fillStyle = "#ffffff"; // white background
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                let yOffset = 10; // start with some padding
+                images.forEach(img => {
+                    ctx.drawImage(img, 10, yOffset); // draw with left padding
+                    yOffset += img.height + 20; // space between barcodes
+                });
+
+                const pngFile = canvas.toDataURL("image/png");
+                const link = document.createElement("a");
+                link.href = pngFile;
+                link.download = svgs.length === 1 ? "barcode.png" : "barcodes.png";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        };
+    });
+});
 </script>
 
 </body>
