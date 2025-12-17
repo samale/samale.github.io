@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="robots" content="noindex, nofollow, noarchive">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Truck Load Optimizer — TP-adjusted</title>
+<title>Truck Load Optimizer</title>
 
 <style>
 :root { --primary:#2563eb; --bg:#f8fafc; --card:#fff; --border:#e2e8f0; --text:#1e293b; }
@@ -39,13 +40,16 @@ button:hover { opacity:0.9; }
     white-space:pre-wrap;
     font-family:monospace;
 }
+
+.status { display:inline-block; padding:0.4rem 0.8rem; border-radius:99px; font-size:0.8rem; font-weight:600; margin-bottom:1rem; }
+.ok { background:#dcfce7; color:#166534; }
 </style>
 </head>
 
 <body>
 
 <h1>Truck Load Optimizer</h1>
-<p class="subtitle">Balanced m³ adjusted per TP</p>
+<p class="subtitle">Higher TP Count → Lower m³</p>
 
 <div class="container">
 
@@ -82,7 +86,9 @@ button:hover { opacity:0.9; }
 <script>
 // ---------- HELPERS ----------
 function parseEuroNumber(v) {
-    return parseFloat(v.replace(/\./g,'').replace(',','.'));
+    return parseFloat(
+        v.replace(/\./g,'').replace(',','.')
+    );
 }
 
 function collectItems() {
@@ -107,8 +113,8 @@ function runOptimization() {
     const items = collectItems();
     if (!items.length) return;
 
-    const blocks = groupItemsByTP(items);
-    const trucks = calculateTrucks(blocks, parseInt(truckCount.value));
+    const tpGroups = groupItemsByTP(items);
+    const trucks = calculateTrucks(tpGroups, parseInt(truckCount.value));
     renderResults(trucks);
 }
 
@@ -117,35 +123,30 @@ function groupItemsByTP(items) {
     const map = new Map();
     items.forEach(i=>{
         if(!map.has(i.tp))
-            map.set(i.tp,{tp:i.tp,kg:0,m3:0});
-        const g = map.get(i.tp);
-        g.kg += i.kg;
-        g.m3 += i.m3;
+            map.set(i.tp,{tp:i.tp,kg:0,m3:0,tpCount:1});
+        const g=map.get(i.tp);
+        g.kg+=i.kg;
+        g.m3+=i.m3;
     });
     return [...map.values()];
 }
 
-// ---------- OPTIMIZER (TP-adjusted m³) ----------
-function calculateTrucks(blocks, n) {
-    const trucks = Array.from({length:n},(_,i)=>({
-        id:i+1,m3:0,kg:0,blocks:[]
+// ---------- OPTIMIZER ----------
+function calculateTrucks(blocks,n) {
+    const trucks=Array.from({length:n},(_,i)=>({
+        id:i+1,kg:0,m3:0,tpCount:0,blocks:[]
     }));
 
-    // Sort largest m³ first
-    blocks.sort((a,b)=>b.m3 - a.m3);
+    // largest volumes first
+    blocks.sort((a,b)=>b.m3-a.m3);
 
-    blocks.forEach(block=>{
-        // Score: m³ divided by (TP count + 1)
-        trucks.sort((a,b)=>{
-            const loadA = a.m3 / (a.blocks.length + 1);
-            const loadB = b.m3 / (b.blocks.length + 1);
-            return loadA - loadB;
-        });
-
-        const t = trucks[0];
-        t.blocks.push(block);
-        t.m3 += block.m3;
-        t.kg += block.kg;
+    blocks.forEach(b=>{
+        trucks.sort((a,b)=>a.m3-b.m3);
+        const t=trucks[0];
+        t.blocks.push(b);
+        t.kg+=b.kg;
+        t.m3+=b.m3;
+        t.tpCount+=b.tpCount;
     });
 
     return trucks;
@@ -153,26 +154,26 @@ function calculateTrucks(blocks, n) {
 
 // ---------- RENDER ----------
 function renderResults(trucks) {
-    let html = `<div class="truck-grid">`;
+    let html=`<div class="truck-grid">`;
 
     trucks.forEach(t=>{
         const tpList = t.blocks.map(b=>b.tp).join('\n');
 
-        html += `
+        html+=`
         <div class="truck-card">
-            <div class="truck-header">
-                <strong>Truck ${t.id}</strong>
-                <div class="stats">
-                    <div class="stat"><span>TPs</span><span>${t.blocks.length}</span></div>
-                    <div class="stat"><span>m³</span><span>${t.m3.toFixed(2)}</span></div>
-                    <div class="stat"><span>KG</span><span>${t.kg.toFixed(0)}</span></div>
-                </div>
-                <div class="tp-list">${tpList}</div>
+        <div class="truck-header">
+            <strong>Truck ${t.id}</strong>
+            <div class="stats">
+                <div class="stat"><span>TP Count</span><span>${t.blocks.length}</span></div>
+                <div class="stat"><span>m³</span><span>${t.m3.toFixed(2)}</span></div>
+                <div class="stat"><span>KG</span><span>${t.kg.toFixed(0)}</span></div>
             </div>
+            <div class="tp-list">${tpList}</div>
+        </div>
         </div>`;
     });
 
-    outputArea.innerHTML = html + `</div>`;
+    outputArea.innerHTML=html+"</div>";
 }
 </script>
 
