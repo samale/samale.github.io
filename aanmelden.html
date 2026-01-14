@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <meta charset="UTF-8">
+    <title>B&S – Pallet Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        .drop-zone {
+            max-width: 600px;
+            margin: 20px auto;
+            border: 2px dashed #007bff;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .drop-zone.dragover {
+            background-color: #f0f8ff;
+        }
+
+        .transport {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .transport h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Pallet Calculator</h1>
+
+<div class="drop-zone" id="dropZone">
+    Drag & drop Excel or CSV file here<br>
+    or click to select
+    <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" hidden>
+</div>
+
+<div class="status" id="status"></div>
+<div id="output"></div>
+
+<script>
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+const status = document.getElementById("status");
+const output = document.getElementById("output");
+
+dropZone.addEventListener("click", () => fileInput.click());
+
+dropZone.addEventListener("dragover", e => {
+    e.preventDefault();
+    dropZone.classList.add("dragover");
+});
+
+dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("dragover");
+});
+
+dropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    dropZone.classList.remove("dragover");
+    handleFile(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener("change", e => handleFile(e.target.files[0]));
+
+function handleFile(file) {
+    if (!file) return;
+    status.textContent = "Processing file...";
+
+    if (file.name.toLowerCase().endsWith(".csv")) {
+        Papa.parse(file, {
+            skipEmptyLines: true,
+            complete: res => processData(res.data)
+        });
+    } else {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const wb = XLSX.read(new Uint8Array(e.target.result), { type: "array" });
+            const sheet = wb.Sheets[wb.SheetNames[0]];
+            const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            processData(data);
+        };
+        reader.readAsArrayBuffer(file);
+    }
+}
+
+function parseEuroNumber(value) {
+    if (typeof value === "number") return value;
+    return parseFloat(
+        String(value)
+            .replace(/\./g, "")
+            .replace(",", ".")
+    ) || 0;
+}
+
+function parseExcelDate(value) {
+    if (typeof value === "number") {
+        const d = XLSX.SSF.parse_date_code(value);
+        if (!d) return "";
+        return `${String(d.d).padStart(2, "0")}-${String(d.m).padStart(2, "0")}-${d.y}`;
+    }
+    return value || "";
+}
+
+function shipmentType(identifier) {
+    if (identifier === "GTC") return "Dry";
+    if (identifier === "GTC/K") return "Chilled";
+    if (identifier === "GTC/V") return "Frozen";
+    if (identifier === "NO9/GTC/V") return "VE";
+    return null;
+}
+
+function processData(rows) {
+    const headers = rows[1];
+    const dataRows = rows.slice(2);
+
+    const idx = {
+        shipmentId: headers.indexOf("Shipment identifier"),
+        transportNo: headers.indexOf("Transport no."),
+        deliveryDate: headers.indexOf("Delivery date customer"),
+        destination: headers.indexOf("Destination"),
+        kg: headers.indexOf("Expected kg gross"),
+        m3: headers.indexOf("Expected mtr3")
+    };
+
+    const transports = {};
+
+    dataRows.forEach(r => {
+        const tNo = r[idx.transportNo];
+        const type = shipmentType(r[idx.shipmentId]);
+        if (!tNo || !type) return;
+
+        if (!transports[tNo]) {
+            transports[tNo] = {
+                destination: r[idx.destination],
+                deliveryDate: parseExcelDate(r[idx.deliveryDate]),
+                shipments: {}
+            };
+        }
+
+        if (!transports[tNo].shipments[type]) {
+            transports[tNo].shipments[type] = { kg: 0, m3: 0 };
+        }
+
+        transports[tNo].shipments[type].kg += parseEuroNumber(r[idx.kg]);
+        transports[tNo].shipments[type].m3 += parseEuroNumber(r[idx.m3]);
+    });
+
+    render(transports);
+}
+
+function render(transports) {
+    output.innerHTML = "";
+    status.textContent = "Calculation complete";
+
+    Object.entries(transports).forEach(([no, t]) => {
+        const div = document.createElement("div");
+        div.className = "transport";
+
+        div.innerHTML = `
+            <h3>${no} / ${t.destination} / Delivery customer ${t.deliveryDate}</h3>
+            <table>
+                <tr>
+                    <th>Type</th>
+                    <th>Kg Gross</th>
+                    <th>Mtr3</th>
+                    <th>Pallets</th>
+                </tr>
+                ${Object.entries(t.shipments).map(([type, v]) => `
+                    <tr>
+                        <td>${type}</td>
+                        <td>${v.kg.toFixed(2)}</td>
+                        <td>${v.m3.toFixed(2)}</td>
+                        <td>${Math.ceil(v.kg / 700)}</td>
+                    </tr>
+                `).join("")}
+            </table>
+        `;
+
+        output.appendChild(div);
+    });
+}
+</script>
+
+</body>
+</html>
