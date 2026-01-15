@@ -1,96 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="robots" content="noindex, nofollow, noarchive">
-    <meta charset="UTF-8">
-    <title>B&S – Pallet Calculator/Aanmelden</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta charset="UTF-8">
+<title>B&S – Pallet Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-    <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-        }
-
-        h1 {
-            text-align: center;
-            color: #007bff;
-        }
-
-        .drop-zone {
-            max-width: 600px;
-            margin: 20px auto;
-            border: 2px dashed #007bff;
-            border-radius: 8px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .drop-zone.dragover {
-            background-color: #f0f8ff;
-        }
-
-        .buttons {
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .buttons button {
-            margin: 0 10px;
-            padding: 10px 20px;
-            font-size: 15px;
-            cursor: pointer;
-        }
-
-        .transport {
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #007bff;
-            color: white;
-        }
-
-        .status {
-            text-align: center;
-            margin-top: 15px;
-            font-weight: bold;
-        }
-    </style>
+<style>
+body { font-family: Arial, sans-serif; padding: 20px; }
+h1 { text-align: center; color: #007bff; }
+.drop-zone {
+    max-width: 600px; margin: 20px auto;
+    border: 2px dashed #007bff; border-radius: 8px;
+    padding: 40px; text-align: center; cursor: pointer;
+}
+.drop-zone.dragover { background-color: #f0f8ff; }
+.buttons { text-align: center; margin: 20px 0; }
+.buttons button { margin: 0 10px; padding: 10px 20px; cursor: pointer; }
+.transport {
+    border: 1px solid #ddd; border-radius: 6px;
+    padding: 15px; margin-bottom: 20px;
+}
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+th { background-color: #007bff; color: white; }
+.status { text-align: center; font-weight: bold; margin-top: 15px; }
+.sump-btn { margin-top: 10px; }
+</style>
 </head>
+
 <body>
 
-<h1>Pallet Calculator</h1>
+<h1>Pallet Calculator/Aanmelden</h1>
 
 <div class="drop-zone" id="dropZone">
-    Drag & drop Excel file here<br>
+    Drag & drop Excel or CSV file here<br>
     or click to select
     <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" hidden>
 </div>
 
 <div class="buttons">
     <button onclick="filterMeeder()">Meeder</button>
-    <button disabled>Sump</button>
+    <button onclick="filterSump()">Sump</button>
 </div>
 
 <div class="status" id="status"></div>
@@ -98,26 +51,25 @@
 
 <script>
 let allTransports = {};
+let currentView = "all";
 
 const dropZone = document.getElementById("dropZone");
 const fileInput = document.getElementById("fileInput");
 const status = document.getElementById("status");
 const output = document.getElementById("output");
 
-dropZone.addEventListener("click", () => fileInput.click());
-dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("dragover"); });
-dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
-dropZone.addEventListener("drop", e => {
-    e.preventDefault();
-    dropZone.classList.remove("dragover");
+dropZone.onclick = () => fileInput.click();
+dropZone.ondragover = e => { e.preventDefault(); dropZone.classList.add("dragover"); };
+dropZone.ondragleave = () => dropZone.classList.remove("dragover");
+dropZone.ondrop = e => {
+    e.preventDefault(); dropZone.classList.remove("dragover");
     handleFile(e.dataTransfer.files[0]);
-});
-fileInput.addEventListener("change", e => handleFile(e.target.files[0]));
+};
+fileInput.onchange = e => handleFile(e.target.files[0]);
 
 function handleFile(file) {
     if (!file) return;
     status.textContent = "Processing file...";
-
     const reader = new FileReader();
     reader.onload = e => {
         const wb = XLSX.read(new Uint8Array(e.target.result), { type: "array" });
@@ -185,60 +137,122 @@ function processData(rows) {
         allTransports[no].shipments[type].m3 += parseEuroNumber(r[idx.m3]);
     });
 
+    currentView = "all";
     render(allTransports);
     status.textContent = "Calculation complete";
 }
 
 function render(transports) {
     output.innerHTML = "";
+
     Object.entries(transports).forEach(([no, t]) => {
+        let sumpButton = "";
+        if (currentView === "sump" && t.destination.toLowerCase().includes("sump")) {
+            sumpButton = `
+<div class="sump-btn">
+<button onclick="exportSumpExcel('${no}')">Send to Sump</button>
+</div>`;
+        }
+
         const div = document.createElement("div");
         div.className = "transport";
-
         div.innerHTML = `
-            <strong>${no} / ${t.destination} / Delivery customer ${t.deliveryDate}</strong>
-            <table>
-                <tr><th>Type</th><th>Kg</th><th>Mtr3</th><th>Pallets</th></tr>
-                ${Object.entries(t.shipments).map(([type,v]) => {
-                    let pallets = Math.round(v.m3 / 1.4);
-                    if (pallets < 1) pallets = 1;
-                    return `
-                    <tr>
-                        <td>${type}</td>
-                        <td>${v.kg.toFixed(2)}</td>
-                        <td>${v.m3.toFixed(2)}</td>
-                        <td>${pallets}</td>
-                    </tr>`;
-                }).join("")}
-            </table>
-        `;
+<strong>${no} / ${t.destination} / Delivery customer ${t.deliveryDate}</strong>
+${sumpButton}
+<table>
+<tr><th>Type</th><th>Kg</th><th>Mtr3</th><th>Pallets</th></tr>
+${Object.entries(t.shipments).map(([type,v]) => {
+    let pallets = Math.round(v.m3 / 1.4);
+    if (pallets < 1) pallets = 1;
+    return `
+<tr>
+<td>${type}</td>
+<td>${v.kg.toFixed(2)}</td>
+<td>${v.m3.toFixed(2)}</td>
+<td>${pallets}</td>
+</tr>`;
+}).join("")}
+</table>`;
         output.appendChild(div);
     });
 }
 
 function filterMeeder() {
+    currentView = "meeder";
     const filtered = {};
     let emailText = `Hi,\n\nWanneer laden? Graag per boot opgeven:\n\n`;
 
     Object.entries(allTransports).forEach(([no, t]) => {
         if (t.destination.toLowerCase().includes("meeder")) {
             filtered[no] = t;
-
             emailText += `${no} / ${t.destination} / Delivery customer ${t.deliveryDate}\n`;
             Object.entries(t.shipments).forEach(([type,v]) => {
                 let pallets = Math.round(v.m3 / 1.4);
                 if (pallets < 1) pallets = 1;
-                emailText += `- ${type}: ${v.kg.toFixed(2)} kg / ${v.m3.toFixed(2)} m3 / ${pallets} pallets\n`;
+                emailText += `- ${type}: ${v.kg.toFixed(2)} kg / ${pallets} pallets\n`;
             });
-            emailText += `\n`;
+            emailText += "\n";
         }
     });
 
     render(filtered);
     status.textContent = "Meeder transports filtered & email generated";
+    window.location.href =
+        `mailto:export@europeancruiselogistics.com?body=${encodeURIComponent(emailText)}`;
+}
 
-    const mailto = `mailto:export@europeancruiselogistics.com?body=${encodeURIComponent(emailText)}`;
-    window.location.href = mailto;
+function filterSump() {
+    currentView = "sump";
+    const filtered = {};
+    Object.entries(allTransports).forEach(([no, t]) => {
+        if (t.destination.toLowerCase().includes("sump")) {
+            filtered[no] = t;
+        }
+    });
+    render(filtered);
+    status.textContent = "Sump transports filtered";
+}
+
+function exportSumpExcel(transportNo) {
+    const t = allTransports[transportNo];
+    if (!t) return;
+
+    const rows = [[
+        "date of delivery at Sump & Stammer",
+        "range of temperature",
+        "PO-number",
+        "company name",
+        "reference",
+        "total (gross weight)",
+        "T1/EXA",
+        "number of pallets"
+    ]];
+
+    ["Dry","Chilled","Frozen"].forEach(type => {
+        const v = t.shipments[type];
+        if (!v) return;
+
+        let pallets = Math.round(v.m3 / 1.4);
+        if (pallets < 1) pallets = 1;
+
+        rows.push([
+            "",
+            type,
+            "",
+            "B&S",
+            "will follow from S&S",
+            v.kg,
+            "ALL",
+            pallets
+        ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sump");
+
+    XLSX.writeFile(wb, `SUMP_${transportNo}.xlsx`);
+    status.textContent = `Excel file generated for transport ${transportNo}`;
 }
 </script>
 
