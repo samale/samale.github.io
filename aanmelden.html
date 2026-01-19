@@ -3,7 +3,7 @@
 <head>
     <meta name="robots" content="noindex, nofollow, noarchive">
     <meta charset="UTF-8">
-    <title>B&S – Pallet Calculator</title>
+    <title>B&S – Pallet Calculator/ Aanmelden</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -25,7 +25,7 @@
 </head>
 <body>
 
-<h1>Pallet Calculator</h1>
+<h1>Pallet Calculator/Aanmelden</h1>
 
 <div class="drop-zone" id="dropZone">
     Drag & drop Excel file here<br>
@@ -89,7 +89,7 @@ function shipmentType(id){
     return null;
 }
 
-/* ✅ FINAL PALLET LOGIC */
+
 function calculatePallets(m3){
     if (m3 <= 1.5) return 1;
     return Math.max(2, Math.round(m3 / 1.4));
@@ -159,7 +159,6 @@ function render(transports){
     });
 }
 
-/* ---------------- Meeder ---------------- */
 function filterMeeder(){
     const filtered = {};
     let emailText = `Hi,\n\nWanneer laden? Graag per boot opgeven:\n\n`;
@@ -191,7 +190,6 @@ function filterMeeder(){
     window.location.href=`mailto:export@europeancruiselogistics.com?body=${encodeURIComponent(emailText)}`;
 }
 
-/* ---------------- Sump ---------------- */
 function filterSump(){
     const filtered={};
     Object.entries(allTransports).forEach(([no,t])=>{
@@ -228,7 +226,6 @@ function filterSump(){
     status.textContent="Sump transports filtered";
 }
 
-/* ---------------- Export Sump Excel ---------------- */
 function exportSumpExcel(transportNo){
     const t = allTransports[transportNo];
     if(!t) return;
