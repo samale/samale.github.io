@@ -181,12 +181,12 @@ function filterMeeder(){
     render(filtered);
     status.textContent="Meeder transports filtered & email generated";
 
-    // Popup with all transport numbers separated by ;
+    
     if(transportNumbers.length > 0){
         window.prompt("Copy all Meeder transport numbers:", transportNumbers.join(";"));
     }
 
-    // Existing email export
+    
     window.location.href=`mailto:export@europeancruiselogistics.com?body=${encodeURIComponent(emailText)}`;
 }
 
