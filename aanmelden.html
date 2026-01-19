@@ -3,7 +3,7 @@
 <head>
     <meta name="robots" content="noindex, nofollow, noarchive">
     <meta charset="UTF-8">
-    <title>B&S – Pallet Calculator/Aanmelden</title>
+    <title>B&S – Pallet Calculator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -25,7 +25,7 @@
 </head>
 <body>
 
-<h1>Pallet Calculator/Aanmelden</h1>
+<h1>Pallet Calculator</h1>
 
 <div class="drop-zone" id="dropZone">
     Drag & drop Excel file here<br>
@@ -89,6 +89,7 @@ function shipmentType(id){
     return null;
 }
 
+/* ✅ FINAL PALLET LOGIC */
 function calculatePallets(m3){
     if (m3 <= 1.5) return 1;
     return Math.max(2, Math.round(m3 / 1.4));
@@ -129,8 +130,6 @@ function processData(rows){
 
         allTransports[no].shipments[type].kg+=parseEuroNumber(r[idx.kg]);
         allTransports[no].shipments[type].m3+=parseEuroNumber(r[idx.m3]);
-
-        // store transport shipment for Meeder export
         allTransports[no].shipments[type].transportShipment = r[idx.transportShipment] || "";
     });
 
@@ -160,15 +159,18 @@ function render(transports){
     });
 }
 
+/* ---------------- Meeder ---------------- */
 function filterMeeder(){
     const filtered = {};
     let emailText = `Hi,\n\nWanneer laden? Graag per boot opgeven:\n\n`;
+    const transportNumbers = [];
 
     Object.entries(allTransports)
         .sort((a,b)=>new Date(a[1].deliveryDate.split("-").reverse().join("-")) - new Date(b[1].deliveryDate.split("-").reverse().join("-")))
         .forEach(([no,t])=>{
             if(t.destination.toLowerCase().includes("meeder")){
                 filtered[no] = t;
+                transportNumbers.push(no);
                 emailText += `${no} / ${t.destination} / Delivery customer ${t.deliveryDate}\n`;
                 Object.entries(t.shipments).forEach(([type,v])=>{
                     emailText += `- ${no}-${v.transportShipment} ${type}: ${v.kg.toFixed(2)} kg / ${v.m3.toFixed(2)} m3 / ${calculatePallets(v.m3)} pallets\n`;
@@ -179,9 +181,17 @@ function filterMeeder(){
 
     render(filtered);
     status.textContent="Meeder transports filtered & email generated";
+
+    // Popup with all transport numbers separated by ;
+    if(transportNumbers.length > 0){
+        window.prompt("Copy all Meeder transport numbers:", transportNumbers.join(";"));
+    }
+
+    // Existing email export
     window.location.href=`mailto:export@europeancruiselogistics.com?body=${encodeURIComponent(emailText)}`;
 }
 
+/* ---------------- Sump ---------------- */
 function filterSump(){
     const filtered={};
     Object.entries(allTransports).forEach(([no,t])=>{
@@ -218,6 +228,7 @@ function filterSump(){
     status.textContent="Sump transports filtered";
 }
 
+/* ---------------- Export Sump Excel ---------------- */
 function exportSumpExcel(transportNo){
     const t = allTransports[transportNo];
     if(!t) return;
