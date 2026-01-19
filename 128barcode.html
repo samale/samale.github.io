@@ -94,7 +94,6 @@ const barcodeContainer = document.getElementById("barcodes");
 const errorMsg = document.getElementById("error");
 const multipleCheckbox = document.getElementById("multiple-checkbox");
 
-// Generate barcodes
 button.addEventListener("click", () => {
     const text = input.value.trim();
     barcodeContainer.innerHTML = "";
@@ -127,7 +126,6 @@ button.addEventListener("click", () => {
     }
 });
 
-// Download barcodes (single or combined)
 downloadBtn.addEventListener("click", () => {
     const svgs = barcodeContainer.querySelectorAll("svg");
     if (svgs.length === 0) {
@@ -135,7 +133,6 @@ downloadBtn.addEventListener("click", () => {
         return;
     }
 
-    // Convert each SVG to an image and calculate total height
     const images = [];
     let totalHeight = 0;
     let maxWidth = 0;
@@ -150,7 +147,6 @@ downloadBtn.addEventListener("click", () => {
         if ((bbox.width || 300) > maxWidth) maxWidth = bbox.width || 300;
     });
 
-    // Wait for all images to load
     let loadedCount = 0;
     images.forEach(img => {
         img.onload = () => {
@@ -164,7 +160,7 @@ downloadBtn.addEventListener("click", () => {
                 ctx.fillStyle = "#ffffff"; // white background
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                let yOffset = 10; // start with some padding
+                let yOffset = 10; 
                 images.forEach(img => {
                     ctx.drawImage(img, 10, yOffset); // draw with left padding
                     yOffset += img.height + 20; // space between barcodes
