@@ -3,7 +3,7 @@
 <head>
     <meta name="robots" content="noindex, nofollow, noarchive">
     <meta charset="UTF-8">
-    <title>B&S – Pallet Calculator</title>
+    <title>B&S – Pallet Calculator/Aanmelden</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -25,7 +25,7 @@
 </head>
 <body>
 
-<h1>Pallet Calculator</h1>
+<h1>Pallet Calculator/Aanmelden</h1>
 
 <div class="drop-zone" id="dropZone">
     Drag & drop Excel file here<br>
@@ -68,35 +68,72 @@ function handleFile(file){
     reader.readAsArrayBuffer(file);
 }
 
-function parseEuroNumber(v){ if(typeof v==="number") return v; return parseFloat(String(v).replace(/\./g,"").replace(",", ".")) || 0; }
-function parseExcelDate(v){ if(typeof v==="number"){ const d=XLSX.SSF.parse_date_code(v); return `${String(d.d).padStart(2,"0")}-${String(d.m).padStart(2,"0")}-${d.y}`; } return v||""; }
-function shipmentType(id){ if(id==="GTC") return "Dry"; if(id==="GTC/K") return "Chilled"; if(id==="GTC/V") return "Frozen"; if(id==="NO9/GTC/V") return "VE"; return null; }
+function parseEuroNumber(v){
+    if(typeof v==="number") return v;
+    return parseFloat(String(v).replace(/\./g,"").replace(",", ".")) || 0;
+}
+
+function parseExcelDate(v){
+    if(typeof v==="number"){
+        const d=XLSX.SSF.parse_date_code(v);
+        return `${String(d.d).padStart(2,"0")}-${String(d.m).padStart(2,"0")}-${d.y}`;
+    }
+    return v||"";
+}
+
+function shipmentType(id){
+    if(id==="GTC") return "Dry";
+    if(id==="GTC/K") return "Chilled";
+    if(id==="GTC/V") return "Frozen";
+    if(id==="NO9/GTC/V") return "VE";
+    return null;
+}
+
+function calculatePallets(m3){
+    if (m3 <= 1.5) return 1;
+    return Math.max(2, Math.round(m3 / 1.4));
+}
 
 function processData(rows){
     const headers = rows[1];
     const data = rows.slice(2);
+
     const idx = {
         shipment: headers.indexOf("Shipment identifier"),
         transport: headers.indexOf("Transport no."),
+        transportShipment: headers.indexOf("Transport shipment"),
         date: headers.indexOf("Delivery date customer"),
         destination: headers.indexOf("Destination"),
         kg: headers.indexOf("Expected kg gross"),
         m3: headers.indexOf("Expected mtr3")
     };
-    allTransports={};
+
+    allTransports = {};
+
     data.forEach(r=>{
         const no=r[idx.transport];
         const type=shipmentType(r[idx.shipment]);
         if(!no || !type) return;
+
         if(!allTransports[no]){
-            allTransports[no]={destination:r[idx.destination], deliveryDate:parseExcelDate(r[idx.date]), shipments:{}};
+            allTransports[no]={
+                destination:r[idx.destination],
+                deliveryDate:parseExcelDate(r[idx.date]),
+                shipments:{}
+            };
         }
+
         if(!allTransports[no].shipments[type]){
             allTransports[no].shipments[type]={kg:0,m3:0};
         }
+
         allTransports[no].shipments[type].kg+=parseEuroNumber(r[idx.kg]);
         allTransports[no].shipments[type].m3+=parseEuroNumber(r[idx.m3]);
+
+        // store transport shipment for Meeder export
+        allTransports[no].shipments[type].transportShipment = r[idx.transportShipment] || "";
     });
+
     render(allTransports);
     status.textContent="Calculation complete";
 }
@@ -106,41 +143,45 @@ function render(transports){
     Object.entries(transports).forEach(([no,t])=>{
         const div=document.createElement("div");
         div.className="transport";
-        div.innerHTML=`
-            <strong>${no} / ${t.destination} / Delivery customer ${t.deliveryDate}</strong>
+        div.innerHTML=`<strong>${no} / ${t.destination} / Delivery customer ${t.deliveryDate}</strong>
             <table>
                 <tr><th>Type</th><th>Kg</th><th>M3</th><th>Pallets</th></tr>
-                ${Object.entries(t.shipments).map(([type,v])=>{
-                    let pallets=Math.round(v.m3/1.4); if(pallets<1) pallets=1;
-                    return `<tr><td>${type}</td><td>${v.kg.toFixed(2)}</td><td>${v.m3.toFixed(2)}</td><td>${pallets}</td></tr>`;
-                }).join("")}
+                ${Object.entries(t.shipments).map(([type,v])=>`
+                    <tr>
+                        <td>${type}</td>
+                        <td>${v.kg.toFixed(2)}</td>
+                        <td>${v.m3.toFixed(2)}</td>
+                        <td>${calculatePallets(v.m3)}</td>
+                    </tr>
+                `).join("")}
             </table>
         `;
         output.appendChild(div);
     });
 }
 
-// ---------------- Meeder ----------------
 function filterMeeder(){
-    const filtered={};
-    let emailText=`Hi,\n\nWanneer laden? Graag per boot opgeven:\n\n`;
-    Object.entries(allTransports).forEach(([no,t])=>{
-        if(t.destination.toLowerCase().includes("meeder")){
-            filtered[no]=t;
-            emailText+=`${no} / ${t.destination} / Delivery customer ${t.deliveryDate}\n`;
-            Object.entries(t.shipments).forEach(([type,v])=>{
-                let pallets=Math.round(v.m3/1.4); if(pallets<1) pallets=1;
-                emailText+=`- ${type}: ${v.kg.toFixed(2)} kg / ${v.m3.toFixed(2)} m3 / ${pallets} pallets\n`;
-            });
-            emailText+="\n";
-        }
-    });
+    const filtered = {};
+    let emailText = `Hi,\n\nWanneer laden? Graag per boot opgeven:\n\n`;
+
+    Object.entries(allTransports)
+        .sort((a,b)=>new Date(a[1].deliveryDate.split("-").reverse().join("-")) - new Date(b[1].deliveryDate.split("-").reverse().join("-")))
+        .forEach(([no,t])=>{
+            if(t.destination.toLowerCase().includes("meeder")){
+                filtered[no] = t;
+                emailText += `${no} / ${t.destination} / Delivery customer ${t.deliveryDate}\n`;
+                Object.entries(t.shipments).forEach(([type,v])=>{
+                    emailText += `- ${no}-${v.transportShipment} ${type}: ${v.kg.toFixed(2)} kg / ${v.m3.toFixed(2)} m3 / ${calculatePallets(v.m3)} pallets\n`;
+                });
+                emailText += "Loading date:\n\n";
+            }
+        });
+
     render(filtered);
     status.textContent="Meeder transports filtered & email generated";
     window.location.href=`mailto:export@europeancruiselogistics.com?body=${encodeURIComponent(emailText)}`;
 }
 
-// ---------------- Sump ----------------
 function filterSump(){
     const filtered={};
     Object.entries(allTransports).forEach(([no,t])=>{
@@ -148,36 +189,40 @@ function filterSump(){
             filtered[no]=t;
         }
     });
+
     output.innerHTML="";
     Object.entries(filtered).forEach(([no,t])=>{
         const div=document.createElement("div");
         div.className="transport";
-        div.innerHTML=`
-            <strong>${no} / ${t.destination} / Delivery customer ${t.deliveryDate}</strong>
+        div.innerHTML=`<strong>${no} / ${t.destination} / Delivery customer ${t.deliveryDate}</strong>
             <table>
                 <tr><th>Type</th><th>Kg</th><th>M3</th><th>Pallets</th></tr>
-                ${Object.entries(t.shipments).map(([type,v])=>{
-                    let pallets=Math.round(v.m3/1.4); if(pallets<1) pallets=1;
-                    return `<tr><td>${type}</td><td>${v.kg.toFixed(2)}</td><td>${v.m3.toFixed(2)}</td><td>${pallets}</td></tr>`;
-                }).join("")}
+                ${Object.entries(t.shipments).map(([type,v])=>`
+                    <tr>
+                        <td>${type}</td>
+                        <td>${v.kg.toFixed(2)}</td>
+                        <td>${v.m3.toFixed(2)}</td>
+                        <td>${calculatePallets(v.m3)}</td>
+                    </tr>
+                `).join("")}
             </table>
         `;
         const btn=document.createElement("button");
         btn.textContent="Send to Sump";
         btn.className="send-button";
-        btn.onclick=()=>exportSumpExcel(no);
+        btn.onclick = ()=> exportSumpExcel(no);
         div.appendChild(btn);
         output.appendChild(div);
     });
+
     status.textContent="Sump transports filtered";
 }
 
-// ---------------- Export Sump Excel (original layout) with formatting ----------------
 function exportSumpExcel(transportNo){
-    const t=allTransports[transportNo];
+    const t = allTransports[transportNo];
     if(!t) return;
 
-    const rows=[[
+    const rows = [[
         "date of delivery at Sump & Stammer",
         "range of temperature",
         "PO-number",
@@ -188,10 +233,10 @@ function exportSumpExcel(transportNo){
         "number of pallets"
     ]];
 
-    ["Dry","Chilled","Frozen"].forEach(type=>{
-        const v=t.shipments[type];
+    ["Dry","Chilled","Frozen","VE"].forEach(type=>{
+        const v = t.shipments[type];
         if(!v) return;
-        let pallets=Math.round(v.m3/1.4); if(pallets<1) pallets=1;
+        let pallets = calculatePallets(v.m3);
         rows.push([
             "",
             type,
@@ -204,10 +249,8 @@ function exportSumpExcel(transportNo){
         ]);
     });
 
-    const ws=XLSX.utils.aoa_to_sheet(rows);
-
-    // Formatting: center, borders, auto-width
-    const range=XLSX.utils.decode_range(ws['!ref']);
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const range = XLSX.utils.decode_range(ws['!ref']);
     for(let R=range.s.r; R<=range.e.r; ++R){
         for(let C=range.s.c; C<=range.e.c; ++C){
             const cell_address=XLSX.utils.encode_cell({r:R,c:C});
@@ -224,10 +267,10 @@ function exportSumpExcel(transportNo){
         }
     }
 
-    const colWidths=rows[0].map((_,i)=>({wch: Math.max(...rows.map(r=>r[i]?String(r[i]).length:0))+2}));
-    ws['!cols']=colWidths;
+    const colWidths = rows[0].map((_,i)=>({wch: Math.max(...rows.map(r=>r[i]?String(r[i]).length:0))+2}));
+    ws['!cols'] = colWidths;
 
-    const wb=XLSX.utils.book_new();
+    const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, transportNo);
     XLSX.writeFile(wb, `Sump_${transportNo}.xlsx`, {bookType:"xlsx", cellStyles:true});
     status.textContent=`Excel for ${transportNo} generated!`;
