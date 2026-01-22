@@ -81,7 +81,6 @@ function parseExcelDate(v){
     return v||"";
 }
 
-/* ONLY CHANGE: extra shipment identifiers */
 function shipmentType(id){
     if(id==="GTC") return { type:"Dry", remark:"" };
     if(id==="GTC/K") return { type:"Chilled", remark:"" };
