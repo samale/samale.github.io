@@ -75,10 +75,10 @@ function parseEuroNumber(v){
 
 function parseExcelDate(v){
     if(typeof v==="number"){
-        const d=XLSX.SSF.parse_date_code(v);
+        const d = XLSX.SSF.parse_date_code(v);
         return `${String(d.d).padStart(2,"0")}-${String(d.m).padStart(2,"0")}-${d.y}`;
     }
-    return v||"";
+    return v || "";
 }
 
 function shipmentType(id){
@@ -86,10 +86,8 @@ function shipmentType(id){
     if(id==="GTC/K") return { type:"Chilled", remark:"" };
     if(id==="GTC/V") return { type:"Frozen", remark:"" };
     if(id==="NO9/GTC/V") return { type:"VE", remark:"" };
-
     if(id==="CSD/V") return { type:"Frozen", remark:"CSD" };
     if(id==="NO9/CSD/V") return { type:"VE", remark:"CSD" };
-
     return null;
 }
 
@@ -119,28 +117,40 @@ function processData(rows){
         const info = shipmentType(r[idx.shipment]);
         if(!no || !info) return;
 
+        const kg = parseEuroNumber(r[idx.kg]);
+        const m3 = parseEuroNumber(r[idx.m3]);
+
+        /* FIX: ignore empty shipments */
+        if(kg === 0 && m3 === 0) return;
+
         if(!allTransports[no]){
-            allTransports[no]={
-                destination:r[idx.destination],
-                deliveryDate:parseExcelDate(r[idx.date]),
-                shipments:{}
+            allTransports[no] = {
+                destination: r[idx.destination],
+                deliveryDate: parseExcelDate(r[idx.date]),
+                shipments: {}
             };
         }
 
-        if(!allTransports[no].shipments[info.type]){
-            allTransports[no].shipments[info.type]={kg:0,m3:0,remark:""};
+        const key = info.type + "|" + info.remark;
+
+        if(!allTransports[no].shipments[key]){
+            allTransports[no].shipments[key] = {
+                type: info.type,
+                remark: info.remark,
+                kg: 0,
+                m3: 0,
+                transportShipment: ""
+            };
         }
 
-        const s = allTransports[no].shipments[info.type];
-        s.kg += parseEuroNumber(r[idx.kg]);
-        s.m3 += parseEuroNumber(r[idx.m3]);
+        const s = allTransports[no].shipments[key];
+        s.kg += kg;
+        s.m3 += m3;
         s.transportShipment = r[idx.transportShipment] || "";
-
-        if(info.remark) s.remark = info.remark;
     });
 
     render(allTransports);
-    status.textContent="Calculation complete";
+    status.textContent = "Calculation complete";
 }
 
 function render(transports){
@@ -151,16 +161,15 @@ function render(transports){
         div.innerHTML=`<strong>${no} / ${t.destination} / Delivery customer ${t.deliveryDate}</strong>
             <table>
                 <tr><th>Type</th><th>Kg</th><th>M3</th><th>Pallets</th></tr>
-                ${Object.entries(t.shipments).map(([type,v])=>`
+                ${Object.values(t.shipments).map(v=>`
                     <tr>
-                        <td>${type}${v.remark ? " ("+v.remark+")" : ""}</td>
+                        <td>${v.type}${v.remark ? " ("+v.remark+")" : ""}</td>
                         <td>${v.kg.toFixed(2)}</td>
                         <td>${v.m3.toFixed(2)}</td>
                         <td>${calculatePallets(v.m3)}</td>
                     </tr>
                 `).join("")}
-            </table>
-        `;
+            </table>`;
         output.appendChild(div);
     });
 }
@@ -174,11 +183,11 @@ function filterMeeder(){
         .sort((a,b)=>new Date(a[1].deliveryDate.split("-").reverse().join("-")) - new Date(b[1].deliveryDate.split("-").reverse().join("-")))
         .forEach(([no,t])=>{
             if(t.destination.toLowerCase().includes("meeder")){
-                filtered[no] = t;
+                filtered[no]=t;
                 transportNumbers.push(no);
                 emailText += `${no} / ${t.destination} / Delivery customer ${t.deliveryDate}\n`;
-                Object.entries(t.shipments).forEach(([type,v])=>{
-                    emailText += `- ${no}-${v.transportShipment} ${type}${v.remark ? " ("+v.remark+")" : ""}: ${v.kg.toFixed(2)} kg / ${v.m3.toFixed(2)} m3 / ${calculatePallets(v.m3)} pallets\n`;
+                Object.values(t.shipments).forEach(v=>{
+                    emailText += `- ${no}-${v.transportShipment} ${v.type}${v.remark ? " ("+v.remark+")" : ""}: ${v.kg.toFixed(2)} kg / ${v.m3.toFixed(2)} m3 / ${calculatePallets(v.m3)} pallets\n`;
                 });
                 emailText += "Loading date:\n\n";
             }
@@ -187,7 +196,7 @@ function filterMeeder(){
     render(filtered);
     status.textContent="Meeder transports filtered & email generated";
 
-    if(transportNumbers.length > 0){
+    if(transportNumbers.length){
         window.prompt("Copy all Meeder transport numbers:", transportNumbers.join(";"));
     }
 
@@ -209,20 +218,19 @@ function filterSump(){
         div.innerHTML=`<strong>${no} / ${t.destination} / Delivery customer ${t.deliveryDate}</strong>
             <table>
                 <tr><th>Type</th><th>Kg</th><th>M3</th><th>Pallets</th></tr>
-                ${Object.entries(t.shipments).map(([type,v])=>`
+                ${Object.values(t.shipments).map(v=>`
                     <tr>
-                        <td>${type}${v.remark ? " ("+v.remark+")" : ""}</td>
+                        <td>${v.type}${v.remark ? " ("+v.remark+")" : ""}</td>
                         <td>${v.kg.toFixed(2)}</td>
                         <td>${v.m3.toFixed(2)}</td>
                         <td>${calculatePallets(v.m3)}</td>
                     </tr>
                 `).join("")}
-            </table>
-        `;
+            </table>`;
         const btn=document.createElement("button");
         btn.textContent="Send to Sump";
         btn.className="send-button";
-        btn.onclick = ()=> exportSumpExcel(no);
+        btn.onclick=()=>exportSumpExcel(no);
         div.appendChild(btn);
         output.appendChild(div);
     });
@@ -245,12 +253,10 @@ function exportSumpExcel(transportNo){
         "number of pallets"
     ]];
 
-    ["Dry","Chilled","Frozen","VE"].forEach(type=>{
-        const v = t.shipments[type];
-        if(!v) return;
+    Object.values(t.shipments).forEach(v=>{
         rows.push([
             "",
-            type + (v.remark ? " ("+v.remark+")" : ""),
+            v.type + (v.remark ? " ("+v.remark+")" : ""),
             "",
             "B&S",
             "will follow from S&S",
@@ -261,20 +267,15 @@ function exportSumpExcel(transportNo){
     });
 
     const ws = XLSX.utils.aoa_to_sheet(rows);
-
     const range = XLSX.utils.decode_range(ws['!ref']);
+
     for(let R=range.s.r; R<=range.e.r; ++R){
         for(let C=range.s.c; C<=range.e.c; ++C){
-            const cell = XLSX.utils.encode_cell({r:R,c:C});
+            const cell=XLSX.utils.encode_cell({r:R,c:C});
             if(!ws[cell]) continue;
             ws[cell].s={
                 alignment:{horizontal:"center",vertical:"center"},
-                border:{
-                    top:{style:"thin"},
-                    bottom:{style:"thin"},
-                    left:{style:"thin"},
-                    right:{style:"thin"}
-                }
+                border:{top:{style:"thin"},bottom:{style:"thin"},left:{style:"thin"},right:{style:"thin"}}
             };
         }
     }
@@ -286,8 +287,6 @@ function exportSumpExcel(transportNo){
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, transportNo);
     XLSX.writeFile(wb, `Sump_${transportNo}.xlsx`, {bookType:"xlsx", cellStyles:true});
-
-    status.textContent=`Excel for ${transportNo} generated!`;
 }
 </script>
 
