@@ -81,14 +81,18 @@ function parseExcelDate(v){
     return v||"";
 }
 
+/* ONLY CHANGE: extra shipment identifiers */
 function shipmentType(id){
-    if(id==="GTC") return "Dry";
-    if(id==="GTC/K") return "Chilled";
-    if(id==="GTC/V") return "Frozen";
-    if(id==="NO9/GTC/V") return "VE";
+    if(id==="GTC") return { type:"Dry", remark:"" };
+    if(id==="GTC/K") return { type:"Chilled", remark:"" };
+    if(id==="GTC/V") return { type:"Frozen", remark:"" };
+    if(id==="NO9/GTC/V") return { type:"VE", remark:"" };
+
+    if(id==="CSD/V") return { type:"Frozen", remark:"CSD" };
+    if(id==="NO9/CSD/V") return { type:"VE", remark:"CSD" };
+
     return null;
 }
-
 
 function calculatePallets(m3){
     if (m3 <= 1.5) return 1;
@@ -112,9 +116,9 @@ function processData(rows){
     allTransports = {};
 
     data.forEach(r=>{
-        const no=r[idx.transport];
-        const type=shipmentType(r[idx.shipment]);
-        if(!no || !type) return;
+        const no = r[idx.transport];
+        const info = shipmentType(r[idx.shipment]);
+        if(!no || !info) return;
 
         if(!allTransports[no]){
             allTransports[no]={
@@ -124,13 +128,16 @@ function processData(rows){
             };
         }
 
-        if(!allTransports[no].shipments[type]){
-            allTransports[no].shipments[type]={kg:0,m3:0};
+        if(!allTransports[no].shipments[info.type]){
+            allTransports[no].shipments[info.type]={kg:0,m3:0,remark:""};
         }
 
-        allTransports[no].shipments[type].kg+=parseEuroNumber(r[idx.kg]);
-        allTransports[no].shipments[type].m3+=parseEuroNumber(r[idx.m3]);
-        allTransports[no].shipments[type].transportShipment = r[idx.transportShipment] || "";
+        const s = allTransports[no].shipments[info.type];
+        s.kg += parseEuroNumber(r[idx.kg]);
+        s.m3 += parseEuroNumber(r[idx.m3]);
+        s.transportShipment = r[idx.transportShipment] || "";
+
+        if(info.remark) s.remark = info.remark;
     });
 
     render(allTransports);
@@ -147,7 +154,7 @@ function render(transports){
                 <tr><th>Type</th><th>Kg</th><th>M3</th><th>Pallets</th></tr>
                 ${Object.entries(t.shipments).map(([type,v])=>`
                     <tr>
-                        <td>${type}</td>
+                        <td>${type}${v.remark ? " ("+v.remark+")" : ""}</td>
                         <td>${v.kg.toFixed(2)}</td>
                         <td>${v.m3.toFixed(2)}</td>
                         <td>${calculatePallets(v.m3)}</td>
@@ -172,7 +179,7 @@ function filterMeeder(){
                 transportNumbers.push(no);
                 emailText += `${no} / ${t.destination} / Delivery customer ${t.deliveryDate}\n`;
                 Object.entries(t.shipments).forEach(([type,v])=>{
-                    emailText += `- ${no}-${v.transportShipment} ${type}: ${v.kg.toFixed(2)} kg / ${v.m3.toFixed(2)} m3 / ${calculatePallets(v.m3)} pallets\n`;
+                    emailText += `- ${no}-${v.transportShipment} ${type}${v.remark ? " ("+v.remark+")" : ""}: ${v.kg.toFixed(2)} kg / ${v.m3.toFixed(2)} m3 / ${calculatePallets(v.m3)} pallets\n`;
                 });
                 emailText += "Loading date:\n\n";
             }
@@ -181,12 +188,10 @@ function filterMeeder(){
     render(filtered);
     status.textContent="Meeder transports filtered & email generated";
 
-    
     if(transportNumbers.length > 0){
         window.prompt("Copy all Meeder transport numbers:", transportNumbers.join(";"));
     }
 
-    
     window.location.href=`mailto:export@europeancruiselogistics.com?body=${encodeURIComponent(emailText)}`;
 }
 
@@ -207,7 +212,7 @@ function filterSump(){
                 <tr><th>Type</th><th>Kg</th><th>M3</th><th>Pallets</th></tr>
                 ${Object.entries(t.shipments).map(([type,v])=>`
                     <tr>
-                        <td>${type}</td>
+                        <td>${type}${v.remark ? " ("+v.remark+")" : ""}</td>
                         <td>${v.kg.toFixed(2)}</td>
                         <td>${v.m3.toFixed(2)}</td>
                         <td>${calculatePallets(v.m3)}</td>
@@ -244,43 +249,45 @@ function exportSumpExcel(transportNo){
     ["Dry","Chilled","Frozen","VE"].forEach(type=>{
         const v = t.shipments[type];
         if(!v) return;
-        let pallets = calculatePallets(v.m3);
         rows.push([
             "",
-            type,
+            type + (v.remark ? " ("+v.remark+")" : ""),
             "",
             "B&S",
             "will follow from S&S",
             v.kg,
             "ALL",
-            pallets
+            calculatePallets(v.m3)
         ]);
     });
 
     const ws = XLSX.utils.aoa_to_sheet(rows);
+
     const range = XLSX.utils.decode_range(ws['!ref']);
     for(let R=range.s.r; R<=range.e.r; ++R){
         for(let C=range.s.c; C<=range.e.c; ++C){
-            const cell_address=XLSX.utils.encode_cell({r:R,c:C});
-            if(!ws[cell_address]) continue;
-            ws[cell_address].s={
-                alignment:{horizontal:"center", vertical:"center"},
+            const cell = XLSX.utils.encode_cell({r:R,c:C});
+            if(!ws[cell]) continue;
+            ws[cell].s={
+                alignment:{horizontal:"center",vertical:"center"},
                 border:{
-                    top:{style:"thin",color:{auto:1}},
-                    bottom:{style:"thin",color:{auto:1}},
-                    left:{style:"thin",color:{auto:1}},
-                    right:{style:"thin",color:{auto:1}}
+                    top:{style:"thin"},
+                    bottom:{style:"thin"},
+                    left:{style:"thin"},
+                    right:{style:"thin"}
                 }
             };
         }
     }
 
-    const colWidths = rows[0].map((_,i)=>({wch: Math.max(...rows.map(r=>r[i]?String(r[i]).length:0))+2}));
-    ws['!cols'] = colWidths;
+    ws['!cols'] = rows[0].map((_,i)=>({
+        wch: Math.max(...rows.map(r=>r[i]?String(r[i]).length:0))+2
+    }));
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, transportNo);
     XLSX.writeFile(wb, `Sump_${transportNo}.xlsx`, {bookType:"xlsx", cellStyles:true});
+
     status.textContent=`Excel for ${transportNo} generated!`;
 }
 </script>
