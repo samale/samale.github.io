@@ -8,43 +8,34 @@
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFoZNk73X4CY1RG3xghjxbAPTnx0JXmO8&libraries=geometry"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root { --primary: #2563eb; --primary-dark: #1e40af; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --accent: #10b981; --warn: #f59e0b; --danger: #ef4444; }
+:root { --primary: #2563eb; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --accent: #10b981; --danger: #ef4444; }
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 body { background: var(--bg); color: var(--text); padding: 20px; line-height: 1.5; }
 .container { max-width: 1440px; margin: 0 auto; }
-header { text-align: center; margin-bottom: 40px; padding-top: 20px; }
-header h1 { font-size: 2.5rem; font-weight: 800; color: #0f172a; letter-spacing: -0.025em; }
-header p { color: var(--text-light); font-size: 1.1rem; }
-.upload-area { display: grid; grid-template-columns: 1fr 320px; gap: 20px; margin-bottom: 40px; }
-#dropZone { background: var(--card); border: 2px dashed var(--border); border-radius: 20px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; justify-content: center; }
-#dropZone:hover { border-color: var(--primary); background: #f1f5f9; transform: translateY(-2px); }
+header { text-align: center; margin-bottom: 30px; }
+header h1 { font-size: 2.2rem; font-weight: 800; color: #0f172a; }
+.upload-area { display: grid; grid-template-columns: 1fr 350px; gap: 20px; margin-bottom: 30px; }
+#dropZone { background: var(--card); border: 2px dashed var(--border); border-radius: 16px; padding: 40px; text-align: center; cursor: pointer; transition: 0.2s; }
 #dropZone.active { border-color: var(--accent); background: #f0fdf4; }
-.control-card { background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-.btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 1rem; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2); }
-.btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
-.btn:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; transform: none; }
-#resultsGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
-.truck-card { background: var(--card); border-radius: 24px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
-.truck-header { padding: 20px 24px; background: #0f172a; color: white; display: flex; justify-content: space-between; align-items: center; }
-.truck-header h2 { font-size: 1.25rem; font-weight: 700; }
-.overload-tag { background: var(--danger); color: white; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; }
-.map-view { height: 300px; background: #f1f5f9; width: 100%; border-bottom: 1px solid var(--border); }
-.metrics { display: grid; grid-template-columns: 1fr 1fr; padding: 20px; background: #f8fafc; border-bottom: 1px solid var(--border); }
-.metric-box span { display: block; }
-.m-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-light); font-weight: 700; letter-spacing: 0.05em; }
-.m-val { font-size: 1.25rem; font-weight: 800; color: #0f172a; }
-.stop-list { flex-grow: 1; max-height: 400px; overflow-y: auto; padding: 10px 0; }
-.stop-card { padding: 12px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: flex-start; }
-.stop-card:last-child { border-bottom: none; }
-.stop-info { flex: 1; }
-.stop-name { font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
-.stop-trans { font-size: 0.8rem; color: var(--text-light); font-family: monospace; margin-top: 4px; }
-.stop-vol { font-weight: 800; color: var(--primary); font-size: 0.9rem; }
-.split-badge { background: #eff6ff; color: var(--primary); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; border: 1px solid #dbeafe; }
-.export-footer { padding: 20px; background: #fff; border-top: 1px solid var(--border); }
-.btn-out { width: 100%; padding: 10px; background: white; border: 1px solid var(--border); border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
-.btn-out:hover { background: #f8fafc; border-color: var(--text-light); }
-#status { margin-top: 12px; font-size: 0.9rem; color: var(--text-light); font-weight: 500; }
+.control-card { background: var(--card); padding: 25px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+.btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.btn:hover { background: #1e40af; }
+.btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+#resultsGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.truck-card { background: var(--card); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+.truck-header { padding: 15px 20px; background: #0f172a; color: white; display: flex; justify-content: space-between; align-items: center; }
+.map-view { height: 280px; background: #f1f5f9; width: 100%; border-bottom: 1px solid var(--border); }
+.metrics { display: grid; grid-template-columns: 1fr 1fr; padding: 15px; background: #f8fafc; gap: 10px; }
+.m-label { font-size: 0.65rem; text-transform: uppercase; color: var(--text-light); font-weight: 700; }
+.m-val { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
+.stop-list { flex-grow: 1; max-height: 350px; overflow-y: auto; padding: 5px 0; }
+.stop-card { padding: 10px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; }
+.stop-name { font-weight: 700; font-size: 0.9rem; }
+.stop-trans { font-size: 0.75rem; color: var(--text-light); margin-top: 2px; }
+.copy-footer { padding: 15px; background: #fff; border-top: 1px solid var(--border); }
+.btn-copy { width: 100%; padding: 10px; background: #f1f5f9; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.btn-copy:hover { background: #e2e8f0; }
+.copy-success { background: var(--accent) !important; color: white !important; }
 </style>
 </head>
 <body>
@@ -52,24 +43,20 @@ header p { color: var(--text-light); font-size: 1.1rem; }
 <div class="container">
     <header>
         <h1>Smart Route Optimizer</h1>
-        <p>Balanced Load Distribution & Split-Address Logic</p>
+        <p>Proactive Load Balancing & Route Analysis</p>
     </header>
 
     <div class="upload-area">
         <div id="dropZone">
-            <svg style="width:48px;height:48px;color:var(--primary);margin-bottom:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a2 2 0 00-2-2H5a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-            <div style="font-weight:700;font-size:1.2rem">Upload Logistics Data</div>
-            <div style="font-size:0.9rem;color:var(--text-light)">Drag & Drop your Excel file here</div>
-            <div id="status">Ready for import</div>
+            <div style="font-weight:700;font-size:1.1rem">Drop Excel File Here</div>
+            <div id="status" style="font-size:0.9rem;color:var(--text-light);margin-top:8px">Ready for import</div>
         </div>
-
         <div class="control-card">
-            <label style="display:block;font-size:0.75rem;font-weight:800;color:var(--text-light);margin-bottom:15px;text-transform:uppercase">Configuration</label>
-            <div style="margin-bottom:20px">
-                <div style="font-weight:600;font-size:0.95rem">Max Payload: 21.00 m³</div>
-                <div style="font-size:0.8rem;color:var(--text-light);margin-top:4px">Address splitting allowed only on overload</div>
+            <div style="margin-bottom:15px">
+                <div style="font-size:0.75rem;font-weight:800;color:var(--text-light);text-transform:uppercase">Distribution Logic</div>
+                <div style="font-weight:600;margin-top:4px">Targeting Equal Volumes</div>
             </div>
-            <button class="btn" id="calcBtn" disabled>Generate Perfect Layout</button>
+            <button class="btn" id="calcBtn" disabled>Calculate Best Layout</button>
         </div>
     </div>
 
@@ -81,14 +68,13 @@ const START_LOC = "Snelliusstraat 12, Dordrecht";
 const LIMIT = 21.0;
 const clientAddresses = {"SHI001":"Dordrecht Voltastraat 6A","SHI038":"Dordrecht Voltastraat 6A","FUJ001":"ROTTERDAM Kortenoord 2-8","FUJ118":"ROTTERDAM Kortenoord 2-8","FUJWEB":"ROTTERDAM Kortenoord 2-8","ARN001":"Rotterdam Plompertstraat 18B","RMS001":"Rotterdam Plompertstraat 50","RMS118":"Rotterdam Plompertstraat 50","GEO003":"ROTTERDAM van Maasdijkweg 56","GEO118":"ROTTERDAM van Maasdijkweg 56","EMD001":"Van Maasdijkweg 56, 3088 EG Rotterdam","VIV118":"Rotterdam Gieterijweg 17","MAA002":"HOOGVLIET Klompenmakerstraat 26","MAA118":"HOOGVLIET Klompenmakerstraat 26","MAA120":"HOOGVLIET Klompenmakerstraat 26","MAA119":"HOOGVLIET Klompenmakerstraat 26","MAR118":"HOOGVLIET Tinnegieterstraat 15","MPA001":"HOOGVLIET Tinnegieterstraat 15","MAS005":"SCHIEDAM ’s-Gravelandseweg 359","NOV001":"Rotterdam Nova Ship, Lodewijk Picoffsweg 438","OUW001":"PERNIS Tarwezand 2-20","OUWWEB":"PERNIS Tarwezand 2-20","MSC001":"ROTTERDAM Columbusstraat 26-28","NEK001":"Rotterdam Columbusstraat 22-26","NEK118":"Rotterdam Columbusstraat 22-26","NEK002":"Rotterdam Columbusstraat 22-26","NEK003":"Rotterdam Columbusstraat 22-26","INT025":"Rotterdam Columsstraat 30a","SUP002":"Rotterdam Columbusstraat 12","SUP118":"Rotterdam Columbusstraat 12","WRI001":"ROTTERDAM Bunschotenweg 58","WRI04B":"ROTTERDAM Bunschotenweg 58","WRI007":"ROTTERDAM Bunschotenweg 58","WRKL00":"ROTTERDAM Bunschotenweg 58","WRKL18":"ROTTERDAM Bunschotenweg 58","VAN008":"Rotterdam Bunschotenweg 115","TER118":"Vierpolders","TER001":"Vierpolders","KLO118":"Rotterdam Rhoneweg 68","KLO119":"Rotterdam Rhoneweg 68","PEN001":"RHOON Kleidijk 88","SCH018":"ALBLASSERDAM Van Hennaertweg 1","ROT003":"Barendrecht Transportweg 20","MEE002":"Barendrecht Donk 15","MEE118":"Barendrecht Donk 15","DIT002":"BARENDRECHT Bijdorp-Oost 14A","MOS002":"Barendrecht FENNAWEG 24","HAR004":"BARENDRECHT Achterzeedijk 57","HAR118":"BARENDRECHT Achterzeedijk 57","GIL001":"ROTTERDAM Giessenweg 56","GIL118":"ROTTERDAM Giessenweg 56","ADR002":"SCHIEDAM Admiraal de Ruyterstraat 16C","POS001":"Rotterdam Pittsburgstraat 33","PRI006":"SCHIEDAM Fokkerstraat 517","VER011":"BERGSCHENHOEK Frans Halslaan 4","GIM001":"Schiedam Jan Van Galenstraat 9","GIM118":"Schiedam Jan Van Galenstraat 9","LIM001":"Strickledeweg 25, 3125 AT Schiedam","IST001":"VLAARDINGEN Kotterstraat 2","BRA001":"Rotterdam Columbusstraat 22-26","BRA004":"Rotterdam Columbusstraat 22-26","SEA013":"VLAARDINGEN Hoekerstraat 19","KOO004":"VLISSINGEN KoolwijkShipstoresWesterhavenweg 14","ROS002":"Rhoneweg 68, 3198 LE Europoort Rotterdam","KOO119":"MIDDELBURG Grenadierweg 19","PRO006":"ZWIJNDRECHT Westpoort 51/59","PRO131":"ZWIJNDRECHT Westpoort 51/59","HUL001":"ANTWERPEN Bredastraat 139","DEL007":"ZWIJNDRECHT Westpoort 51-59","ELE001":"Spijkenisse Ohmweg 14","ELEWEB":"Spijkenisse Ohmweg 14","FMVB01":"SPIJKENISSE Curieweg 2","FMVB02":"SPIJKENISSE Curieweg 2"};
 
-let customers = [];
+let rawStops = [];
 const dropZone = document.getElementById("dropZone");
 const calcBtn = document.getElementById("calcBtn");
 const statusDiv = document.getElementById("status");
 
 dropZone.onclick = () => { let i = document.createElement("input"); i.type="file"; i.onchange=e=>handleFile(e.target.files[0]); i.click(); };
 dropZone.ondragover = e => { e.preventDefault(); dropZone.classList.add("active"); };
-dropZone.ondragleave = () => dropZone.classList.remove("active");
 dropZone.ondrop = e => { e.preventDefault(); dropZone.classList.remove("active"); handleFile(e.dataTransfer.files[0]); };
 
 function handleFile(file) {
@@ -99,70 +85,64 @@ function handleFile(file) {
         const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:""});
         let hIdx = rows.findIndex(row => row.includes("Customer"));
         if(hIdx === -1) return alert("Headers not found");
-        
         const heads = rows[hIdx];
         const data = rows.slice(hIdx + 1);
         const map = { cust: heads.indexOf("Customer"), trans: heads.indexOf("Transport no."), m3: heads.indexOf("Expected mtr3") };
         
-        const g = {};
+        let grouped = {};
         data.forEach(row => {
-            const id = row[map.cust];
-            if(!id) return;
+            const id = row[map.cust]; if(!id) return;
             const tNo = String(row[map.trans]).replace(/,/g, "");
             const vol = parseFloat(String(row[map.m3]).replace(",", ".")) || 0;
-            if(!g[id]) g[id] = { id, items: [], totalVol: 0, addr: clientAddresses[id] || "" };
-            g[id].items.push({ no: tNo, vol: vol });
-            g[id].totalVol += vol;
+            if(!grouped[id]) grouped[id] = { id, items: [], totalVol: 0, addr: clientAddresses[id] || "" };
+            grouped[id].items.push({ no: tNo, vol: vol });
+            grouped[id].totalVol += vol;
         });
-        
-        customers = Object.values(g).sort((a,b) => b.totalVol - a.totalVol);
-        statusDiv.innerText = `Imported ${customers.length} locations. Ready to balance.`;
+        rawStops = Object.values(grouped).sort((a,b) => b.totalVol - a.totalVol);
+        statusDiv.innerText = `Data Loaded: ${rawStops.length} drops. Ready to balance.`;
         calcBtn.disabled = false;
     };
     r.readAsArrayBuffer(file);
 }
 
 calcBtn.onclick = () => {
-    let trucks = [
-        { id: 1, stops: [], vol: 0 },
-        { id: 2, stops: [], vol: 0 },
-        { id: 3, stops: [], vol: 0 }
-    ];
+    let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
+    let totalVol = rawStops.reduce((sum, s) => sum + s.totalVol, 0);
+    let targetAvg = totalVol / 3;
 
-    customers.forEach(cust => {
-        let target = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
-        target.stops.push({ ...cust, isSplit: false });
-        target.vol += cust.totalVol;
+    // Initial greedy distribution
+    rawStops.forEach(s => {
+        let best = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
+        best.stops.push({ ...s, items: [...s.items], currentVol: s.totalVol });
+        best.vol += s.totalVol;
     });
 
-    for(let i=0; i<10; i++) {
-        let heavy = trucks.reduce((p, c) => c.vol > p.vol ? c : p);
-        let light = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
+    // Proactive Balancing (Even below 21m3)
+    for(let loop=0; loop<20; loop++) {
+        trucks.sort((a,b) => b.vol - a.vol);
+        let heavy = trucks[0];
+        let light = trucks[2];
         
-        if(heavy.vol > LIMIT) {
-            let splittable = heavy.stops.find(s => s.items.length > 1);
-            if(splittable) {
-                let item = splittable.items.pop();
-                splittable.totalVol -= item.vol;
-                heavy.vol -= item.vol;
-                splittable.isSplit = true;
-                
-                let existingStop = light.stops.find(s => s.id === splittable.id);
-                if(existingStop) {
-                    existingStop.items.push(item);
-                    existingStop.totalVol += item.vol;
-                } else {
-                    light.stops.push({ id: splittable.id, items: [item], totalVol: item.vol, addr: splittable.addr, isSplit: true });
-                }
-                light.vol += item.vol;
+        if(heavy.vol - light.vol < 0.5) break; // Close enough
+
+        let splittable = heavy.stops.find(s => s.items.length > 1);
+        if(splittable) {
+            let item = splittable.items.pop();
+            splittable.currentVol -= item.vol;
+            heavy.vol -= item.vol;
+            
+            let existing = light.stops.find(s => s.id === splittable.id);
+            if(existing) {
+                existing.items.push(item);
+                existing.currentVol += item.vol;
             } else {
-                break;
+                light.stops.push({ id: splittable.id, items: [item], currentVol: item.vol, addr: splittable.addr });
             }
+            light.vol += item.vol;
         } else {
-            break;
+            break; 
         }
     }
-
     render(trucks);
 };
 
@@ -173,27 +153,23 @@ function render(trucks) {
         const card = document.createElement("div");
         card.className = "truck-card";
         card.innerHTML = `
-            <div class="truck-header">
-                <h2>TRUCK ${t.id}</h2>
-                ${t.vol > LIMIT ? `<span class="overload-tag">OVERLOADED</span>` : ''}
-            </div>
+            <div class="truck-header"><h2>TRUCK ${t.id}</h2></div>
             <div id="map-${t.id}" class="map-view"></div>
             <div class="metrics">
-                <div class="metric-box"><span class="m-label">Total Volume</span><span class="m-val">${t.vol.toFixed(2)} m³</span></div>
-                <div class="metric-box"><span class="m-label">Drop Points</span><span class="m-val">${t.stops.length}</span></div>
+                <div class="metric-box"><span class="m-label">Volume</span><span class="m-val">${t.vol.toFixed(2)} m³</span></div>
+                <div class="metric-box"><span class="m-label">Drops</span><span class="m-val">${t.stops.length}</span></div>
+                <div class="metric-box"><span class="m-label">Distance</span><span class="m-val" id="dist-${t.id}">--</span></div>
+                <div class="metric-box"><span class="m-label">Time</span><span class="m-val" id="time-${t.id}">--</span></div>
             </div>
             <div class="stop-list">
                 ${t.stops.map(s => `
                     <div class="stop-card">
-                        <div class="stop-info">
-                            <div class="stop-name">${s.id} ${s.isSplit ? '<span class="split-badge">SPLIT ADDRESS</span>' : ''}</div>
-                            <div class="stop-trans">${s.items.map(i => i.no).join(", ")}</div>
-                        </div>
-                        <div class="stop-vol">${s.totalVol.toFixed(2)}</div>
+                        <div><div class="stop-name">${s.id}</div><div class="stop-trans">${s.items.map(i => i.no).join(", ")}</div></div>
+                        <div style="font-weight:700">${s.currentVol.toFixed(2)}</div>
                     </div>
                 `).join("")}
             </div>
-            <div class="export-footer"><button class="btn-out" onclick="exportData(${t.id})">Export Transport Numbers</button></div>
+            <div class="copy-footer"><button class="btn-copy" id="copyBtn-${t.id}" onclick="copyToClipboard(${t.id})">Copy Transport Nos</button></div>
         `;
         grid.appendChild(card);
         initMap(t);
@@ -208,19 +184,28 @@ function initMap(truck) {
     const waypoints = truck.stops.filter(s => s.addr).map(s => ({ location: s.addr, stopover: true }));
     if(waypoints.length > 0) {
         ds.route({ origin: START_LOC, destination: START_LOC, waypoints, optimizeWaypoints: true, travelMode: 'DRIVING' }, (res, stat) => {
-            if(stat === 'OK') dr.setDirections(res);
+            if(stat === 'OK') {
+                dr.setDirections(res);
+                let dist = 0, dur = 0;
+                res.routes[0].legs.forEach(l => { dist += l.distance.value; dur += l.duration.value; });
+                document.getElementById(`dist-${truck.id}`).innerText = (dist/1000).toFixed(1) + " km";
+                document.getElementById(`time-${truck.id}`).innerText = Math.floor(dur/3600) + "h " + Math.floor((dur%3600)/60) + "m";
+            }
         });
     }
 }
 
-function exportData(id) {
+async function copyToClipboard(id) {
     const t = window.currentSolution.find(x => x.id === id);
     const nos = t.stops.flatMap(s => s.items.map(i => i.no)).join(";");
-    const blob = new Blob([nos], {type: "text/plain"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `Truck_${id}_Transports.txt`;
-    a.click();
+    try {
+        await navigator.clipboard.writeText(nos);
+        const btn = document.getElementById(`copyBtn-${id}`);
+        const oldText = btn.innerText;
+        btn.innerText = "✓ Copied to Clipboard!";
+        btn.classList.add("copy-success");
+        setTimeout(() => { btn.innerText = oldText; btn.classList.remove("copy-success"); }, 2000);
+    } catch (err) { alert("Failed to copy. Please try again."); }
 }
 </script>
 
