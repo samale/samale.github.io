@@ -135,9 +135,16 @@ calcBtn.onclick = () => {
     let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
     let sortedGroups = [...addressGroups];
 
-    // Sortering aanpassen op basis van strategie
+    // FIX: Verbeterde sortering voor Regio (Stad eerst, negeer leestekens voor MAS005)
     if (strat === 'regio') {
-        sortedGroups.sort((a, b) => a.addr.localeCompare(b.addr));
+        sortedGroups.sort((a, b) => {
+            const cityA = a.addr.split(',').reverse()[1]?.trim() || "";
+            const cityB = b.addr.split(',').reverse()[1]?.trim() || "";
+            if (cityA === cityB) {
+                return a.addr.replace(/[^a-zA-Z]/g, "").localeCompare(b.addr.replace(/[^a-zA-Z]/g, ""));
+            }
+            return cityA.localeCompare(cityB);
+        });
     } else {
         sortedGroups.sort((a,b) => b.totalVol - a.totalVol);
     }
