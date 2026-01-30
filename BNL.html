@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BNL Optimizer - Fixed Master</title>
+    <title>BNL Optimizer - Master with Export</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFoZNk73X4CY1RG3xghjxbAPTnx0JXmO8&libraries=geometry"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2563eb; --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; --text-light: #64748b; --border: #cbd5e1; }
+        :root { --primary: #2563eb; --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; --text-light: #64748b; --border: #cbd5e1; --success: #059669; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--text); padding: 25px; }
         .container { max-width: 1600px; margin: 0 auto; }
@@ -22,7 +22,8 @@
         .summary-card .m-label { color: #94a3b8; }
         .summary-card .m-val { color: white; font-size: 1.4rem; }
         select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin: 10px 0 20px; font-weight: 600; font-size: 1rem; }
-        .btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 1rem; }
+        .btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 1rem; margin-bottom: 10px; }
+        .btn-export { background: var(--success); }
         .btn:disabled { background: #94a3b8; cursor: not-allowed; }
         #resultsGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
         .truck-card { background: var(--card); border-radius: 28px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
@@ -47,7 +48,7 @@
         <div id="dropZone">
             <div style="font-size: 2.5rem; margin-bottom: 10px;">📦</div>
             <div id="status" style="font-weight: 700;">Sleep Excel-bestand hierheen</div>
-            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 5px;">(Strict 21m³ Limit | Fixed Excel Import)</div>
+            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 5px;">(Strict 21m³ Limit | Export Enabled)</div>
         </div>
         <div class="control-card">
             <label class="m-label">Berekeningsmethode</label>
@@ -63,7 +64,8 @@
                 <option value="scient">9. Wetenschappelijke Mix (m³ vs Afstand)</option>
                 <option value="urban">10. Urban Density (Stad concentratie)</option>
             </select>
-            <button class="btn" id="calcBtn" disabled>Bereken Optimale Planning</button>
+            <button class="btn" id="calcBtn" disabled>Bereken Planning</button>
+            <button class="btn btn-export" id="exportBtn" style="display:none;" onclick="exportPlanning()">Download Chauffeurs Planning</button>
         </div>
         <div class="summary-card">
             <div style="margin-bottom: 20px;">
@@ -116,6 +118,7 @@ let globalTimes = { 1:0, 2:0, 3:0 };
 
 const dropZone = document.getElementById("dropZone");
 const calcBtn = document.getElementById("calcBtn");
+const exportBtn = document.getElementById("exportBtn");
 
 dropZone.onclick = () => { let i = document.createElement("input"); i.type="file"; i.onchange=e=>handleFile(e.target.files[0]); i.click(); };
 dropZone.ondragover = e => e.preventDefault();
@@ -128,27 +131,21 @@ function handleFile(file) {
         const wb = XLSX.read(dataArr, {type:"array"});
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:""});
-        
         let hIdx = rows.findIndex(row => row.join('|').includes("Customer"));
-        if(hIdx === -1) { alert("Geen 'Customer' kolom gevonden!"); return; }
-        
+        if(hIdx === -1) { alert("Header niet gevonden!"); return; }
         const heads = rows[hIdx];
         const col = { cust: heads.indexOf("Customer"), trans: heads.indexOf("Transport no."), m3: heads.indexOf("Expected mtr3") };
-        
         let groups = {};
         rows.slice(hIdx + 1).forEach(row => {
             const custId = String(row[col.cust] || "").trim();
             if(!custId) return;
             const vol = parseFloat(String(row[col.m3]).replace(",", ".")) || 0;
             const addr = ADRES_MAPPING[custId] || custId;
-            const transNo = row[col.trans] || "N/A";
-
             if(!groups[addr]) groups[addr] = { addr, customers: new Set(), items: [], totalVol: 0 };
             groups[addr].customers.add(custId);
-            groups[addr].items.push({ no: transNo, vol, cust: custId });
+            groups[addr].items.push({ no: row[col.trans], vol, cust: custId });
             groups[addr].totalVol += vol;
         });
-
         addressGroups = Object.values(groups);
         document.getElementById("status").innerText = addressGroups.length + " Stops Geladen";
         calcBtn.disabled = false;
@@ -157,44 +154,27 @@ function handleFile(file) {
 }
 
 calcBtn.onclick = () => {
-    globalDistances = { 1:0, 2:0, 3:0 };
-    globalTimes = { 1:0, 2:0, 3:0 };
+    globalDistances = { 1:0, 2:0, 3:0 }; globalTimes = { 1:0, 2:0, 3:0 };
     updateGlobalMetrics();
-
     const strat = document.getElementById("strategy").value;
     let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
     let sorted = [...addressGroups];
 
-    // SORTING LOGIC PER METHOD
-    if (strat === 'regio' || strat === 'scient' || strat === 'urban') {
-        sorted.sort((a,b) => a.addr.split(',').reverse()[1]?.trim().localeCompare(b.addr.split(',').reverse()[1]?.trim()) || b.totalVol - a.totalVol);
-    } else if (strat === 'heavy') {
-        sorted.sort((a,b) => b.totalVol - a.totalVol);
-    } else if (strat === 'postcode') {
-        sorted.sort((a,b) => a.addr.replace(/\D/g,'').localeCompare(b.addr.replace(/\D/g,'')));
-    } else if (strat === 'proximity') {
-        sorted.sort((a,b) => a.addr.includes("Dordrecht") ? -1 : 1);
-    }
+    if (strat === 'regio') sorted.sort((a,b) => a.addr.split(',').reverse()[1]?.trim().localeCompare(b.addr.split(',').reverse()[1]?.trim()) || b.totalVol - a.totalVol);
+    else if (strat === 'heavy') sorted.sort((a,b) => b.totalVol - a.totalVol);
+    else if (strat === 'postcode') sorted.sort((a,b) => a.addr.replace(/\D/g,'').localeCompare(b.addr.replace(/\D/g,'')));
 
     sorted.forEach(group => {
         let target;
         const score = t => (t.vol * 1.8) + (t.stops.length * 1.2);
+        if (strat === 'greedy') target = trucks.find(t => t.vol + group.totalVol <= MAX_VOL) || trucks.reduce((p,c) => c.vol < p.vol ? c : p);
+        else if (strat === 'vol') target = trucks.reduce((p,c) => c.vol < p.vol ? c : p);
+        else target = trucks.filter(t => t.vol + group.totalVol <= MAX_VOL).sort((a,b) => score(a) - score(b))[0] || trucks.reduce((p,c) => c.vol < p.vol ? c : p);
 
-        if (strat === 'greedy') {
-            target = trucks.find(t => t.vol + group.totalVol <= MAX_VOL) || trucks.reduce((p,c) => c.vol < p.vol ? c : p);
-        } else if (strat === 'vol') {
-            target = trucks.reduce((p,c) => c.vol < p.vol ? c : p);
-        } else if (strat === 'stops') {
-            target = trucks.reduce((p,c) => c.stops.length < p.stops.length ? c : p);
-        } else {
-            target = trucks.filter(t => t.vol + group.totalVol <= MAX_VOL).sort((a,b) => score(a) - score(b))[0] || trucks.reduce((p,c) => c.vol < p.vol ? c : p);
-        }
-
-        // TWO TRUCK SPLIT FOR OVERFLOW
         if (group.totalVol > MAX_VOL || target.vol + group.totalVol > MAX_VOL) {
-            let partners = [...trucks].sort((a,b) => a.vol - b.vol).slice(0, 2);
+            let p = [...trucks].sort((a,b) => a.vol - b.vol).slice(0, 2);
             group.items.forEach(it => {
-                let chosen = partners.sort((a,b) => a.vol - b.vol)[0];
+                let chosen = p.sort((a,b) => a.vol - b.vol)[0];
                 let s = chosen.stops.find(x => x.addr === group.addr);
                 if(s) { s.items.push(it); s.currentVol += it.vol; s.custs.add(it.cust); }
                 else { chosen.stops.push({ addr: group.addr, custs: new Set([it.cust]), items: [it], currentVol: it.vol }); }
@@ -205,8 +185,8 @@ calcBtn.onclick = () => {
             target.vol += group.totalVol;
         }
     });
-
     render(trucks);
+    exportBtn.style.display = 'block';
 };
 
 function render(trucks) {
@@ -215,25 +195,7 @@ function render(trucks) {
     trucks.forEach(t => {
         const card = document.createElement("div");
         card.className = "truck-card";
-        card.innerHTML = `
-            <div class="truck-header">Vrachtwagen ${t.id}</div>
-            <div id="map-${t.id}" class="map-view"></div>
-            <div class="metrics">
-                <div><span class="m-label">Volume</span><span class="m-val">${t.vol.toFixed(2)} m³</span></div>
-                <div><span class="m-label">Stops</span><span class="m-val">${t.stops.length}</span></div>
-                <div><span class="m-label">Afstand</span><span class="m-val" id="dist-${t.id}">--</span></div>
-                <div><span class="m-label">Reistijd</span><span class="m-val" id="time-${t.id}">--</span></div>
-            </div>
-            <div class="stop-list">${t.stops.map(s => `
-                <div class="stop-card">
-                    <div class="stop-main">
-                        <div><b>${s.addr.split(',')[0]}</b><br><small>${s.addr.split(',')[1] || ''}</small></div>
-                        <div style="font-weight:800;color:var(--primary)">${s.currentVol.toFixed(2)}</div>
-                    </div>
-                    <div class="cust-tags">${Array.from(s.custs).map(c => `<span class="tag">${c}</span>`).join("")}</div>
-                </div>`).join("")}</div>
-            <button class="btn-copy" onclick="copyN(${t.id})">Transportnummers Kopiëren</button>
-        `;
+        card.innerHTML = `<div class="truck-header">Vrachtwagen ${t.id}</div><div id="map-${t.id}" class="map-view"></div><div class="metrics"><div><span class="m-label">Volume</span><span class="m-val">${t.vol.toFixed(2)} m³</span></div><div><span class="m-label">Stops</span><span class="m-val">${t.stops.length}</span></div><div><span class="m-label">Afstand</span><span class="m-val" id="dist-${t.id}">--</span></div><div><span class="m-label">Tijd</span><span class="m-val" id="time-${t.id}">--</span></div></div><div class="stop-list">${t.stops.map(s => `<div class="stop-card"><div class="stop-main"><div><b>${s.addr.split(',')[0]}</b><br><small>${s.addr.split(',')[1] || ''}</small></div><div style="font-weight:800;color:var(--primary)">${s.currentVol.toFixed(2)}</div></div><div class="cust-tags">${Array.from(s.custs).map(c => `<span class="tag">${c}</span>`).join("")}</div></div>`).join("")}</div><button class="btn-copy" onclick="copyN(${t.id})">Transportnummers Kopiëren</button>`;
         grid.appendChild(card);
         setTimeout(() => initM(t), 500);
     });
@@ -248,8 +210,7 @@ function initM(t) {
     ds.route({ origin: WAREHOUSE, destination: WAREHOUSE, waypoints: t.stops.map(s => ({location: s.addr, stopover:true})), optimizeWaypoints: true, travelMode: 'DRIVING' }, (res, stat) => {
         if (stat === 'OK') {
             dr.setDirections(res);
-            let d = 0, tt = 0;
-            res.routes[0].legs.forEach(l => { d += l.distance.value; tt += l.duration.value; });
+            let d = 0, tt = 0; res.routes[0].legs.forEach(l => { d += l.distance.value; tt += l.duration.value; });
             globalDistances[t.id] = d; globalTimes[t.id] = tt; updateGlobalMetrics();
             document.getElementById(`dist-${t.id}`).innerText = (d/1000).toFixed(1) + " km";
             document.getElementById(`time-${t.id}`).innerText = Math.floor(tt/3600) + "u " + Math.floor((tt%3600)/60) + "m";
@@ -269,6 +230,29 @@ function copyN(id) {
     const nos = t.stops.flatMap(s => s.items.map(i => i.no)).join(";");
     navigator.clipboard.writeText(nos);
     alert("Gekopieerd voor Vrachtwagen " + id);
+}
+
+function exportPlanning() {
+    if(!window.final) return;
+    let exportData = [];
+    window.final.forEach(truck => {
+        truck.stops.forEach((stop, index) => {
+            stop.items.forEach(item => {
+                exportData.push({
+                    "Vrachtwagen": truck.id,
+                    "Stop Volgorde": index + 1,
+                    "Klant": item.cust,
+                    "Adres": stop.addr,
+                    "Volume (m3)": item.vol.toFixed(2),
+                    "Transport Nr": item.no
+                });
+            });
+        });
+    });
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Planning");
+    XLSX.writeFile(wb, "BNL_Chauffeurs_Planning.xlsx");
 }
 </script>
 </body>
