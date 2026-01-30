@@ -41,9 +41,8 @@
     </style>
 </head>
 <body>
-
 <div class="container">
-    <header><h1>BNL<span style="font-weight: 400; color: var(--text-light);">Optimizer</span></h1></header>
+    <header><h1>BNL <span style="font-weight: 400; color: var(--text-light);">Optimizer</span></h1></header>
     <div class="upload-area">
         <div id="dropZone">
             <div style="font-size: 2.5rem; margin-bottom: 10px;">📦</div>
@@ -80,7 +79,6 @@
 <script>
 const WAREHOUSE = "Snelliusstraat 12, 3313LL Dordrecht, NL";
 const MAX_VOL = 21.0;
-
 const ADRES_MAPPING = {
     "SHI001": "Voltastraat 6A, Dordrecht, NL", "SHI038": "Voltastraat 6A, Dordrecht, NL",
     "FUJ001": "Kortenoord 2-8, Rotterdam, NL", "FUJ118": "Kortenoord 2-8, Rotterdam, NL", "FUJWEB": "Kortenoord 2-8, Rotterdam, NL",
@@ -112,8 +110,6 @@ const ADRES_MAPPING = {
 let addressGroups = [];
 const dropZone = document.getElementById("dropZone");
 const calcBtn = document.getElementById("calcBtn");
-
-// Variabelen om de totalen bij te houden
 let globalDistances = { 1:0, 2:0, 3:0 };
 let globalTimes = { 1:0, 2:0, 3:0 };
 
@@ -135,10 +131,11 @@ function handleFile(file) {
             const custId = row[col.cust]; if(!custId) return;
             const vol = parseFloat(String(row[col.m3]).replace(",", ".")) || 0;
             const addr = ADRES_MAPPING[custId] || custId;
+            const transNo = row[col.trans];
             
             if(!groups[addr]) groups[addr] = { addr: addr, customers: new Set(), items: [], totalVol: 0 };
             groups[addr].customers.add(custId);
-            groups[addr].items.push({ no: row[col.trans], vol: vol, cust: custId });
+            groups[addr].items.push({ no: transNo, vol: vol, cust: custId });
             groups[addr].totalVol += vol;
         });
         addressGroups = Object.values(groups);
@@ -149,11 +146,9 @@ function handleFile(file) {
 }
 
 calcBtn.onclick = () => {
-    // Reset totalen bij nieuwe berekening
     globalDistances = { 1:0, 2:0, 3:0 };
     globalTimes = { 1:0, 2:0, 3:0 };
     updateGlobalMetrics();
-
     const strat = document.getElementById("strategy").value;
     let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
     let sortedGroups = [...addressGroups];
@@ -162,9 +157,7 @@ calcBtn.onclick = () => {
         sortedGroups.sort((a, b) => {
             const cityA = a.addr.split(',').reverse()[1]?.trim() || "";
             const cityB = b.addr.split(',').reverse()[1]?.trim() || "";
-            if (cityA === cityB) {
-                return a.addr.replace(/[^a-zA-Z]/g, "").localeCompare(b.addr.replace(/[^a-zA-Z]/g, ""));
-            }
+            if (cityA === cityB) return a.addr.replace(/[^a-zA-Z]/g, "").localeCompare(b.addr.replace(/[^a-zA-Z]/g, ""));
             return cityA.localeCompare(cityB);
         });
     } else {
@@ -173,14 +166,12 @@ calcBtn.onclick = () => {
 
     sortedGroups.forEach(group => {
         let target;
+        const getScore = (t) => (t.vol * 1.5) + (t.stops.length * 1.0);
+
         if(strat === 'regio') {
             target = trucks
                 .filter(t => t.vol + group.totalVol <= MAX_VOL + 1)
-                .sort((a, b) => {
-                    let scoreA = (a.vol * 1.5) + (a.stops.length * 1.0);
-                    let scoreB = (b.vol * 1.5) + (b.stops.length * 1.0);
-                    return scoreA - scoreB;
-                })[0];
+                .sort((a, b) => getScore(a) - getScore(b))[0];
             if (!target) target = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
         } else if(strat === 'greedy') {
             target = trucks.find(t => t.vol + group.totalVol <= MAX_VOL) || trucks.reduce((p, c) => c.vol < p.vol ? c : p);
@@ -192,17 +183,34 @@ calcBtn.onclick = () => {
             target = trucks.reduce((p, c) => (p.vol/MAX_VOL + p.stops.length/10) < (c.vol/MAX_VOL + c.stops.length/10) ? p : c);
         }
 
+        // SPLIT LOGICA: Alleen als volume echt te groot is voor de gekozen truck
         if (group.totalVol > MAX_VOL || target.vol + group.totalVol > MAX_VOL + 2) {
-            group.items.forEach(item => {
-                let chosen = trucks.sort((a, b) => {
-                    let scoreA = (a.vol * 1.5) + (a.stops.length * 1.0);
-                    let scoreB = (b.vol * 1.5) + (b.stops.length * 1.0);
-                    return scoreA - scoreB;
-                })[0];
+            // FIX 1: Bij splitsen over 21m3, gebruik MAXIMAAL 2 trucks
+            let availableTrucks = [...trucks].sort((a, b) => getScore(a) - getScore(b)).slice(0, 2);
+            
+            // FIX 2: Groepeer items per transportnummer zodat kleine orders bij elkaar blijven
+            let ordersInGroup = {};
+            group.items.forEach(it => {
+                if(!ordersInGroup[it.no]) ordersInGroup[it.no] = { vol: 0, items: [] };
+                ordersInGroup[it.no].vol += it.vol;
+                ordersInGroup[it.no].items.push(it);
+            });
+
+            Object.values(ordersInGroup).forEach(order => {
+                // Kies van de 2 geselecteerde trucks degene met de laagste score voor deze complete order
+                let chosen = availableTrucks.sort((a, b) => getScore(a) - getScore(b))[0];
+                
                 let s = chosen.stops.find(x => x.addr === group.addr);
-                if(s) { s.items.push(item); s.currentVol += item.vol; s.custs.add(item.cust); }
-                else { chosen.stops.push({ addr: group.addr, custs: new Set([item.cust]), items: [item], currentVol: item.vol }); }
-                chosen.vol += item.vol;
+                if(!s) {
+                    s = { addr: group.addr, custs: new Set(), items: [], currentVol: 0 };
+                    chosen.stops.push(s);
+                }
+                order.items.forEach(item => {
+                    s.items.push(item);
+                    s.currentVol += item.vol;
+                    s.custs.add(item.cust);
+                    chosen.vol += item.vol;
+                });
             });
         } else {
             target.stops.push({ addr: group.addr, custs: group.customers, items: group.items, currentVol: group.totalVol });
@@ -249,18 +257,14 @@ function initM(t) {
     const map = new google.maps.Map(el, { zoom: 10, center: {lat: 51.81, lng: 4.67}, disableDefaultUI: true });
     const ds = new google.maps.DirectionsService(), dr = new google.maps.DirectionsRenderer({ map });
     const waypoints = t.stops.map(s => ({ location: s.addr, stopover: true }));
-
     ds.route({ origin: WAREHOUSE, destination: WAREHOUSE, waypoints, optimizeWaypoints: true, travelMode: 'DRIVING' }, (res, stat) => {
         if (stat === 'OK') {
             dr.setDirections(res);
             let d = 0, tt = 0;
             res.routes[0].legs.forEach(l => { d += l.distance.value; tt += l.duration.value; });
-            
-            // Sla op voor totaaloverzicht
             globalDistances[t.id] = d;
             globalTimes[t.id] = tt;
             updateGlobalMetrics();
-
             document.getElementById(`dist-${t.id}`).innerText = (d/1000).toFixed(1) + " km";
             document.getElementById(`time-${t.id}`).innerText = Math.floor(tt/3600) + "u " + Math.floor((tt%3600)/60) + "m";
         }
@@ -270,7 +274,6 @@ function initM(t) {
 function updateGlobalMetrics() {
     let totalD = Object.values(globalDistances).reduce((a, b) => a + b, 0);
     let totalT = Object.values(globalTimes).reduce((a, b) => a + b, 0);
-    
     document.getElementById("total-dist").innerText = (totalD/1000).toFixed(1) + " km";
     document.getElementById("total-time").innerText = Math.floor(totalT/3600) + "u " + Math.floor((totalT%3600)/60) + "m";
 }
