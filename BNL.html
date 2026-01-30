@@ -135,7 +135,7 @@ calcBtn.onclick = () => {
     let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
     let sortedGroups = [...addressGroups];
 
-    // FIX: Verbeterde sortering voor Regio (Stad eerst, negeer leestekens voor MAS005)
+    // 1. Sorteer op Stad (Fix voor MAS005/leestekens)
     if (strat === 'regio') {
         sortedGroups.sort((a, b) => {
             const cityA = a.addr.split(',').reverse()[1]?.trim() || "";
@@ -151,8 +151,21 @@ calcBtn.onclick = () => {
 
     sortedGroups.forEach(group => {
         let target;
+        
         if(strat === 'regio') {
-            target = trucks.filter(t => t.vol + group.totalVol <= MAX_VOL).sort((a,b) => a.vol - b.vol)[0] || trucks.reduce((p, c) => c.vol < p.vol ? c : p);
+            // BULLETPROOF: Zoek de truck met de laagste gecombineerde belasting (m3 + stops)
+            // We geven m3 een iets zwaardere weging (1.5) dan het aantal stops (1.0)
+            target = trucks
+                .filter(t => t.vol + group.totalVol <= MAX_VOL + 1) // Blijf binnen de marge
+                .sort((a, b) => {
+                    let scoreA = (a.vol * 1.5) + (a.stops.length * 1.0);
+                    let scoreB = (b.vol * 1.5) + (b.stops.length * 1.0);
+                    return scoreA - scoreB;
+                })[0];
+
+            // Als er echt niks past binnen de marge, pak de allerleegste
+            if (!target) target = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
+            
         } else if(strat === 'greedy') {
             target = trucks.find(t => t.vol + group.totalVol <= MAX_VOL) || trucks.reduce((p, c) => c.vol < p.vol ? c : p);
         } else if(strat === 'vol') {
@@ -163,11 +176,15 @@ calcBtn.onclick = () => {
             target = trucks.reduce((p, c) => (p.vol/MAX_VOL + p.stops.length/10) < (c.vol/MAX_VOL + c.stops.length/10) ? p : c);
         }
 
+        // Split logica als het volume te groot is
         if (group.totalVol > MAX_VOL || target.vol + group.totalVol > MAX_VOL + 2) {
             group.items.forEach(item => {
-                let pool = [trucks[0], trucks[1]];
-                let chosen = pool.reduce((p, c) => c.vol < p.vol ? c : p);
-                if(chosen.vol > 20) chosen = trucks[2];
+                // Ook bij splitsen kijken we naar de beste balans
+                let chosen = trucks.sort((a, b) => {
+                    let scoreA = (a.vol * 1.5) + (a.stops.length * 1.0);
+                    let scoreB = (b.vol * 1.5) + (b.stops.length * 1.0);
+                    return scoreA - scoreB;
+                })[0];
                 
                 let s = chosen.stops.find(x => x.addr === group.addr);
                 if(s) { s.items.push(item); s.currentVol += item.vol; s.custs.add(item.cust); }
@@ -181,7 +198,6 @@ calcBtn.onclick = () => {
     });
     render(trucks);
 };
-
 function render(trucks) {
     const grid = document.getElementById("resultsGrid");
     grid.innerHTML = "";
