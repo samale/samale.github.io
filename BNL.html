@@ -34,14 +34,19 @@ header h1 { font-size: 2.2rem; font-weight: 800; color: #0f172a; }
 .copy-footer { padding: 20px; background: #fff; border-top: 1px solid var(--border); }
 .btn-copy { width: 100%; padding: 12px; background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
 .btn-copy.success { background: var(--accent); color: white; }
+#status { color: var(--text-light); font-size: 0.9rem; margin-top: 10px; }
 </style>
 </head>
 <body>
 
 <div class="container">
-    <header><h1>Logistics Optimizer Pro</h1><p>Equal Stops & Equal Volumes Distribution</p></header>
+    <header><h1>Fleet Load Optimizer</h1><p>Balanced Stops, Volumes & Live Map Routing</p></header>
     <div class="upload-area">
-        <div id="dropZone"><div id="status">Click or Drop Excel file here</div></div>
+        <div id="dropZone">
+            <div style="font-size:1.5rem">📄</div>
+            <div style="font-weight:700">Drop Excel Logistics File</div>
+            <div id="status">Waiting for file...</div>
+        </div>
         <div class="control-card">
             <button class="btn" id="calcBtn" disabled>Generate Balanced Routes</button>
         </div>
@@ -53,7 +58,7 @@ header h1 { font-size: 2.2rem; font-weight: 800; color: #0f172a; }
 const START_LOC = "Snelliusstraat 12, Dordrecht";
 const clientAddresses = {"SHI001":"Dordrecht Voltastraat 6A","FUJ001":"ROTTERDAM Kortenoord 2-8","NEK118":"Rotterdam Columbusstraat 22-26","MAA002":"HOOGVLIET Klompenmakerstraat 26","WRI001":"ROTTERDAM Bunschotenweg 58","RMS001":"Rotterdam Plompertstraat 50","GIM001":"Schiedam Jan Van Galenstraat 9","WRKL00":"ROTTERDAM Bunschotenweg 58","FUJWEB":"ROTTERDAM Kortenoord 2-8"};
 
-let processedData = [];
+let rawLocations = [];
 const dropZone = document.getElementById("dropZone");
 const calcBtn = document.getElementById("calcBtn");
 
@@ -69,19 +74,19 @@ function handleFile(file) {
         let hIdx = rows.findIndex(row => row.includes("Customer"));
         const heads = rows[hIdx];
         const data = rows.slice(hIdx + 1);
-        const map = { cust: heads.indexOf("Customer"), trans: heads.indexOf("Transport no."), m3: heads.indexOf("Expected mtr3") };
+        const colMap = { cust: heads.indexOf("Customer"), trans: heads.indexOf("Transport no."), m3: heads.indexOf("Expected mtr3") };
         
         let groups = {};
         data.forEach(row => {
-            const id = row[map.cust]; if(!id) return;
-            const tNo = String(row[map.trans]);
-            const vol = parseFloat(String(row[map.m3]).replace(",", ".")) || 0;
+            const id = row[colMap.cust]; if(!id) return;
+            const tNo = String(row[colMap.trans]);
+            const vol = parseFloat(String(row[colMap.m3]).replace(",", ".")) || 0;
             if(!groups[id]) groups[id] = { id, items: [], totalVol: 0, addr: clientAddresses[id] || id };
             groups[id].items.push({ no: tNo, vol: vol });
             groups[id].totalVol += vol;
         });
-        processedData = Object.values(groups);
-        document.getElementById("status").innerText = `Loaded ${processedData.length} Locations. Ready.`;
+        rawLocations = Object.values(groups);
+        document.getElementById("status").innerText = `${rawLocations.length} locations loaded. Click calculate.`;
         calcBtn.disabled = false;
     };
     r.readAsArrayBuffer(file);
@@ -89,43 +94,41 @@ function handleFile(file) {
 
 calcBtn.onclick = () => {
     let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
-    let totalItems = processedData.reduce((a,b) => a + b.items.length, 0);
     
-    // Sort by largest orders first
-    let customers = [...processedData].sort((a,b) => b.totalVol - a.totalVol);
+    // Sort customers by volume (highest first)
+    let customers = [...rawLocations].sort((a,b) => b.totalVol - a.totalVol);
 
     customers.forEach(cust => {
-        // We calculate a 'Fairness Score' to choose the truck
-        // Score factors in BOTH current volume and number of stops already assigned
-        let targetTruck = trucks.reduce((p, c) => {
-            let pScore = (p.vol / 21) + (p.stops.length * 0.5);
-            let cScore = (c.vol / 21) + (c.stops.length * 0.5);
-            return cScore < pScore ? c : p;
+        // Balance Logic: Find truck with lowest Load Factor (Mix of Vol + Stop Count)
+        let target = trucks.reduce((prev, curr) => {
+            let prevScore = (prev.vol / 21) + (prev.stops.length * 0.4);
+            let currScore = (curr.vol / 21) + (curr.stops.length * 0.4);
+            return currScore < prevScore ? curr : prev;
         });
 
-        // Split logic: If adding the whole customer exceeds 21m3, split it.
-        if (targetTruck.vol + cust.totalVol > 21 || cust.totalVol > 21) {
+        // Split Logic for massive orders (e.g. NEK118 > 21m3)
+        if (target.vol + cust.totalVol > 21 || cust.totalVol > 21) {
             cust.items.forEach(item => {
-                let currentT = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
-                let existing = currentT.stops.find(s => s.id === cust.id);
-                if (existing) {
-                    existing.items.push(item);
-                    existing.currentVol += item.vol;
+                let emptiest = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
+                let existingStop = emptiest.stops.find(s => s.id === cust.id);
+                if (existingStop) {
+                    existingStop.items.push(item);
+                    existingStop.currentVol += item.vol;
                 } else {
-                    currentT.stops.push({ id: cust.id, addr: cust.addr, items: [item], currentVol: item.vol });
+                    emptiest.stops.push({ id: cust.id, addr: cust.addr, items: [item], currentVol: item.vol });
                 }
-                currentT.vol += item.vol;
+                emptiest.vol += item.vol;
             });
         } else {
-            targetTruck.stops.push({ id: cust.id, addr: cust.addr, items: [...cust.items], currentVol: cust.totalVol });
-            targetTruck.vol += cust.totalVol;
+            target.stops.push({ id: cust.id, addr: cust.addr, items: [...cust.items], currentVol: cust.totalVol });
+            target.vol += cust.totalVol;
         }
     });
 
-    render(trucks);
+    renderTrucks(trucks);
 };
 
-function render(trucks) {
+function renderTrucks(trucks) {
     const grid = document.getElementById("resultsGrid");
     grid.innerHTML = "";
     trucks.forEach(t => {
@@ -137,8 +140,8 @@ function render(trucks) {
             <div class="metrics">
                 <div class="metric-box"><span class="m-label">Volume</span><span class="m-val">${t.vol.toFixed(2)} m³</span></div>
                 <div class="metric-box"><span class="m-label">Drop Count</span><span class="m-val">${t.stops.length}</span></div>
-                <div class="metric-box"><span class="m-label">Distance</span><span class="m-val" id="dist-${t.id}">--</span></div>
-                <div class="metric-box"><span class="m-label">Est. Time</span><span class="m-val" id="time-${t.id}">--</span></div>
+                <div class="metric-box"><span class="m-label">Distance</span><span class="m-val" id="dist-${t.id}">...</span></div>
+                <div class="metric-box"><span class="m-label">Est. Time</span><span class="m-val" id="time-${t.id}">...</span></div>
             </div>
             <div class="stop-list">
                 ${t.stops.map(s => `
@@ -151,42 +154,63 @@ function render(trucks) {
                     </div>
                 `).join("")}
             </div>
-            <div class="copy-footer"><button class="btn-copy" id="btn-${t.id}" onclick="copyToClipboard(${t.id})">Copy All Transport Nos</button></div>
+            <div class="copy-footer"><button class="btn-copy" id="btn-${t.id}" onclick="copyToClip(${t.id})">Copy Transport Nos</button></div>
         `;
         grid.appendChild(card);
-        initMap(t);
     });
-    window.lastCalculated = trucks;
+
+    window.currentSolution = trucks;
+    
+    // DELAY MAP INITIALIZATION to ensure elements exist in DOM
+    setTimeout(() => {
+        trucks.forEach(t => initTruckRoute(t));
+    }, 500);
 }
 
-function initMap(t) {
-    if(typeof google === "undefined") return;
-    const map = new google.maps.Map(document.getElementById(`map-${t.id}`), { zoom: 10, center: {lat: 51.81, lng: 4.67}, disableDefaultUI: true });
-    const ds = new google.maps.DirectionsService(), dr = new google.maps.DirectionsRenderer({map});
+function initTruckRoute(t) {
+    const mapEl = document.getElementById(`map-${t.id}`);
+    if (!mapEl || typeof google === "undefined") return;
+
+    const map = new google.maps.Map(mapEl, { zoom: 9, center: {lat: 51.81, lng: 4.67}, disableDefaultUI: true });
+    const ds = new google.maps.DirectionsService();
+    const dr = new google.maps.DirectionsRenderer({ map, suppressMarkers: false });
+
     const waypoints = t.stops.map(s => ({ location: s.addr, stopover: true }));
-    
-    if(waypoints.length > 0) {
-        ds.route({ origin: START_LOC, destination: START_LOC, waypoints, optimizeWaypoints: true, travelMode: 'DRIVING' }, (res, stat) => {
-            if(stat === 'OK') {
-                dr.setDirections(res);
-                let dist = 0, time = 0;
-                res.routes[0].legs.forEach(l => { dist += l.distance.value; time += l.duration.value; });
-                document.getElementById(`dist-${t.id}`).innerText = (dist/1000).toFixed(1) + " km";
-                document.getElementById(`time-${t.id}`).innerText = Math.floor(time/3600) + "h " + Math.floor((time%3600)/60) + "m";
+
+    if (waypoints.length > 0) {
+        ds.route({
+            origin: START_LOC,
+            destination: START_LOC,
+            waypoints: waypoints,
+            optimizeWaypoints: true,
+            travelMode: google.maps.TravelMode.DRIVING
+        }, (result, status) => {
+            if (status === "OK") {
+                dr.setDirections(result);
+                let totalDist = 0;
+                let totalTime = 0;
+                result.routes[0].legs.forEach(leg => {
+                    totalDist += leg.distance.value;
+                    totalTime += leg.duration.value;
+                });
+                document.getElementById(`dist-${t.id}`).innerText = (totalDist / 1000).toFixed(1) + " km";
+                document.getElementById(`time-${t.id}`).innerText = Math.floor(totalTime / 3600) + "h " + Math.floor((totalTime % 3600) / 60) + "m";
+            } else {
+                document.getElementById(`dist-${t.id}`).innerText = "N/A";
+                document.getElementById(`time-${t.id}`).innerText = "N/A";
             }
         });
     }
 }
 
-async function copyToClipboard(id) {
-    const t = window.lastCalculated.find(x => x.id === id);
-    const nos = t.stops.flatMap(s => s.items.map(i => i.no)).join(";");
+async function copyToClip(id) {
+    const truck = window.currentSolution.find(x => x.id === id);
+    const nos = truck.stops.flatMap(s => s.items.map(i => i.no)).join(";");
     await navigator.clipboard.writeText(nos);
     const btn = document.getElementById(`btn-${id}`);
-    btn.innerText = "✓ Copied to Clipboard!"; btn.classList.add("success");
-    setTimeout(() => { btn.innerText = "Copy All Transport Nos"; btn.classList.remove("success"); }, 2000);
+    btn.innerText = "✓ Copied!"; btn.classList.add("success");
+    setTimeout(() => { btn.innerText = "Copy Transport Nos"; btn.classList.remove("success"); }, 2000);
 }
 </script>
-
 </body>
 </html>
