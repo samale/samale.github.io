@@ -153,13 +153,12 @@ function handleFile(file) {
     };
     r.readAsArrayBuffer(file);
 }
-
 calcBtn.onclick = () => {
     const strat = document.getElementById("strategy").value;
     let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
     let sorted = [...addressGroups];
 
-    // THE 10 STRATEGIES SORTING LOGIC
+    // Maintain your 10 Strategy Sorting
     switch(strat) {
         case 'regio': sorted.sort((a,b) => a.addr.split(',').reverse()[1]?.trim().localeCompare(b.addr.split(',').reverse()[1]?.trim()) || b.totalVol - a.totalVol); break;
         case 'vol': sorted.sort((a,b) => b.totalVol - a.totalVol); break;
@@ -174,30 +173,48 @@ calcBtn.onclick = () => {
     }
 
     sorted.forEach(group => {
-        // Find best truck using logic: Same address first, then balanced
-        let target;
-        let existing = trucks.find(t => t.stops.some(s => s.addr === group.addr));
+        let target = null;
         
-        if (existing && existing.vol + group.totalVol <= MAX_VOL + 0.5) {
-            target = existing;
-        } else {
+        // FIX: STRICT ADDRESS LOCKING
+        // Check if any part of this address/client is already in a truck
+        let existingTruck = trucks.find(t => t.stops.some(s => s.addr === group.addr));
+        
+        if (existingTruck) {
+            // If the truck has space (allowing a small buffer for heavy clients to stay together)
+            if (existingTruck.vol + group.totalVol <= MAX_VOL + 1.5) {
+                target = existingTruck;
+            }
+        }
+
+        // If no existing truck or it's genuinely full (>22.5m3), pick the best empty/balanced truck
+        if (!target) {
             target = trucks.sort((a,b) => {
-                let scoreA = (a.vol / MAX_VOL) + (a.stops.length / 15);
-                let scoreB = (b.vol / MAX_VOL) + (b.stops.length / 15);
+                let scoreA = (a.vol / MAX_VOL) + (a.stops.length / 12);
+                let scoreB = (b.vol / MAX_VOL) + (b.stops.length / 12);
                 return scoreA - scoreB;
             })[0];
         }
 
-        // Logic: No splitting big orders to more than 3 trucks (Trucks are capped at 3 anyway)
-        if (group.totalVol > MAX_VOL || (target.vol + group.totalVol > MAX_VOL + 1)) {
+        // IMPROVED SPLIT LOGIC: Keep splits to a absolute minimum
+        if (group.totalVol > MAX_VOL || (target.vol + group.totalVol > MAX_VOL + 2)) {
+            // If we MUST split, try to keep it in just 2 trucks instead of 3
             group.items.forEach(it => {
-                let subTarget = trucks.sort((a,b) => a.vol - b.vol)[0];
+                // Find the truck that already has this address, or the emptiest one
+                let subTarget = trucks.find(t => t.stops.some(s => s.addr === group.addr)) || 
+                                trucks.sort((a,b) => a.vol - b.vol)[0];
+                
                 let s = subTarget.stops.find(x => x.addr === group.addr);
-                if(s) { s.items.push(it); s.currentVol += it.vol; s.custs.add(it.cust); }
-                else { subTarget.stops.push({ addr: group.addr, custs: new Set([it.cust]), items: [it], currentVol: it.vol }); }
+                if(s) { 
+                    s.items.push(it); 
+                    s.currentVol += it.vol; 
+                    s.custs.add(it.cust); 
+                } else { 
+                    subTarget.stops.push({ addr: group.addr, custs: new Set([it.cust]), items: [it], currentVol: it.vol }); 
+                }
                 subTarget.vol += it.vol;
             });
         } else {
+            // Normal assignment: One client, one truck.
             target.stops.push({ addr: group.addr, custs: group.customers, items: group.items, currentVol: group.totalVol });
             target.vol += group.totalVol;
         }
@@ -206,100 +223,7 @@ calcBtn.onclick = () => {
     render(trucks);
     exportBtn.style.display = 'block';
 };
-
-function render(trucks) {
-    const grid = document.getElementById("resultsGrid");
-    grid.innerHTML = "";
-    trucks.forEach(t => {
-        const card = document.createElement("div");
-        card.className = "truck-card";
-        card.innerHTML = `
-            <div class="truck-header">Vrachtwagen ${t.id}</div>
-            <div id="map-${t.id}" class="map-view"></div>
-            <div class="metrics">
-                <div><span class="m-label">Volume</span><span class="m-val">${t.vol.toFixed(2)} m³</span></div>
-                <div><span class="m-label">Stops</span><span class="m-val">${t.stops.length}</span></div>
-                <div><span class="m-label">Afstand</span><span class="m-val" id="dist-${t.id}">...</span></div>
-                <div><span class="m-label">Tijd</span><span class="m-val" id="time-${t.id}">...</span></div>
-            </div>
-            <div class="stop-list">
-                ${t.stops.map(s => `
-                    <div class="stop-card">
-                        <div class="stop-main">
-                            <div><b>${s.addr.split(',')[0]}</b><br><small>${s.addr.split(',')[1] || ''}</small></div>
-                            <div style="font-weight:800;color:var(--primary)">${s.currentVol.toFixed(2)}</div>
-                        </div>
-                        <div class="cust-tags">${Array.from(s.custs).map(c => `<span class="tag">${c}</span>`).join("")}</div>
-                    </div>`).join("")}
-            </div>
-            <button class="btn-copy" onclick="copyN(${t.id})">Transportnummers Kopiëren</button>`;
-        grid.appendChild(card);
-        setTimeout(() => initM(t), 500);
-    });
-    window.final = trucks;
-}
-
-function initM(t) {
-    const el = document.getElementById(`map-${t.id}`);
-    if(!el || typeof google === "undefined" || t.stops.length === 0) return;
-    const map = new google.maps.Map(el, { zoom: 10, center: {lat: 51.8, lng: 4.6}, disableDefaultUI: true });
-    const ds = new google.maps.DirectionsService(), dr = new google.maps.DirectionsRenderer({ map });
-    ds.route({ origin: WAREHOUSE, destination: WAREHOUSE, waypoints: t.stops.map(s => ({location: s.addr, stopover:true})), optimizeWaypoints: true, travelMode: 'DRIVING' }, (res, stat) => {
-        if (stat === 'OK') {
-            dr.setDirections(res);
-            let d = 0, tt = 0; res.routes[0].legs.forEach(l => { d += l.distance.value; tt += l.duration.value; });
-            globalDistances[t.id] = d; globalTimes[t.id] = tt;
-            document.getElementById(`dist-${t.id}`).innerText = (d/1000).toFixed(1) + " km";
-            document.getElementById(`time-${t.id}`).innerText = Math.floor(tt/3600) + "u " + Math.floor((tt%3600)/60) + "m";
-            updateGlobalMetrics();
-        }
-    });
-}
-
-function updateGlobalMetrics() {
-    const d = Object.values(globalDistances).reduce((a,b)=>a+b, 0);
-    const t = Object.values(globalTimes).reduce((a,b)=>a+b, 0);
-    document.getElementById("total-dist").innerText = (d/1000).toFixed(1) + " km";
-    document.getElementById("total-time").innerText = Math.floor(t/3600) + "u " + Math.floor((t%3600)/60) + "m";
-}
-
-function copyN(id) {
-    const t = window.final.find(x => x.id === id);
-    const nos = t.stops.flatMap(s => s.items.map(i => i.no)).join(";");
-    navigator.clipboard.writeText(nos);
-    alert("Gekopieerd!");
-}
-
-async function exportToPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
-    
-    // Summary Page
-    doc.setFontSize(22); doc.setTextColor(37, 99, 235);
-    doc.text("BNL Master Planning Overzicht", 15, 25);
-    doc.setFontSize(12); doc.setTextColor(0);
-    doc.text(`Totaal Afstand: ${document.getElementById("total-dist").innerText}`, 15, 35);
-    doc.text(`Totaal Tijd: ${document.getElementById("total-time").innerText}`, 15, 42);
-    
-    for (const t of window.final) {
-        doc.addPage();
-        doc.setFontSize(20); doc.text(`Vrachtwagen ${t.id}`, 15, 20);
-        doc.setFontSize(10);
-        doc.text(`Volume: ${t.vol.toFixed(2)} m3 | Afstand: ${document.getElementById(`dist-${t.id}`).innerText}`, 15, 28);
-        
-        const canvas = await html2canvas(document.getElementById(`map-${t.id}`), { useCORS: true, scale: 2 });
-        doc.addImage(canvas.toDataURL('image/png'), 'PNG', 15, 35, 180, 80);
-        
-        let y = 125;
-        t.stops.forEach((s, idx) => {
-            if (y > 270) { doc.addPage(); y = 20; }
-            doc.setFont(undefined, 'bold'); doc.text(`${idx+1}. ${s.addr.split(',')[0]} (${s.currentVol.toFixed(2)} m3)`, 15, y);
-            doc.setFont(undefined, 'normal'); doc.text(`TP: ${s.items.map(i=>i.no).join(", ")}`, 15, y+5);
-            y += 12;
-        });
-    }
-    doc.save("BNL_Planning_Master.pdf");
-}
+// ... (Keep the rest of your render, initM, and exportToPDF functions)
 </script>
 </body>
 </html>
