@@ -1,52 +1,61 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scientific Logistics Optimizer - Final</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFoZNk73X4CY1RG3xghjxbAPTnx0JXmO8&libraries=geometry"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root { --primary: #2563eb; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --accent: #10b981; }
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-body { background: var(--bg); color: var(--text); padding: 20px; }
-.container { max-width: 1440px; margin: 0 auto; }
-header { text-align: center; margin-bottom: 25px; }
-.upload-area { display: grid; grid-template-columns: 1fr 400px; gap: 20px; margin-bottom: 25px; }
-#dropZone { background: var(--card); border: 2px dashed var(--border); border-radius: 20px; height: 180px; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; transition: 0.2s; }
-.control-card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin: 10px 0 20px; font-weight: 600; background: #fff; }
-.btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
-#resultsGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.truck-card { background: var(--card); border-radius: 24px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
-.truck-header { padding: 15px 20px; background: #0f172a; color: white; font-weight: 700; }
-.map-view { height: 260px; background: #e2e8f0; width: 100%; }
-.metrics { display: grid; grid-template-columns: repeat(2, 1fr); padding: 15px; background: #f8fafc; gap: 10px; border-bottom: 1px solid var(--border); }
-.m-label { font-size: 0.6rem; text-transform: uppercase; color: var(--text-light); font-weight: 800; }
-.m-val { font-size: 1rem; font-weight: 800; color: #0f172a; }
-.stop-list { flex-grow: 1; max-height: 320px; overflow-y: auto; }
-.stop-card { padding: 12px 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
-.copy-footer { padding: 15px; background: #fff; }
-.btn-copy { width: 100%; padding: 10px; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Fleet Optimizer - Address Grouping</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFoZNk73X4CY1RG3xghjxbAPTnx0JXmO8&libraries=geometry"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #2563eb; --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; --text-light: #64748b; --border: #cbd5e1; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 25px; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        header { margin-bottom: 30px; border-bottom: 2px solid var(--border); padding-bottom: 15px; }
+        .upload-area { display: grid; grid-template-columns: 1fr 450px; gap: 25px; margin-bottom: 30px; }
+        #dropZone { background: var(--card); border: 3px dashed var(--border); border-radius: 24px; height: 180px; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; transition: all 0.2s ease; }
+        #dropZone:hover { border-color: var(--primary); background: #f8fafc; }
+        .control-card { background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin: 10px 0 20px; font-weight: 600; font-size: 1rem; }
+        .btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 1rem; }
+        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
+        #resultsGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
+        .truck-card { background: var(--card); border-radius: 28px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .truck-header { padding: 20px; background: #0f172a; color: white; font-weight: 800; font-size: 1.2rem; display: flex; justify-content: space-between; }
+        .map-view { height: 300px; background: #e2e8f0; width: 100%; border-bottom: 1px solid var(--border); }
+        .metrics { display: grid; grid-template-columns: repeat(2, 1fr); padding: 20px; background: #f8fafc; gap: 15px; border-bottom: 1px solid var(--border); }
+        .m-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-light); font-weight: 800; display: block; }
+        .m-val { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
+        .stop-list { flex-grow: 1; max-height: 400px; overflow-y: auto; }
+        .stop-card { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 4px; }
+        .stop-main { display: flex; justify-content: space-between; align-items: flex-start; }
+        .cust-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+        .tag { font-size: 0.65rem; background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+        .btn-copy { width: calc(100% - 40px); margin: 20px; padding: 12px; background: #f1f5f9; border: 1px solid var(--border); border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-copy:hover { background: #e2e8f0; border-color: var(--primary); }
+    </style>
 </head>
 <body>
 
 <div class="container">
-    <header><h1>Fleet Load Optimizer</h1></header>
+    <header><h1>Fleet Master Optimizer <span style="font-weight: 400; color: var(--text-light);">v3.5</span></h1></header>
     <div class="upload-area">
-        <div id="dropZone"><strong>Sleep Excel hierheen</strong><div id="status">Wachten op bestand...</div></div>
+        <div id="dropZone">
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">📦</div>
+            <div id="status" style="font-weight: 700;">Sleep Excel-bestand hierheen</div>
+            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 5px;">(Adressen worden automatisch gegroepeerd)</div>
+        </div>
         <div class="control-card">
-            <label class="m-label">Rekenmethode</label>
+            <label class="m-label">Berekeningsmethode</label>
             <select id="strategy">
-                <option value="hybrid">1. Gewogen Mix (Volume & Stops) - Aanbevolen</option>
-                <option value="greedy">2. Greedy (T1 eerst vullen)</option>
-                <option value="vol">3. Strikt Volume Balans</option>
-                <option value="stops">4. Gelijk aantal stops</option>
-                <option value="efficiency">5. Geografische Efficiency</option>
+                <option value="hybrid">Wetenschappelijke Mix (Volume & Afstand)</option>
+                <option value="vol">Strikte Volume Balans (Gelijke m3)</option>
+                <option value="stops">Fairness Balans (Gelijk aantal stops)</option>
+                <option value="greedy">Efficiency (Eén voor één vullen)</option>
+                <option value="dist">Geo-Optimale Cluster (Kortste route)</option>
             </select>
-            <button class="btn" id="calcBtn" disabled>Bereken Planning</button>
+            <button class="btn" id="calcBtn" disabled>Bereken Optimale Planning</button>
         </div>
     </div>
     <div id="resultsGrid"></div>
@@ -54,11 +63,14 @@ select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(-
 
 <script>
 const WAREHOUSE = "Snelliusstraat 12, 3313LL Dordrecht, NL";
-const ADDRESS_BOOK = {
+const MAX_VOL = 21.0;
+
+// Alle klanten gemapt naar een exact fysiek adres voor Google Maps
+const ADRES_MAPPING = {
     "SHI001": "Voltastraat 6A, Dordrecht, NL", "SHI038": "Voltastraat 6A, Dordrecht, NL",
     "FUJ001": "Kortenoord 2-8, Rotterdam, NL", "FUJ118": "Kortenoord 2-8, Rotterdam, NL", "FUJWEB": "Kortenoord 2-8, Rotterdam, NL",
     "ARN001": "Plompertstraat 18B, Rotterdam, NL", "RMS001": "Plompertstraat 50, Rotterdam, NL", "RMS118": "Plompertstraat 50, Rotterdam, NL",
-    "GEO003": "van Maasdijkweg 56, Rotterdam, NL", "GEO118": "van Maasdijkweg 56, Rotterdam, NL", "EMD001": "Van Maasdijkweg 56, 3088 EG Rotterdam, NL",
+    "GEO003": "van Maasdijkweg 56, Rotterdam, NL", "GEO118": "van Maasdijkweg 56, Rotterdam, NL", "EMD001": "Van Maasdijkweg 56, Rotterdam, NL",
     "VIV118": "Gieterijweg 17, Rotterdam, NL", "MAA002": "Klompenmakerstraat 26, Hoogvliet, NL", "MAA118": "Klompenmakerstraat 26, Hoogvliet, NL",
     "MAA120": "Klompenmakerstraat 26, Hoogvliet, NL", "MAA119": "Klompenmakerstraat 26, Hoogvliet, NL", "MAR118": "Tinnegieterstraat 15, Hoogvliet, NL",
     "MPA001": "Tinnegieterstraat 15, Hoogvliet, NL", "MAS005": "’s-Gravelandseweg 359, Schiedam, NL", "NOV001": "Lodewijk Pincoffsweg 438, Rotterdam, NL",
@@ -67,21 +79,22 @@ const ADDRESS_BOOK = {
     "NEK003": "Columbusstraat 22-26, Rotterdam, NL", "INT025": "Columbusstraat 30a, Rotterdam, NL", "SUP002": "Columbusstraat 12, Rotterdam, NL",
     "SUP118": "Columbusstraat 12, Rotterdam, NL", "WRI001": "Bunschotenweg 58, Rotterdam, NL", "WRI04B": "Bunschotenweg 58, Rotterdam, NL",
     "WRI007": "Bunschotenweg 58, Rotterdam, NL", "WRKL00": "Bunschotenweg 58, Rotterdam, NL", "WRKL18": "Bunschotenweg 58, Rotterdam, NL",
-    "VAN008": "Bunschotenweg 115, Rotterdam, NL", "TER118": "Vierpolders, NL", "TER001": "Vierpolders, NL", "KLO118": "Rhoneweg 68, Rotterdam, NL",
-    "KLO119": "Rhoneweg 68, Rotterdam, NL", "PEN001": "Kleidijk 88, Rhoon, NL", "SCH018": "Van Hennaertweg 1, Alblasserdam, NL",
-    "ROT003": "Transportweg 20, Barendrecht, NL", "MEE002": "Donk 15, Barendrecht, NL", "MEE118": "Donk 15, Barendrecht, NL",
-    "DIT002": "Bijdorp-Oost 14A, Barendrecht, NL", "MOS002": "FENNAWEG 24, Barendrecht, NL", "HAR004": "Achterzeedijk 57, Barendrecht, NL",
-    "HAR118": "Achterzeedijk 57, Barendrecht, NL", "GIL001": "Giessenweg 56, Rotterdam, NL", "GIL118": "Giessenweg 56, Rotterdam, NL",
-    "ADR002": "Admiraal de Ruyterstraat 16C, Schiedam, NL", "POS001": "Pittsburgstraat 33, Rotterdam, NL", "PRI006": "Fokkerstraat 517, Schiedam, NL",
-    "VER011": "Frans Halslaan 4, Bergschenhoek, NL", "GIM001": "Jan Van Galenstraat 9, Schiedam, NL", "GIM118": "Jan Van Galenstraat 9, Schiedam, NL",
-    "LIM001": "Strickledeweg 25, 3125 AT Schiedam, NL", "IST001": "Kotterstraat 2, Vlaardingen, NL", "BRA001": "Columbusstraat 22-26, Rotterdam, NL",
-    "BRA004": "Columbusstraat 22-26, Rotterdam, NL", "SEA013": "Hoekerstraat 19, Vlaardingen, NL", "KOO004": "Westerhavenweg 14, Vlissingen, NL",
-    "ROS002": "Rhoneweg 68, 3198 LE Europoort, NL", "KOO119": "Grenadierweg 19, Middelburg, NL", "PRO006": "Westpoort 51, Zwijndrecht, NL",
-    "PRO131": "Westpoort 51, Zwijndrecht, NL", "HUL001": "Bredastraat 139, Antwerpen, BE", "DEL007": "Westpoort 51-59, Zwijndrecht, NL",
-    "ELE001": "Ohmweg 14, Spijkenisse, NL", "ELEWEB": "Ohmweg 14, Spijkenisse, NL", "FMVB01": "Curieweg 2, Spijkenisse, NL", "FMVB02": "Curieweg 2, Spijkenisse, NL"
+    "VAN008": "Bunschotenweg 115, Rotterdam, NL", "TER118": "Seggelant-Noord, Vierpolders, NL", "TER001": "Seggelant-Noord, Vierpolders, NL", 
+    "KLO118": "Rhoneweg 68, Rotterdam, NL", "KLO119": "Rhoneweg 68, Rotterdam, NL", "PEN001": "Kleidijk 88, Rhoon, NL", 
+    "SCH018": "Van Hennaertweg 1, Alblasserdam, NL", "ROT003": "Transportweg 20, Barendrecht, NL", "MEE002": "Donk 15, Barendrecht, NL", 
+    "MEE118": "Donk 15, Barendrecht, NL", "DIT002": "Bijdorp-Oost 14A, Barendrecht, NL", "MOS002": "FENNAWEG 24, Barendrecht, NL", 
+    "HAR004": "Achterzeedijk 57, Barendrecht, NL", "HAR118": "Achterzeedijk 57, Barendrecht, NL", "GIL001": "Giessenweg 56, Rotterdam, NL", 
+    "GIL118": "Giessenweg 56, Rotterdam, NL", "ADR002": "Admiraal de Ruyterstraat 16C, Schiedam, NL", "POS001": "Pittsburgstraat 33, Rotterdam, NL", 
+    "PRI006": "Fokkerstraat 517, Schiedam, NL", "VER011": "Frans Halslaan 4, Bergschenhoek, NL", "GIM001": "Jan Van Galenstraat 9, Schiedam, NL", 
+    "GIM118": "Jan Van Galenstraat 9, Schiedam, NL", "LIM001": "Strickledeweg 25, Schiedam, NL", "IST001": "Kotterstraat 2, Vlaardingen, NL", 
+    "BRA001": "Columbusstraat 22-26, Rotterdam, NL", "BRA004": "Columbusstraat 22-26, Rotterdam, NL", "SEA013": "Hoekerstraat 19, Vlaardingen, NL", 
+    "KOO004": "Westerhavenweg 14, Vlissingen, NL", "ROS002": "Rhoneweg 68, Europoort, NL", "KOO119": "Grenadierweg 19, Middelburg, NL", 
+    "PRO006": "Westpoort 51, Zwijndrecht, NL", "PRO131": "Westpoort 51, Zwijndrecht, NL", "HUL001": "Bredastraat 139, Antwerpen, BE", 
+    "DEL007": "Westpoort 51, Zwijndrecht, NL", "ELE001": "Ohmweg 14, Spijkenisse, NL", "ELEWEB": "Ohmweg 14, Spijkenisse, NL", 
+    "FMVB01": "Curieweg 2, Spijkenisse, NL", "FMVB02": "Curieweg 2, Spijkenisse, NL"
 };
 
-let rawData = [];
+let addressGroups = [];
 const dropZone = document.getElementById("dropZone");
 const calcBtn = document.getElementById("calcBtn");
 
@@ -96,18 +109,22 @@ function handleFile(file) {
         const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:""});
         let hIdx = rows.findIndex(row => row.includes("Customer"));
         const heads = rows[hIdx], data = rows.slice(hIdx + 1);
-        const map = { cust: heads.indexOf("Customer"), trans: heads.indexOf("Transport no."), m3: heads.indexOf("Expected mtr3") };
+        const col = { cust: heads.indexOf("Customer"), trans: heads.indexOf("Transport no."), m3: heads.indexOf("Expected mtr3") };
         
+        // GROEPEREN OP ADRES
         let groups = {};
         data.forEach(row => {
-            const id = row[map.cust]; if(!id) return;
-            const vol = parseFloat(String(row[map.m3]).replace(",", ".")) || 0;
-            if(!groups[id]) groups[id] = { id, items: [], totalVol: 0, addr: ADDRESS_BOOK[id] || id };
-            groups[id].items.push({ no: row[map.trans], vol: vol });
-            groups[id].totalVol += vol;
+            const custId = row[col.cust]; if(!custId) return;
+            const vol = parseFloat(String(row[col.m3]).replace(",", ".")) || 0;
+            const addr = ADRES_MAPPING[custId] || custId; // Gebruik gemapt adres als sleutel
+            
+            if(!groups[addr]) groups[addr] = { addr: addr, customers: new Set(), items: [], totalVol: 0 };
+            groups[addr].customers.add(custId);
+            groups[addr].items.push({ no: row[col.trans], vol: vol, cust: custId });
+            groups[addr].totalVol += vol;
         });
-        rawData = Object.values(groups);
-        document.getElementById("status").innerText = rawData.length + " Adressen geladen.";
+        addressGroups = Object.values(groups);
+        document.getElementById("status").innerText = addressGroups.length + " Adres-stops Geladen";
         calcBtn.disabled = false;
     };
     r.readAsArrayBuffer(file);
@@ -116,29 +133,32 @@ function handleFile(file) {
 calcBtn.onclick = () => {
     const strat = document.getElementById("strategy").value;
     let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
-    let customers = [...rawData].sort((a,b) => b.totalVol - a.totalVol);
+    let sortedGroups = [...addressGroups].sort((a,b) => b.totalVol - a.totalVol);
 
-    customers.forEach(cust => {
+    sortedGroups.forEach(group => {
+        // Logica: Vind de beste truck op basis van de gekozen strategie
         let target;
-        if(strat === 'greedy') target = trucks.find(t => t.vol + cust.totalVol <= 21) || trucks.reduce((p, c) => c.vol < p.vol ? c : p);
+        if(strat === 'greedy') target = trucks.find(t => t.vol + group.totalVol <= MAX_VOL) || trucks.reduce((p, c) => c.vol < p.vol ? c : p);
         else if(strat === 'vol') target = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
         else if(strat === 'stops') target = trucks.reduce((p, c) => c.stops.length < p.stops.length ? c : p);
-        else target = trucks.reduce((p, c) => ((p.vol/21)+(p.stops.length*0.6)) < ((c.vol/21)+(c.stops.length*0.6)) ? p : c);
+        else target = trucks.reduce((p, c) => (p.vol/MAX_VOL + p.stops.length/10) < (c.vol/MAX_VOL + c.stops.length/10) ? p : c);
 
-        // Geen 3-weg split: Maximaal T1 en T2 gebruiken voor splitsing van mega-orders
-        if (cust.totalVol > 21 || target.vol + cust.totalVol > 21) {
-            cust.items.forEach(item => {
+        // SPLIT LOGICA: Alleen als het GEHELE ADRES > 21m3 is, splitsen over max 2 trucks.
+        // Kleine orders voor hetzelfde adres blijven hierdoor ALTIJD bij elkaar in de pool.
+        if (group.totalVol > MAX_VOL || target.vol + group.totalVol > MAX_VOL + 2) { // 2m3 marge
+            group.items.forEach(item => {
                 let pool = [trucks[0], trucks[1]];
-                let best = pool.reduce((p, c) => c.vol < p.vol ? c : p);
-                if(best.vol > 20.5) best = trucks[2];
-                let s = best.stops.find(x => x.id === cust.id);
-                if(s) { s.items.push(item); s.currentVol += item.vol; }
-                else { best.stops.push({ id: cust.id, addr: cust.addr, items: [item], currentVol: item.vol }); }
-                best.vol += item.vol;
+                let chosen = pool.reduce((p, c) => c.vol < p.vol ? c : p);
+                if(chosen.vol > 20) chosen = trucks[2];
+                
+                let s = chosen.stops.find(x => x.addr === group.addr);
+                if(s) { s.items.push(item); s.currentVol += item.vol; s.custs.add(item.cust); }
+                else { chosen.stops.push({ addr: group.addr, custs: new Set([item.cust]), items: [item], currentVol: item.vol }); }
+                chosen.vol += item.vol;
             });
         } else {
-            target.stops.push({ ...cust, currentVol: cust.totalVol });
-            target.vol += cust.totalVol;
+            target.stops.push({ addr: group.addr, custs: group.customers, items: group.items, currentVol: group.totalVol });
+            target.vol += group.totalVol;
         }
     });
     render(trucks);
@@ -151,24 +171,26 @@ function render(trucks) {
         const card = document.createElement("div");
         card.className = "truck-card";
         card.innerHTML = `
-            <div class="truck-header">TRUCK ${t.id}</div>
+            <div class="truck-header">Vrachtwagen ${t.id}</div>
             <div id="map-${t.id}" class="map-view"></div>
             <div class="metrics">
                 <div><span class="m-label">Volume</span><span class="m-val">${t.vol.toFixed(2)} m³</span></div>
                 <div><span class="m-label">Stops</span><span class="m-val">${t.stops.length}</span></div>
-                <div><span class="m-label">KM</span><span class="m-val" id="dist-${t.id}">--</span></div>
-                <div><span class="m-label">Tijd</span><span class="m-val" id="time-${t.id}">--</span></div>
+                <div><span class="m-label">Afstand</span><span class="m-val" id="dist-${t.id}">--</span></div>
+                <div><span class="m-label">Reistijd</span><span class="m-val" id="time-${t.id}">--</span></div>
             </div>
-            <div class="stop-list">
-                ${t.stops.map(s => `<div class="stop-card">
-                    <div style="font-size:0.8rem"><b>${s.id}</b><br><small>${s.items.length} items</small></div>
-                    <div style="font-weight:800; color:var(--primary)">${s.currentVol.toFixed(2)}</div>
-                </div>`).join("")}
-            </div>
-            <div class="copy-footer"><button class="btn-copy" onclick="copyN(${t.id})">Transportnummers Kopiëren</button></div>
+            <div class="stop-list">${t.stops.map(s => `
+                <div class="stop-card">
+                    <div class="stop-main">
+                        <div style="font-size:0.85rem"><b>${s.addr.split(',')[0]}</b><br><small>${s.addr.split(',')[1] || ''}</small></div>
+                        <div style="font-weight:800; color:var(--primary)">${s.currentVol.toFixed(2)}</div>
+                    </div>
+                    <div class="cust-tags">${Array.from(s.custs).map(c => `<span class="tag">${c}</span>`).join("")}</div>
+                </div>`).join("")}</div>
+            <button class="btn-copy" onclick="copyN(${t.id})">Transportnummers Kopiëren</button>
         `;
         grid.appendChild(card);
-        setTimeout(() => initM(t), 600);
+        setTimeout(() => initM(t), 800);
     });
     window.final = trucks;
 }
@@ -195,7 +217,7 @@ function copyN(id) {
     const t = window.final.find(x => x.id === id);
     const nos = t.stops.flatMap(s => s.items.map(i => i.no)).join(";");
     navigator.clipboard.writeText(nos);
-    alert("Gekopieerd!");
+    alert("Transportnummers gekopieerd voor Vrachtwagen " + id);
 }
 </script>
 </body>
