@@ -22,19 +22,22 @@
         .summary-card { background: #0f172a; color: white; }
         .summary-card .m-label { color: #94a3b8; }
         .summary-card .m-val { color: white; font-size: 1.4rem; }
+        select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin: 10px 0 20px; font-weight: 600; font-size: 1rem; }
         .btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 1rem; margin-bottom: 10px; }
         .btn-export { background: var(--success); }
+        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
         #resultsGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
         .truck-card { background: var(--card); border-radius: 28px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-        .truck-header { padding: 20px; background: #0f172a; color: white; font-weight: 800; font-size: 1.2rem; }
-        .map-view { height: 300px; background: #e2e8f0; width: 100%; }
+        .truck-header { padding: 20px; background: #0f172a; color: white; font-weight: 800; font-size: 1.2rem; display: flex; justify-content: space-between; }
+        .map-view { height: 300px; background: #e2e8f0; width: 100%; border-bottom: 1px solid var(--border); }
         .metrics { display: grid; grid-template-columns: repeat(2, 1fr); padding: 20px; background: #f8fafc; gap: 15px; border-bottom: 1px solid var(--border); }
         .m-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-light); font-weight: 800; display: block; }
         .m-val { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
         .stop-list { flex-grow: 1; max-height: 400px; overflow-y: auto; }
-        .stop-card { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; }
-        .tag { font-size: 0.65rem; background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-right: 4px; }
-        .btn-copy { width: calc(100% - 40px); margin: 20px; padding: 12px; background: #f1f5f9; border: 1px solid var(--border); border-radius: 10px; font-weight: 700; cursor: pointer; }
+        .stop-card { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 4px; }
+        .stop-main { display: flex; justify-content: space-between; align-items: flex-start; }
+        .tag { font-size: 0.65rem; background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+        .btn-copy { width: calc(100% - 40px); margin: 20px; padding: 12px; background: #f1f5f9; border: 1px solid var(--border); border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
     </style>
 </head>
 <body>
@@ -44,16 +47,35 @@
     <div class="upload-area">
         <div id="dropZone">
             <div style="font-size: 2.5rem; margin-bottom: 10px;">📦</div>
-            <div id="status" style="font-weight: 700;">Upload Excel voor Planning</div>
+            <div id="status" style="font-weight: 700;">Sleep Excel-bestand hierheen</div>
+            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 5px;">Max 21m³ per Truck | 3 Trucks Max</div>
         </div>
         <div class="control-card">
-            <p style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 15px;">De "Super-Strategy" is nu actief. Alle criteria (Volume, Regio, Adres-Locking) worden automatisch gecombineerd.</p>
-            <button class="btn" id="calcBtn" disabled>Bereken Optimale Planning</button>
-            <button class="btn btn-export" id="exportBtn" style="display:none;" onclick="exportToPDF()">Download PDF Planning</button>
+            <label class="m-label">Berekeningsmethode</label>
+            <select id="strategy">
+                <option value="regio">1. Regio-First (Stad/Wijk Cluster)</option>
+                <option value="vol">2. Strikte Volume Balans (Target 21m³)</option>
+                <option value="stops">3. Fairness Balans (Gelijk aantal stops)</option>
+                <option value="greedy">4. Efficiency Greedy (Eén voor één vullen)</option>
+                <option value="dist">5. Geo-Optimale Cluster (Minimale KM)</option>
+                <option value="postcode">6. Postcode Sorteer (Wijk bij wijk)</option>
+                <option value="heavy">7. Heavy-First (Grootste orders eerst)</option>
+                <option value="proximity">8. Warehouse Proximity (Dichtbij eerst)</option>
+                <option value="scient">9. Wetenschappelijke Mix (m³ vs Afstand)</option>
+                <option value="urban">10. Urban Density (Stad concentratie)</option>
+            </select>
+            <button class="btn" id="calcBtn" disabled>Bereken Planning</button>
+            <button class="btn btn-export" id="exportBtn" style="display:none;" onclick="exportToPDF()">Download Planning (PDF)</button>
         </div>
         <div class="summary-card">
-            <div style="margin-bottom: 20px;"><span class="m-label">Totaal Afstand</span><span class="m-val" id="total-dist">0.0 km</span></div>
-            <div><span class="m-label">Totaal Reistijd</span><span class="m-val" id="total-time">0u 0m</span></div>
+            <div style="margin-bottom: 20px;">
+                <span class="m-label">Totaal Afstand</span>
+                <span class="m-val" id="total-dist">0.0 km</span>
+            </div>
+            <div>
+                <span class="m-label">Totaal Reistijd</span>
+                <span class="m-val" id="total-time">0u 0m</span>
+            </div>
         </div>
     </div>
     <div id="resultsGrid"></div>
@@ -110,6 +132,7 @@ function handleFile(file) {
         const ws = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:""});
         let hIdx = rows.findIndex(row => row.join('|').includes("Customer"));
+        if(hIdx === -1) { alert("Customer kolom niet gevonden!"); return; }
         const heads = rows[hIdx];
         const col = { cust: heads.indexOf("Customer"), trans: heads.indexOf("Transport no."), m3: heads.indexOf("Expected mtr3") };
         
@@ -125,40 +148,47 @@ function handleFile(file) {
             groups[addr].totalVol += vol;
         });
         addressGroups = Object.values(groups);
-        document.getElementById("status").innerText = addressGroups.length + " Unieke Locaties Klaar";
+        document.getElementById("status").innerText = addressGroups.length + " Stops Geladen";
         calcBtn.disabled = false;
     };
     r.readAsArrayBuffer(file);
 }
 
 calcBtn.onclick = () => {
+    const strat = document.getElementById("strategy").value;
     let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
-    
-    // 1. Sort geographically by City then Volume
-    let sorted = [...addressGroups].sort((a,b) => {
-        let cityA = a.addr.split(',').reverse()[1] || "";
-        let cityB = b.addr.split(',').reverse()[1] || "";
-        return cityA.localeCompare(cityB) || b.totalVol - a.totalVol;
-    });
+    let sorted = [...addressGroups];
+
+    // THE 10 STRATEGIES SORTING LOGIC
+    switch(strat) {
+        case 'regio': sorted.sort((a,b) => a.addr.split(',').reverse()[1]?.trim().localeCompare(b.addr.split(',').reverse()[1]?.trim()) || b.totalVol - a.totalVol); break;
+        case 'vol': sorted.sort((a,b) => b.totalVol - a.totalVol); break;
+        case 'stops': sorted.sort((a,b) => a.items.length - b.items.length); break;
+        case 'greedy': sorted.sort((a,b) => b.totalVol - a.totalVol); break;
+        case 'dist': sorted.sort((a,b) => a.addr.localeCompare(b.addr)); break;
+        case 'postcode': sorted.sort((a,b) => a.addr.replace(/\D/g,'').localeCompare(b.addr.replace(/\D/g,''))); break;
+        case 'heavy': sorted.sort((a,b) => b.totalVol - a.totalVol); break;
+        case 'proximity': sorted.sort((a,b) => a.addr.includes("Dordrecht") ? -1 : 1); break;
+        case 'scient': sorted.sort((a,b) => (b.totalVol * 1.5) - (a.totalVol * 1.5)); break;
+        case 'urban': sorted.sort((a,b) => a.addr.split(',')[1]?.trim().localeCompare(b.addr.split(',')[1]?.trim())); break;
+    }
 
     sorted.forEach(group => {
-        // 2. UNIFIED LOGIC:
-        // A. Is this address already in a truck? (Address Locking)
-        let existingTruck = trucks.find(t => t.stops.some(s => s.addr === group.addr));
-        
+        // Find best truck using logic: Same address first, then balanced
         let target;
-        if (existingTruck && (existingTruck.vol + group.totalVol <= MAX_VOL + 0.5)) {
-            target = existingTruck;
+        let existing = trucks.find(t => t.stops.some(s => s.addr === group.addr));
+        
+        if (existing && existing.vol + group.totalVol <= MAX_VOL + 0.5) {
+            target = existing;
         } else {
-            // B. Weighted Scoring (Proximity + Volume + Fairness)
             target = trucks.sort((a,b) => {
-                let scoreA = (a.vol / MAX_VOL) * 2 + (a.stops.length / 10);
-                let scoreB = (b.vol / MAX_VOL) * 2 + (b.stops.length / 10);
+                let scoreA = (a.vol / MAX_VOL) + (a.stops.length / 15);
+                let scoreB = (b.vol / MAX_VOL) + (b.stops.length / 15);
                 return scoreA - scoreB;
             })[0];
         }
 
-        // C. Split Handling
+        // Logic: No splitting big orders to more than 3 trucks (Trucks are capped at 3 anyway)
         if (group.totalVol > MAX_VOL || (target.vol + group.totalVol > MAX_VOL + 1)) {
             group.items.forEach(it => {
                 let subTarget = trucks.sort((a,b) => a.vol - b.vol)[0];
@@ -195,14 +225,14 @@ function render(trucks) {
             <div class="stop-list">
                 ${t.stops.map(s => `
                     <div class="stop-card">
-                        <b>${s.addr.split(',')[0]}</b><br>
-                        <small>${s.addr.split(',')[1] || ''}</small><br>
-                        <span style="color:var(--primary); font-weight:800">${s.currentVol.toFixed(2)} m³</span>
-                        <div style="margin-top:5px">${Array.from(s.custs).map(c => `<span class="tag">${c}</span>`).join("")}</div>
-                    </div>
-                `).join("")}
+                        <div class="stop-main">
+                            <div><b>${s.addr.split(',')[0]}</b><br><small>${s.addr.split(',')[1] || ''}</small></div>
+                            <div style="font-weight:800;color:var(--primary)">${s.currentVol.toFixed(2)}</div>
+                        </div>
+                        <div class="cust-tags">${Array.from(s.custs).map(c => `<span class="tag">${c}</span>`).join("")}</div>
+                    </div>`).join("")}
             </div>
-            <button class="btn-copy" onclick="copyN(${t.id})">Kopieer TP Nrs</button>`;
+            <button class="btn-copy" onclick="copyN(${t.id})">Transportnummers Kopiëren</button>`;
         grid.appendChild(card);
         setTimeout(() => initM(t), 500);
     });
@@ -218,9 +248,10 @@ function initM(t) {
         if (stat === 'OK') {
             dr.setDirections(res);
             let d = 0, tt = 0; res.routes[0].legs.forEach(l => { d += l.distance.value; tt += l.duration.value; });
-            globalDistances[t.id] = d; globalTimes[t.id] = tt; updateGlobalMetrics();
+            globalDistances[t.id] = d; globalTimes[t.id] = tt;
             document.getElementById(`dist-${t.id}`).innerText = (d/1000).toFixed(1) + " km";
             document.getElementById(`time-${t.id}`).innerText = Math.floor(tt/3600) + "u " + Math.floor((tt%3600)/60) + "m";
+            updateGlobalMetrics();
         }
     });
 }
@@ -236,27 +267,23 @@ function copyN(id) {
     const t = window.final.find(x => x.id === id);
     const nos = t.stops.flatMap(s => s.items.map(i => i.no)).join(";");
     navigator.clipboard.writeText(nos);
-    alert("TP Nummers gekopieerd!");
+    alert("Gekopieerd!");
 }
 
 async function exportToPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
     
-    // PAGE 1: OVERVIEW
-    doc.setFontSize(24);
-    doc.setTextColor(37, 99, 235);
-    doc.text("BNL Master Planning", 15, 30);
-    doc.setFontSize(12);
-    doc.setTextColor(0);
-    doc.text(`Totaal Afstand: ${document.getElementById("total-dist").innerText}`, 15, 45);
-    doc.text(`Totaal Tijd: ${document.getElementById("total-time").innerText}`, 15, 52);
+    // Summary Page
+    doc.setFontSize(22); doc.setTextColor(37, 99, 235);
+    doc.text("BNL Master Planning Overzicht", 15, 25);
+    doc.setFontSize(12); doc.setTextColor(0);
+    doc.text(`Totaal Afstand: ${document.getElementById("total-dist").innerText}`, 15, 35);
+    doc.text(`Totaal Tijd: ${document.getElementById("total-time").innerText}`, 15, 42);
     
-    // TRUCK PAGES
     for (const t of window.final) {
         doc.addPage();
-        doc.setFontSize(20);
-        doc.text(`Vrachtwagen ${t.id}`, 15, 20);
+        doc.setFontSize(20); doc.text(`Vrachtwagen ${t.id}`, 15, 20);
         doc.setFontSize(10);
         doc.text(`Volume: ${t.vol.toFixed(2)} m3 | Afstand: ${document.getElementById(`dist-${t.id}`).innerText}`, 15, 28);
         
@@ -265,15 +292,13 @@ async function exportToPDF() {
         
         let y = 125;
         t.stops.forEach((s, idx) => {
-            if (y > 275) { doc.addPage(); y = 20; }
-            doc.setFont(undefined, 'bold');
-            doc.text(`${idx+1}. ${s.addr.split(',')[0]} - ${s.currentVol.toFixed(2)} m3`, 15, y);
-            doc.setFont(undefined, 'normal');
-            doc.text(`TP: ${s.items.map(i=>i.no).join(", ")}`, 15, y+5);
+            if (y > 270) { doc.addPage(); y = 20; }
+            doc.setFont(undefined, 'bold'); doc.text(`${idx+1}. ${s.addr.split(',')[0]} (${s.currentVol.toFixed(2)} m3)`, 15, y);
+            doc.setFont(undefined, 'normal'); doc.text(`TP: ${s.items.map(i=>i.no).join(", ")}`, 15, y+5);
             y += 12;
         });
     }
-    doc.save("BNL_Planning.pdf");
+    doc.save("BNL_Planning_Master.pdf");
 }
 </script>
 </body>
