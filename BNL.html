@@ -616,6 +616,8 @@
                     document.getElementById(`dist-${t.id}`).innerText = (d/1000).toFixed(1) + " km";
                     document.getElementById(`time-${t.id}`).innerText = Math.floor(tt/3600) + "u " + Math.floor((tt%3600)/60) + "m";
                     updateGlobalMetrics();
+                    // Store optimized order
+                    window.final.find(tr => tr.id === t.id).optimizedOrder = res.routes[0].waypoint_order;
                 }
             });
         }
@@ -654,7 +656,8 @@
                 const canvas = await html2canvas(document.getElementById(`map-${t.id}`), { useCORS: true, scale: 2 });
                 doc.addImage(canvas.toDataURL('image/png'), 'PNG', 15, 35, 180, 80);
                 let y = 125;
-                t.stops.forEach((s, idx) => {
+                let orderedStops = t.optimizedOrder ? t.optimizedOrder.map(i => t.stops[i]) : t.stops;
+                orderedStops.forEach((s, idx) => {
                     if (y > 270) {
                         doc.addPage();
                         y = 20;
