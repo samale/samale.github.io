@@ -2,8 +2,9 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Fleet Optimizer - Address Grouping</title>
+    <title>BNL Optimizer</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFoZNk73X4CY1RG3xghjxbAPTnx0JXmO8&libraries=geometry"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -39,7 +40,7 @@
 <body>
 
 <div class="container">
-    <header><h1>Fleet Master Optimizer <span style="font-weight: 400; color: var(--text-light);">v3.5</span></h1></header>
+    <header><h1>BNL <span style="font-weight: 400; color: var(--text-light);">OPTIMIZER</span></h1></header>
     <div class="upload-area">
         <div id="dropZone">
             <div style="font-size: 2.5rem; margin-bottom: 10px;">📦</div>
@@ -65,7 +66,6 @@
 const WAREHOUSE = "Snelliusstraat 12, 3313LL Dordrecht, NL";
 const MAX_VOL = 21.0;
 
-// Alle klanten gemapt naar een exact fysiek adres voor Google Maps
 const ADRES_MAPPING = {
     "SHI001": "Voltastraat 6A, Dordrecht, NL", "SHI038": "Voltastraat 6A, Dordrecht, NL",
     "FUJ001": "Kortenoord 2-8, Rotterdam, NL", "FUJ118": "Kortenoord 2-8, Rotterdam, NL", "FUJWEB": "Kortenoord 2-8, Rotterdam, NL",
@@ -111,7 +111,6 @@ function handleFile(file) {
         const heads = rows[hIdx], data = rows.slice(hIdx + 1);
         const col = { cust: heads.indexOf("Customer"), trans: heads.indexOf("Transport no."), m3: heads.indexOf("Expected mtr3") };
         
-        // GROEPEREN OP ADRES
         let groups = {};
         data.forEach(row => {
             const custId = row[col.cust]; if(!custId) return;
@@ -136,16 +135,15 @@ calcBtn.onclick = () => {
     let sortedGroups = [...addressGroups].sort((a,b) => b.totalVol - a.totalVol);
 
     sortedGroups.forEach(group => {
-        // Logica: Vind de beste truck op basis van de gekozen strategie
+        
         let target;
         if(strat === 'greedy') target = trucks.find(t => t.vol + group.totalVol <= MAX_VOL) || trucks.reduce((p, c) => c.vol < p.vol ? c : p);
         else if(strat === 'vol') target = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
         else if(strat === 'stops') target = trucks.reduce((p, c) => c.stops.length < p.stops.length ? c : p);
         else target = trucks.reduce((p, c) => (p.vol/MAX_VOL + p.stops.length/10) < (c.vol/MAX_VOL + c.stops.length/10) ? p : c);
 
-        // SPLIT LOGICA: Alleen als het GEHELE ADRES > 21m3 is, splitsen over max 2 trucks.
-        // Kleine orders voor hetzelfde adres blijven hierdoor ALTIJD bij elkaar in de pool.
-        if (group.totalVol > MAX_VOL || target.vol + group.totalVol > MAX_VOL + 2) { // 2m3 marge
+        
+                if (group.totalVol > MAX_VOL || target.vol + group.totalVol > MAX_VOL + 2) { // 2m3 marge
             group.items.forEach(item => {
                 let pool = [trucks[0], trucks[1]];
                 let chosen = pool.reduce((p, c) => c.vol < p.vol ? c : p);
