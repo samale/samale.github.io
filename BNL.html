@@ -415,9 +415,37 @@
             r.readAsArrayBuffer(file);
         }
 
+        function updateCentroid(truck, latLng) {
+            const n = truck.stops.length;
+            if (!truck.centroid) {
+                truck.centroid = latLng;
+            } else {
+                const newLat = (truck.centroid.lat() * (n - 1) + latLng.lat()) / n;
+                const newLng = (truck.centroid.lng() * (n - 1) + latLng.lng()) / n;
+                truck.centroid = new google.maps.LatLng(newLat, newLng);
+            }
+        }
+
+        function getScore(truck, groupVol, groupLatLng, strat) {
+            const load = (truck.vol / MAX_VOL) + (truck.stops.length / 15);
+            let geo = 0;
+            if (truck.stops.length > 0 && truck.centroid) {
+                const dist = google.maps.geometry.spherical.computeDistanceBetween(truck.centroid, groupLatLng) / 1000;
+                geo = dist / 50; // Normalize assuming 50km max reasonable cluster size
+            }
+            const geoStrats = ['regio', 'dist', 'postcode', 'proximity', 'scient', 'urban'];
+            let geoWeight = geoStrats.includes(strat) ? (strat === 'dist' ? 2.0 : 1.0) : 0.0;
+            const loadWeight = 1.0;
+            return loadWeight * load + geoWeight * geo;
+        }
+
         calcBtn.onclick = async () => {
             const strat = document.getElementById("strategy").value;
-            let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
+            let trucks = [
+                {id:1, stops:[], vol:0, centroid: null},
+                {id:2, stops:[], vol:0, centroid: null},
+                {id:3, stops:[], vol:0, centroid: null}
+            ];
             let sorted = [...addressGroups];
             // Extract city and postcode helpers
             const getCity = addr => addr.split(',')[1]?.replace(/^\s*\d{4}[A-Z]{2}\s*/,'').trim() || '';
@@ -453,26 +481,26 @@
                     sorted.sort((a,b) => a.distToWare - b.distToWare);
                     break;
                 case 'scient':
-                    sorted.sort((a,b) => (b.totalVol / (a.distToWare + 1)) - (a.totalVol / (b.distToWare + 1)));
+                    sorted.sort((a,b) => (b.totalVol / (b.distToWare + 1)) - (a.totalVol / (a.distToWare + 1)));
                     break;
                 case 'urban':
                     sorted.sort((a,b) => getCity(a.addr).localeCompare(getCity(b.addr)));
                     break;
             }
             sorted.forEach(group => {
-                // Find existing truck by client (custId overlap)
+                // Find existing truck by client (custId overlap) - sticky rule
                 let existing = trucks.find(t => t.stops.some(s => [...s.custs].some(c => group.customers.has(c))));
                 let target;
                 if (existing && existing.vol + group.totalVol <= MAX_VOL + BUFFER) {
                     target = existing;
                 } else {
-                    target = trucks.sort((a,b) => {
-                        let scoreA = (a.vol / MAX_VOL) + (a.stops.length / 15);
-                        let scoreB = (b.vol / MAX_VOL) + (b.stops.length / 15);
-                        return scoreA - scoreB;
-                    })[0];
+                    let candidates = trucks.filter(t => t.vol + group.totalVol <= MAX_VOL + BUFFER);
+                    if (candidates.length > 0) {
+                        candidates.sort((a,b) => getScore(a, group.totalVol, group.latLng, strat) - getScore(b, group.totalVol, group.latLng, strat));
+                        target = candidates[0];
+                    }
                 }
-                if (group.totalVol > MAX_VOL || (target.vol + group.totalVol > MAX_VOL + BUFFER)) {
+                if (!target) {
                     // Split logic: sort items desc, limit trucks for this group to 2 unless total > 2*(MAX_VOL+BUFFER)
                     let items = [...group.items].sort((a,b) => b.vol - a.vol);
                     let groupTrucks = [];
@@ -482,11 +510,7 @@
                     while (groupTrucks.length < maxGroupTrucks) {
                         let candidates = trucks.filter(t => !groupTrucks.includes(t));
                         if (candidates.length === 0) break;
-                        let next = candidates.sort((a,b) => {
-                            let scoreA = (a.vol / MAX_VOL) + (a.stops.length / 15);
-                            let scoreB = (b.vol / MAX_VOL) + (b.stops.length / 15);
-                            return scoreA - scoreB;
-                        })[0];
+                        let next = candidates.sort((a,b) => getScore(a, 0, group.latLng, strat) - getScore(b, 0, group.latLng, strat))[0];
                         groupTrucks.push(next);
                     }
                     for (let it of items) {
@@ -495,14 +519,19 @@
                         for (let tr of groupTrucks.sort((a,b) => b.vol - a.vol)) {
                             if (tr.vol + it.vol <= MAX_VOL + BUFFER) {
                                 let s = tr.stops.find(x => [...x.custs].some(c => group.customers.has(c)));
+                                let isNewStop = false;
                                 if (!s) {
                                     s = { addr: group.addr, custs: new Set(), items: [], currentVol: 0 };
                                     tr.stops.push(s);
+                                    isNewStop = true;
                                 }
                                 s.items.push(it);
                                 s.currentVol += it.vol;
                                 s.custs.add(it.cust);
                                 tr.vol += it.vol;
+                                if (isNewStop) {
+                                    updateCentroid(tr, group.latLng);
+                                }
                                 fitted = true;
                                 break;
                             }
@@ -512,14 +541,19 @@
                             let subTarget = trucks.sort((a,b) => a.vol - b.vol)[0];
                             if (subTarget.vol + it.vol <= MAX_VOL + BUFFER) {
                                 let s = subTarget.stops.find(x => [...x.custs].some(c => group.customers.has(c)));
+                                let isNewStop = false;
                                 if (!s) {
                                     s = { addr: group.addr, custs: new Set(), items: [], currentVol: 0 };
                                     subTarget.stops.push(s);
+                                    isNewStop = true;
                                 }
                                 s.items.push(it);
                                 s.currentVol += it.vol;
                                 s.custs.add(it.cust);
                                 subTarget.vol += it.vol;
+                                if (isNewStop) {
+                                    updateCentroid(subTarget, group.latLng);
+                                }
                             } else {
                                 alert(`Kan item niet toewijzen: ${it.no} (vol: ${it.vol}) - Trucks vol!`);
                             }
@@ -528,6 +562,7 @@
                 } else {
                     target.stops.push({ addr: group.addr, custs: group.customers, items: group.items, currentVol: group.totalVol });
                     target.vol += group.totalVol;
+                    updateCentroid(target, group.latLng);
                 }
             });
             render(trucks);
