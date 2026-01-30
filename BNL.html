@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BNL Optimizer - Master with Export</title>
+    <title>BNL Optimizer - PDF Master</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFoZNk73X4CY1RG3xghjxbAPTnx0JXmO8&libraries=geometry"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -41,41 +43,26 @@
     </style>
 </head>
 <body>
-
 <div class="container">
     <header><h1>BNL<span style="font-weight: 400; color: var(--text-light);">Optimizer</span></h1></header>
     <div class="upload-area">
         <div id="dropZone">
             <div style="font-size: 2.5rem; margin-bottom: 10px;">📦</div>
             <div id="status" style="font-weight: 700;">Sleep Excel-bestand hierheen</div>
-            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 5px;">(Strict 21m³ Limit | Export Enabled)</div>
         </div>
         <div class="control-card">
             <label class="m-label">Berekeningsmethode</label>
             <select id="strategy">
                 <option value="regio">1. Regio-First (Master Hybrid)</option>
-                <option value="vol">2. Strikte Volume Balans (21m³ Target)</option>
-                <option value="stops">3. Fairness Balans (Gelijk aantal stops)</option>
-                <option value="greedy">4. Efficiency Greedy (Vullen tot 21m³)</option>
-                <option value="dist">5. Geo-Optimale Cluster (Kortste km)</option>
-                <option value="postcode">6. Postcode Sorteer (Wijk bij wijk)</option>
-                <option value="heavy">7. Heavy-First (Grootste orders eerst)</option>
-                <option value="proximity">8. Warehouse Proximity (Dichtbij eerst)</option>
-                <option value="scient">9. Wetenschappelijke Mix (m³ vs Afstand)</option>
-                <option value="urban">10. Urban Density (Stad concentratie)</option>
+                <option value="vol">2. Strikte Volume Balans</option>
+                <option value="greedy">3. Efficiency Greedy</option>
             </select>
             <button class="btn" id="calcBtn" disabled>Bereken Planning</button>
-            <button class="btn btn-export" id="exportBtn" style="display:none;" onclick="exportPlanning()">Download Chauffeurs Planning</button>
+            <button class="btn btn-export" id="exportBtn" style="display:none;" onclick="exportToPDF()">Download Chauffeurs Planning (PDF)</button>
         </div>
         <div class="summary-card">
-            <div style="margin-bottom: 20px;">
-                <span class="m-label">Totaal Afstand</span>
-                <span class="m-val" id="total-dist">0.0 km</span>
-            </div>
-            <div>
-                <span class="m-label">Totaal Reistijd</span>
-                <span class="m-val" id="total-time">0u 0m</span>
-            </div>
+            <div style="margin-bottom: 20px;"><span class="m-label">Totaal Afstand</span><span class="m-val" id="total-dist">0.0 km</span></div>
+            <div><span class="m-label">Totaal Reistijd</span><span class="m-val" id="total-time">0u 0m</span></div>
         </div>
     </div>
     <div id="resultsGrid"></div>
@@ -84,33 +71,7 @@
 <script>
 const WAREHOUSE = "Snelliusstraat 12, 3313LL Dordrecht, NL";
 const MAX_VOL = 21.0;
-const ADRES_MAPPING = {
-    "SHI001": "Voltastraat 6A, Dordrecht, NL", "SHI038": "Voltastraat 6A, Dordrecht, NL",
-    "FUJ001": "Kortenoord 2-8, Rotterdam, NL", "FUJ118": "Kortenoord 2-8, Rotterdam, NL", "FUJWEB": "Kortenoord 2-8, Rotterdam, NL",
-    "ARN001": "Plompertstraat 18B, Rotterdam, NL", "RMS001": "Plompertstraat 50, Rotterdam, NL", "RMS118": "Plompertstraat 50, Rotterdam, NL",
-    "GEO003": "van Maasdijkweg 56, Rotterdam, NL", "GEO118": "van Maasdijkweg 56, Rotterdam, NL", "EMD001": "Van Maasdijkweg 56, Rotterdam, NL",
-    "VIV118": "Gieterijweg 17, Rotterdam, NL", "MAA002": "Klompenmakerstraat 26, Hoogvliet, NL", "MAA118": "Klompenmakerstraat 26, Hoogvliet, NL",
-    "MAA120": "Klompenmakerstraat 26, Hoogvliet, NL", "MAA119": "Klompenmakerstraat 26, Hoogvliet, NL", "MAR118": "Tinnegieterstraat 15, Hoogvliet, NL",
-    "MPA001": "Tinnegieterstraat 15, Hoogvliet, NL", "MAS005": "’s-Gravelandseweg 359, Schiedam, NL", "NOV001": "Lodewijk Pincoffsweg 438, Rotterdam, NL",
-    "OUW001": "Tarwezand 2-20, Pernis, NL", "OUWWEB": "Tarwezand 2-20, Pernis, NL", "MSC001": "Columbusstraat 26-28, Rotterdam, NL",
-    "NEK001": "Columbusstraat 22-26, Rotterdam, NL", "NEK118": "Columbusstraat 22-26, Rotterdam, NL", "NEK002": "Columbusstraat 22-26, Rotterdam, NL",
-    "NEK003": "Columbusstraat 22-26, Rotterdam, NL", "INT025": "Columbusstraat 30a, Rotterdam, NL", "SUP002": "Columbusstraat 12, Rotterdam, NL",
-    "SUP118": "Columbusstraat 12, Rotterdam, NL", "WRI001": "Bunschotenweg 58, Rotterdam, NL", "WRI04B": "Bunschotenweg 58, Rotterdam, NL",
-    "WRI007": "Bunschotenweg 58, Rotterdam, NL", "WRKL00": "Bunschotenweg 58, Rotterdam, NL", "WRKL18": "Bunschotenweg 58, Rotterdam, NL",
-    "VAN008": "Bunschotenweg 115, Rotterdam, NL", "TER118": "Seggelant-Noord 17, Vierpolders, NL", "TER001": "Seggelant-Noord 17, Vierpolders, NL", 
-    "KLO118": "Rhoneweg 68, Rotterdam, NL", "KLO119": "Rhoneweg 68, Rotterdam, NL", "PEN001": "Kleidijk 88, Rhoon, NL", 
-    "SCH018": "Van Hennaertweg 1, Alblasserdam, NL", "ROT003": "Transportweg 20, Barendrecht, NL", "MEE002": "Donk 15, Barendrecht, NL", 
-    "MEE118": "Donk 15, Barendrecht, NL", "DIT002": "Bijdorp-Oost 14A, Barendrecht, NL", "MOS002": "FENNAWEG 24, Barendrecht, NL", 
-    "HAR004": "Achterzeedijk 57, Barendrecht, NL", "HAR118": "Achterzeedijk 57, Barendrecht, NL", "GIL001": "Giessenweg 56, Rotterdam, NL", 
-    "GIL118": "Giessenweg 56, Rotterdam, NL", "ADR002": "Admiraal de Ruyterstraat 16C, Schiedam, NL", "POS001": "Pittsburgstraat 33, Rotterdam, NL", 
-    "PRI006": "Fokkerstraat 517, Schiedam, NL", "VER011": "Frans Halslaan 4, Bergschenhoek, NL", "GIM001": "Jan Van Galenstraat 9, Schiedam, NL", 
-    "GIM118": "Jan Van Galenstraat 9, Schiedam, NL", "LIM001": "Strickledeweg 25, Schiedam, NL", "IST001": "Kotterstraat 2, Vlaardingen, NL", 
-    "BRA001": "Columbusstraat 22-26, Rotterdam, NL", "BRA004": "Columbusstraat 22-26, Rotterdam, NL", "SEA013": "Hoekerstraat 19, Vlaardingen, NL", 
-    "KOO004": "Westerhavenweg 14, Vlissingen, NL", "ROS002": "Rhoneweg 68, Europoort, NL", "KOO119": "Grenadierweg 19, Middelburg, NL", 
-    "PRO006": "Westpoort 51, Zwijndrecht, NL", "PRO131": "Westpoort 51, Zwijndrecht, NL", "HUL001": "Bredastraat 139, Antwerpen, BE", 
-    "DEL007": "Westpoort 51, Zwijndrecht, NL", "ELE001": "Ohmweg 14, Spijkenisse, NL", "ELEWEB": "Ohmweg 14, Spijkenisse, NL", 
-    "FMVB01": "Curieweg 2, Spijkenisse, NL", "FMVB02": "Curieweg 2, Spijkenisse, NL"
-};
+const ADRES_MAPPING = { "SHI001": "Voltastraat 6A, Dordrecht, NL", "FUJ001": "Kortenoord 2-8, Rotterdam, NL", "ARN001": "Plompertstraat 18B, Rotterdam, NL", "RMS001": "Plompertstraat 50, Rotterdam, NL", "GEO003": "van Maasdijkweg 56, Rotterdam, NL", "VIV118": "Gieterijweg 17, Rotterdam, NL", "MAA002": "Klompenmakerstraat 26, Hoogvliet, NL", "MAR118": "Tinnegieterstraat 15, Hoogvliet, NL", "MAS005": "’s-Gravelandseweg 359, Schiedam, NL", "NOV001": "Lodewijk Pincoffsweg 438, Rotterdam, NL", "OUW001": "Tarwezand 2-20, Pernis, NL", "MSC001": "Columbusstraat 26-28, Rotterdam, NL", "NEK001": "Columbusstraat 22-26, Rotterdam, NL", "INT025": "Columbusstraat 30a, Rotterdam, NL", "SUP002": "Columbusstraat 12, Rotterdam, NL", "WRI001": "Bunschotenweg 58, Rotterdam, NL", "VAN008": "Bunschotenweg 115, Rotterdam, NL", "TER118": "Seggelant-Noord 17, Vierpolders, NL", "KLO118": "Rhoneweg 68, Rotterdam, NL", "PEN001": "Kleidijk 88, Rhoon, NL", "SCH018": "Van Hennaertweg 1, Alblasserdam, NL", "ROT003": "Transportweg 20, Barendrecht, NL", "MEE002": "Donk 15, Barendrecht, NL", "DIT002": "Bijdorp-Oost 14A, Barendrecht, NL", "MOS002": "FENNAWEG 24, Barendrecht, NL", "HAR004": "Achterzeedijk 57, Barendrecht, NL", "GIL001": "Giessenweg 56, Rotterdam, NL", "ADR002": "Admiraal de Ruyterstraat 16C, Schiedam, NL", "POS001": "Pittsburgstraat 33, Rotterdam, NL", "PRI006": "Fokkerstraat 517, Schiedam, NL", "VER011": "Frans Halslaan 4, Bergschenhoek, NL", "GIM001": "Jan Van Galenstraat 9, Schiedam, NL", "LIM001": "Strickledeweg 25, Schiedam, NL", "IST001": "Kotterstraat 2, Vlaardingen, NL", "SEA013": "Hoekerstraat 19, Vlaardingen, NL", "KOO004": "Westerhavenweg 14, Vlissingen, NL", "ROS002": "Rhoneweg 68, Europoort, NL", "PRO006": "Westpoort 51, Zwijndrecht, NL", "HUL001": "Bredastraat 139, Antwerpen, BE", "ELE001": "Ohmweg 14, Spijkenisse, NL", "FMVB01": "Curieweg 2, Spijkenisse, NL" };
 
 let addressGroups = [];
 let globalDistances = { 1:0, 2:0, 3:0 };
@@ -159,31 +120,11 @@ calcBtn.onclick = () => {
     const strat = document.getElementById("strategy").value;
     let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
     let sorted = [...addressGroups];
-
     if (strat === 'regio') sorted.sort((a,b) => a.addr.split(',').reverse()[1]?.trim().localeCompare(b.addr.split(',').reverse()[1]?.trim()) || b.totalVol - a.totalVol);
-    else if (strat === 'heavy') sorted.sort((a,b) => b.totalVol - a.totalVol);
-    else if (strat === 'postcode') sorted.sort((a,b) => a.addr.replace(/\D/g,'').localeCompare(b.addr.replace(/\D/g,'')));
-
     sorted.forEach(group => {
-        let target;
-        const score = t => (t.vol * 1.8) + (t.stops.length * 1.2);
-        if (strat === 'greedy') target = trucks.find(t => t.vol + group.totalVol <= MAX_VOL) || trucks.reduce((p,c) => c.vol < p.vol ? c : p);
-        else if (strat === 'vol') target = trucks.reduce((p,c) => c.vol < p.vol ? c : p);
-        else target = trucks.filter(t => t.vol + group.totalVol <= MAX_VOL).sort((a,b) => score(a) - score(b))[0] || trucks.reduce((p,c) => c.vol < p.vol ? c : p);
-
-        if (group.totalVol > MAX_VOL || target.vol + group.totalVol > MAX_VOL) {
-            let p = [...trucks].sort((a,b) => a.vol - b.vol).slice(0, 2);
-            group.items.forEach(it => {
-                let chosen = p.sort((a,b) => a.vol - b.vol)[0];
-                let s = chosen.stops.find(x => x.addr === group.addr);
-                if(s) { s.items.push(it); s.currentVol += it.vol; s.custs.add(it.cust); }
-                else { chosen.stops.push({ addr: group.addr, custs: new Set([it.cust]), items: [it], currentVol: it.vol }); }
-                chosen.vol += it.vol;
-            });
-        } else {
-            target.stops.push({ addr: group.addr, custs: group.customers, items: group.items, currentVol: group.totalVol });
-            target.vol += group.totalVol;
-        }
+        let target = trucks.filter(t => t.vol + group.totalVol <= MAX_VOL).sort((a,b) => a.vol - b.vol)[0] || trucks.reduce((p,c) => c.vol < p.vol ? c : p);
+        target.stops.push({ addr: group.addr, custs: group.customers, items: group.items, currentVol: group.totalVol });
+        target.vol += group.totalVol;
     });
     render(trucks);
     exportBtn.style.display = 'block';
@@ -195,7 +136,8 @@ function render(trucks) {
     trucks.forEach(t => {
         const card = document.createElement("div");
         card.className = "truck-card";
-        card.innerHTML = `<div class="truck-header">Vrachtwagen ${t.id}</div><div id="map-${t.id}" class="map-view"></div><div class="metrics"><div><span class="m-label">Volume</span><span class="m-val">${t.vol.toFixed(2)} m³</span></div><div><span class="m-label">Stops</span><span class="m-val">${t.stops.length}</span></div><div><span class="m-label">Afstand</span><span class="m-val" id="dist-${t.id}">--</span></div><div><span class="m-label">Tijd</span><span class="m-val" id="time-${t.id}">--</span></div></div><div class="stop-list">${t.stops.map(s => `<div class="stop-card"><div class="stop-main"><div><b>${s.addr.split(',')[0]}</b><br><small>${s.addr.split(',')[1] || ''}</small></div><div style="font-weight:800;color:var(--primary)">${s.currentVol.toFixed(2)}</div></div><div class="cust-tags">${Array.from(s.custs).map(c => `<span class="tag">${c}</span>`).join("")}</div></div>`).join("")}</div><button class="btn-copy" onclick="copyN(${t.id})">Transportnummers Kopiëren</button>`;
+        card.id = `truck-card-${t.id}`;
+        card.innerHTML = `<div class="truck-header">Vrachtwagen ${t.id}</div><div id="map-${t.id}" class="map-view"></div><div class="metrics"><div><span class="m-label">Volume</span><span class="m-val">${t.vol.toFixed(2)} m³</span></div><div><span class="m-label">Stops</span><span class="m-val">${t.stops.length}</span></div><div><span class="m-label">Afstand</span><span class="m-val" id="dist-${t.id}">--</span></div><div><span class="m-label">Tijd</span><span class="m-val" id="time-${t.id}">--</span></div></div><div class="stop-list">${t.stops.map(s => `<div class="stop-card"><b>${s.addr}</b><br><small>${Array.from(s.custs).join(', ')}</small></div>`).join("")}</div>`;
         grid.appendChild(card);
         setTimeout(() => initM(t), 500);
     });
@@ -204,7 +146,7 @@ function render(trucks) {
 
 function initM(t) {
     const el = document.getElementById(`map-${t.id}`);
-    if(!el || typeof google === "undefined" || t.stops.length === 0) return;
+    if(!el || typeof google === "undefined") return;
     const map = new google.maps.Map(el, { zoom: 10, center: {lat: 51.8, lng: 4.6}, disableDefaultUI: true });
     const ds = new google.maps.DirectionsService(), dr = new google.maps.DirectionsRenderer({ map });
     ds.route({ origin: WAREHOUSE, destination: WAREHOUSE, waypoints: t.stops.map(s => ({location: s.addr, stopover:true})), optimizeWaypoints: true, travelMode: 'DRIVING' }, (res, stat) => {
@@ -225,34 +167,66 @@ function updateGlobalMetrics() {
     document.getElementById("total-time").innerText = Math.floor(t/3600) + "u " + Math.floor((t%3600)/60) + "m";
 }
 
-function copyN(id) {
-    const t = window.final.find(x => x.id === id);
-    const nos = t.stops.flatMap(s => s.items.map(i => i.no)).join(";");
-    navigator.clipboard.writeText(nos);
-    alert("Gekopieerd voor Vrachtwagen " + id);
-}
+// NEW PDF EXPORT FUNCTION
+async function exportToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const trucks = window.final;
 
-function exportPlanning() {
-    if(!window.final) return;
-    let exportData = [];
-    window.final.forEach(truck => {
-        truck.stops.forEach((stop, index) => {
-            stop.items.forEach(item => {
-                exportData.push({
-                    "Vrachtwagen": truck.id,
-                    "Stop Volgorde": index + 1,
-                    "Klant": item.cust,
-                    "Adres": stop.addr,
-                    "Volume (m3)": item.vol.toFixed(2),
-                    "Transport Nr": item.no
-                });
-            });
+    for (let i = 0; i < trucks.length; i++) {
+        const t = trucks[i];
+        if (i > 0) doc.addPage();
+
+        // 1. Header
+        doc.setFontSize(22);
+        doc.setTextColor(37, 99, 235);
+        doc.text(`Planning Vrachtwagen ${t.id}`, 15, 20);
+
+        // 2. Metrics
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        const dist = document.getElementById(`dist-${t.id}`).innerText;
+        const time = document.getElementById(`time-${t.id}`).innerText;
+        doc.text(`Totaal Afstand: ${dist} | Verwachte Reistijd: ${time} | Volume: ${t.vol.toFixed(2)} m³`, 15, 30);
+
+        // 3. Capture Map Image
+        const mapEl = document.getElementById(`map-${t.id}`);
+        const canvas = await html2canvas(mapEl, { useCORS: true });
+        const mapImg = canvas.toDataURL('image/png');
+        doc.addImage(mapImg, 'PNG', 15, 40, 180, 80);
+
+        // 4. Stops Table
+        doc.setFontSize(14);
+        doc.text("Stops Overzicht:", 15, 130);
+        
+        let y = 140;
+        doc.setFontSize(10);
+        // Table Headers
+        doc.setFillColor(241, 245, 249);
+        doc.rect(15, y, 180, 8, 'F');
+        doc.text("Klant", 17, y+5);
+        doc.text("Adres", 50, y+5);
+        doc.text("Transport Nrs", 150, y+5);
+        y += 10;
+
+        t.stops.forEach((s, idx) => {
+            const tpList = s.items.map(it => it.no).join(", ");
+            const clientList = Array.from(s.custs).join(", ");
+            
+            // Check page overflow
+            if (y > 270) { doc.addPage(); y = 20; }
+
+            doc.text(clientList, 17, y, { maxWidth: 30 });
+            doc.text(s.addr, 50, y, { maxWidth: 90 });
+            doc.text(tpList, 150, y, { maxWidth: 40 });
+            
+            y += 12;
+            doc.setDrawColor(203, 213, 225);
+            doc.line(15, y-2, 195, y-2);
         });
-    });
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Planning");
-    XLSX.writeFile(wb, "BNL_Chauffeurs_Planning.xlsx");
+    }
+
+    doc.save(`BNL_Chauffeurs_Planning_${new Date().toLocaleDateString()}.pdf`);
 }
 </script>
 </body>
