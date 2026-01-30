@@ -2,75 +2,59 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BNL Optimizer</title>
+    <title>BNL Master Optimizer</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFoZNk73X4CY1RG3xghjxbAPTnx0JXmO8&libraries=geometry"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=geometry"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2563eb; --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; --text-light: #64748b; --border: #cbd5e1; }
+        :root { --primary: #2563eb; --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; --border: #cbd5e1; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: var(--text); padding: 25px; }
+        body { background: var(--bg); color: var(--text); padding: 20px; }
         .container { max-width: 1600px; margin: 0 auto; }
-        header { margin-bottom: 30px; border-bottom: 2px solid var(--border); padding-bottom: 15px; }
-        .upload-area { display: grid; grid-template-columns: 1fr 350px 350px; gap: 20px; margin-bottom: 30px; }
-        #dropZone { background: var(--card); border: 3px dashed var(--border); border-radius: 24px; height: 180px; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; transition: all 0.2s ease; }
-        #dropZone:hover { border-color: var(--primary); background: #f8fafc; }
-        .control-card, .summary-card { background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .upload-area { display: grid; grid-template-columns: 1fr 350px 350px; gap: 20px; margin-bottom: 25px; }
+        #dropZone { background: var(--card); border: 3px dashed var(--border); border-radius: 20px; height: 160px; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; }
+        .control-card, .summary-card { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .summary-card { background: #0f172a; color: white; }
-        .summary-card .m-label { color: #94a3b8; }
-        .summary-card .m-val { color: white; font-size: 1.4rem; }
-        select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin: 10px 0 20px; font-weight: 600; font-size: 1rem; }
-        .btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 1rem; }
-        .btn:disabled { background: #94a3b8; cursor: not-allowed; }
-        #resultsGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
-        .truck-card { background: var(--card); border-radius: 28px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-        .truck-header { padding: 20px; background: #0f172a; color: white; font-weight: 800; font-size: 1.2rem; display: flex; justify-content: space-between; }
-        .map-view { height: 300px; background: #e2e8f0; width: 100%; border-bottom: 1px solid var(--border); }
-        .metrics { display: grid; grid-template-columns: repeat(2, 1fr); padding: 20px; background: #f8fafc; gap: 15px; border-bottom: 1px solid var(--border); }
-        .m-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-light); font-weight: 800; display: block; }
-        .m-val { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
-        .stop-list { flex-grow: 1; max-height: 400px; overflow-y: auto; }
-        .stop-card { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 4px; }
-        .stop-main { display: flex; justify-content: space-between; align-items: flex-start; }
-        .cust-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
-        .tag { font-size: 0.65rem; background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
-        .btn-copy { width: calc(100% - 40px); margin: 20px; padding: 12px; background: #f1f5f9; border: 1px solid var(--border); border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-copy:hover { background: #e2e8f0; border-color: var(--primary); }
+        select, .btn { width: 100%; padding: 12px; border-radius: 10px; margin-top: 10px; font-weight: 700; cursor: pointer; }
+        .btn { background: var(--primary); color: white; border: none; }
+        .btn:disabled { background: #94a3b8; }
+        #resultsGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .truck-card { background: var(--card); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; }
+        .truck-header { padding: 15px; background: #0f172a; color: white; font-weight: 800; display: flex; justify-content: space-between; }
+        .map-view { height: 250px; background: #e2e8f0; border-bottom: 1px solid var(--border); }
+        .metrics { display: grid; grid-template-columns: 1fr 1fr; padding: 15px; background: #f8fafc; gap: 10px; border-bottom: 1px solid var(--border); }
+        .m-label { font-size: 0.65rem; text-transform: uppercase; color: #64748b; font-weight: 800; }
+        .m-val { font-size: 1rem; font-weight: 800; color: #0f172a; }
+        .stop-list { flex-grow: 1; max-height: 350px; overflow-y: auto; padding: 10px; }
+        .stop-card { padding: 10px; border-bottom: 1px solid #f1f5f9; }
+        .tag { font-size: 0.6rem; background: #e0e7ff; color: #4338ca; padding: 2px 5px; border-radius: 4px; margin-right: 3px; font-weight: 700; }
+        .overload { color: #ef4444 !important; }
     </style>
 </head>
 <body>
 <div class="container">
-    <header><h1>BNL <span style="font-weight: 400; color: var(--text-light);">Optimizer</span></h1></header>
+    <header style="margin-bottom: 20px;"><h1>BNL <span style="font-weight: 400;">Multi-Strategy Optimizer</span></h1></header>
     <div class="upload-area">
         <div id="dropZone">
-            <div style="font-size: 2.5rem; margin-bottom: 10px;">📦</div>
-            <div id="status" style="font-weight: 700;">Sleep Excel-bestand hierheen</div>
-            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 5px;">(Adressen worden automatisch gegroepeerd)</div>
+            <b style="font-size: 1.2rem;">📁 Sleep Excel-bestand hierheen</b>
+            <p id="status" style="margin-top:5px; color: #64748b;">Max 21m³ | Max 2 Truck Split</p>
         </div>
         <div class="control-card">
-            <label class="m-label">Berekeningsmethode</label>
+            <label class="m-label">Optimalisatie Methode</label>
             <select id="strategy">
-                <option value="regio">Regio-First (Stad bij Stad + Balans)</option>
-                <option value="hybrid">Wetenschappelijke Mix (Volume & Afstand)</option>
-                <option value="vol">Strikte Volume Balans (Gelijke m3)</option>
-                <option value="stops">Fairness Balans (Gelijk aantal stops)</option>
-                <option value="greedy">Efficiency (Eén voor één vullen)</option>
-                <option value="dist">Geo-Optimale Cluster (Kortste route)</option>
+                <option value="master">Master Combo (Regio + Vol + Fair)</option>
+                <option value="regio">Strict Regio-First (Cluster per stad)</option>
+                <option value="vol">Strict Volume Balans (21m³ Target)</option>
+                <option value="fair">Fairness Mode (Gelijke stops)</option>
+                <option value="greedy">Greedy Mode (Vrachtwagens vullen)</option>
             </select>
-            <button class="btn" id="calcBtn" disabled>Bereken Optimale Planning</button>
+            <button class="btn" id="calcBtn" disabled>Start Berekening</button>
         </div>
         <div class="summary-card">
-            <div style="margin-bottom: 20px;">
-                <span class="m-label">Totaal Afstand</span>
-                <span class="m-val" id="total-dist">0.0 km</span>
-            </div>
-            <div>
-                <span class="m-label">Totaal Reistijd</span>
-                <span class="m-val" id="total-time">0u 0m</span>
-            </div>
-            <div style="margin-top: 15px; font-size: 0.65rem; color: #64748b;">(Som van alle vrachtwagens)</div>
+            <span class="m-label" style="color:#94a3b8">Fleet Totaal</span>
+            <div style="font-size: 1.2rem; font-weight: 800; margin-top:10px;" id="total-dist">0.0 km</div>
+            <div style="font-size: 1.2rem; font-weight: 800;" id="total-time">0u 0m</div>
         </div>
     </div>
     <div id="resultsGrid"></div>
@@ -110,8 +94,6 @@ const ADRES_MAPPING = {
 let addressGroups = [];
 const dropZone = document.getElementById("dropZone");
 const calcBtn = document.getElementById("calcBtn");
-let globalDistances = { 1:0, 2:0, 3:0 };
-let globalTimes = { 1:0, 2:0, 3:0 };
 
 dropZone.onclick = () => { let i = document.createElement("input"); i.type="file"; i.onchange=e=>handleFile(e.target.files[0]); i.click(); };
 dropZone.ondragover = e => e.preventDefault();
@@ -132,91 +114,63 @@ function handleFile(file) {
             const vol = parseFloat(String(row[col.m3]).replace(",", ".")) || 0;
             const addr = ADRES_MAPPING[custId] || custId;
             const transNo = row[col.trans];
-            
-            if(!groups[addr]) groups[addr] = { addr: addr, customers: new Set(), items: [], totalVol: 0 };
+            if(!groups[addr]) groups[addr] = { addr, customers: new Set(), items: [], totalVol: 0 };
             groups[addr].customers.add(custId);
             groups[addr].items.push({ no: transNo, vol: vol, cust: custId });
             groups[addr].totalVol += vol;
         });
         addressGroups = Object.values(groups);
-        document.getElementById("status").innerText = addressGroups.length + " Adres-stops Geladen";
+        document.getElementById("status").innerText = addressGroups.length + " stops geladen.";
         calcBtn.disabled = false;
     };
     r.readAsArrayBuffer(file);
 }
 
 calcBtn.onclick = () => {
-    globalDistances = { 1:0, 2:0, 3:0 };
-    globalTimes = { 1:0, 2:0, 3:0 };
-    updateGlobalMetrics();
     const strat = document.getElementById("strategy").value;
     let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
-    let sortedGroups = [...addressGroups];
+    let sorted = [...addressGroups];
 
-    if (strat === 'regio') {
-        sortedGroups.sort((a, b) => {
-            const cityA = a.addr.split(',').reverse()[1]?.trim() || "";
-            const cityB = b.addr.split(',').reverse()[1]?.trim() || "";
-            if (cityA === cityB) return a.addr.replace(/[^a-zA-Z]/g, "").localeCompare(b.addr.replace(/[^a-zA-Z]/g, ""));
-            return cityA.localeCompare(cityB);
-        });
-    } else {
-        sortedGroups.sort((a,b) => b.totalVol - a.totalVol);
+    // SORTING LOGIC PER STRATEGY
+    if (strat === 'master' || strat === 'regio') {
+        sorted.sort((a,b) => a.addr.split(',').reverse()[1]?.localeCompare(b.addr.split(',').reverse()[1]) || b.totalVol - a.totalVol);
+    } else if (strat === 'fair') {
+        sorted.sort((a,b) => b.totalVol - a.totalVol);
     }
 
-    sortedGroups.forEach(group => {
-        let target;
-        const getScore = (t) => (t.vol * 1.5) + (t.stops.length * 1.0);
+    sorted.forEach(group => {
+        let bestT;
+        // Scoring: Volume weight 2.0, Stops weight 1.0
+        const score = (t) => (t.vol / MAX_VOL * 2) + (t.stops.length / 10);
 
-        if(strat === 'regio') {
-            target = trucks
-                .filter(t => t.vol + group.totalVol <= MAX_VOL + 1)
-                .sort((a, b) => getScore(a) - getScore(b))[0];
-            if (!target) target = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
-        } else if(strat === 'greedy') {
-            target = trucks.find(t => t.vol + group.totalVol <= MAX_VOL) || trucks.reduce((p, c) => c.vol < p.vol ? c : p);
-        } else if(strat === 'vol') {
-            target = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
-        } else if(strat === 'stops') {
-            target = trucks.reduce((p, c) => c.stops.length < p.stops.length ? c : p);
-        } else {
-            target = trucks.reduce((p, c) => (p.vol/MAX_VOL + p.stops.length/10) < (c.vol/MAX_VOL + c.stops.length/10) ? p : c);
+        if (strat === 'master') {
+            bestT = trucks.filter(t => t.vol + group.totalVol <= MAX_VOL).sort((a,b) => score(a) - score(b))[0];
+        } else if (strat === 'greedy') {
+            bestT = trucks.find(t => t.vol + group.totalVol <= MAX_VOL);
+        } else if (strat === 'vol') {
+            bestT = trucks.reduce((p,c) => c.vol < p.vol ? c : p);
+        } else if (strat === 'fair') {
+            bestT = trucks.reduce((p,c) => c.stops.length < p.stops.length ? c : p);
         }
 
-        // SPLIT LOGICA: Alleen als volume echt te groot is voor de gekozen truck
-        if (group.totalVol > MAX_VOL || target.vol + group.totalVol > MAX_VOL + 2) {
-            // FIX 1: Bij splitsen over 21m3, gebruik MAXIMAAL 2 trucks
-            let availableTrucks = [...trucks].sort((a, b) => getScore(a) - getScore(b)).slice(0, 2);
-            
-            // FIX 2: Groepeer items per transportnummer zodat kleine orders bij elkaar blijven
-            let ordersInGroup = {};
+        // SPLIT LOGIC: Max 2 trucks
+        if (!bestT || group.totalVol > MAX_VOL) {
+            let partners = [...trucks].sort((a,b) => a.vol - b.vol).slice(0, 2);
             group.items.forEach(it => {
-                if(!ordersInGroup[it.no]) ordersInGroup[it.no] = { vol: 0, items: [] };
-                ordersInGroup[it.no].vol += it.vol;
-                ordersInGroup[it.no].items.push(it);
-            });
-
-            Object.values(ordersInGroup).forEach(order => {
-                // Kies van de 2 geselecteerde trucks degene met de laagste score voor deze complete order
-                let chosen = availableTrucks.sort((a, b) => getScore(a) - getScore(b))[0];
-                
-                let s = chosen.stops.find(x => x.addr === group.addr);
+                let target = partners.sort((a,b) => a.vol - b.vol)[0];
+                let s = target.stops.find(x => x.addr === group.addr);
                 if(!s) {
                     s = { addr: group.addr, custs: new Set(), items: [], currentVol: 0 };
-                    chosen.stops.push(s);
+                    target.stops.push(s);
                 }
-                order.items.forEach(item => {
-                    s.items.push(item);
-                    s.currentVol += item.vol;
-                    s.custs.add(item.cust);
-                    chosen.vol += item.vol;
-                });
+                s.items.push(it); s.currentVol += it.vol; s.custs.add(it.cust); target.vol += it.vol;
             });
         } else {
-            target.stops.push({ addr: group.addr, custs: group.customers, items: group.items, currentVol: group.totalVol });
-            target.vol += group.totalVol;
+            bestT.stops.push({ addr: group.addr, custs: group.customers, items: group.items, currentVol: group.totalVol });
+            bestT.vol += group.totalVol;
         }
     });
+
     render(trucks);
 };
 
@@ -227,62 +181,51 @@ function render(trucks) {
         const card = document.createElement("div");
         card.className = "truck-card";
         card.innerHTML = `
-            <div class="truck-header">Vrachtwagen ${t.id}</div>
+            <div class="truck-header">Vrachtwagen ${t.id} ${t.vol > MAX_VOL ? '⚠️' : ''}</div>
             <div id="map-${t.id}" class="map-view"></div>
             <div class="metrics">
-                <div><span class="m-label">Volume</span><span class="m-val">${t.vol.toFixed(2)} m³</span></div>
-                <div><span class="m-label">Stops</span><span class="m-val">${t.stops.length}</span></div>
-                <div><span class="m-label">Afstand</span><span class="m-val" id="dist-${t.id}">--</span></div>
-                <div><span class="m-label">Reistijd</span><span class="m-val" id="time-${t.id}">--</span></div>
+                <div><span class="m-label">Volume</span><br><span class="m-val ${t.vol > MAX_VOL ? 'overload' : ''}">${t.vol.toFixed(2)} m³</span></div>
+                <div><span class="m-label">Stops</span><br><span class="m-val">${t.stops.length}</span></div>
+                <div><span class="m-label">Afstand</span><br><span class="m-val" id="d-${t.id}">--</span></div>
+                <div><span class="m-label">Tijd</span><br><span class="m-val" id="t-${t.id}">--</span></div>
             </div>
             <div class="stop-list">${t.stops.map(s => `
                 <div class="stop-card">
-                    <div class="stop-main">
-                        <div style="font-size:0.85rem"><b>${s.addr.split(',')[0]}</b><br><small>${s.addr.split(',')[1] || ''}</small></div>
-                        <div style="font-weight:800; color:var(--primary)">${s.currentVol.toFixed(2)}</div>
+                    <div style="display:flex; justify-content:space-between">
+                        <span style="font-size:0.8rem"><b>${s.addr.split(',')[0]}</b></span>
+                        <b style="color:var(--primary)">${s.currentVol.toFixed(2)}</b>
                     </div>
-                    <div class="cust-tags">${Array.from(s.custs).map(c => `<span class="tag">${c}</span>`).join("")}</div>
+                    <div>${Array.from(s.custs).map(c => `<span class="tag">${c}</span>`).join("")}</div>
                 </div>`).join("")}</div>
-            <button class="btn-copy" onclick="copyN(${t.id})">Transportnummers Kopiëren</button>
+            <button class="btn" style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; margin:10px; width:calc(100% - 20px)" onclick="copy(${t.id})">Kopieer nummers</button>
         `;
         grid.appendChild(card);
-        setTimeout(() => initM(t), 800);
+        setTimeout(() => initMap(t), 500);
     });
-    window.final = trucks;
+    window.lastResult = trucks;
 }
 
-function initM(t) {
+function initMap(t) {
     const el = document.getElementById(`map-${t.id}`);
     if(!el || typeof google === "undefined" || t.stops.length === 0) return;
-    const map = new google.maps.Map(el, { zoom: 10, center: {lat: 51.81, lng: 4.67}, disableDefaultUI: true });
+    const map = new google.maps.Map(el, { zoom: 10, center: {lat: 51.8, lng: 4.6}, disableDefaultUI: true });
     const ds = new google.maps.DirectionsService(), dr = new google.maps.DirectionsRenderer({ map });
-    const waypoints = t.stops.map(s => ({ location: s.addr, stopover: true }));
-    ds.route({ origin: WAREHOUSE, destination: WAREHOUSE, waypoints, optimizeWaypoints: true, travelMode: 'DRIVING' }, (res, stat) => {
+    ds.route({ origin: WAREHOUSE, destination: WAREHOUSE, waypoints: t.stops.map(s => ({location: s.addr, stopover:true})), optimizeWaypoints: true, travelMode: 'DRIVING' }, (res, stat) => {
         if (stat === 'OK') {
             dr.setDirections(res);
             let d = 0, tt = 0;
             res.routes[0].legs.forEach(l => { d += l.distance.value; tt += l.duration.value; });
-            globalDistances[t.id] = d;
-            globalTimes[t.id] = tt;
-            updateGlobalMetrics();
-            document.getElementById(`dist-${t.id}`).innerText = (d/1000).toFixed(1) + " km";
-            document.getElementById(`time-${t.id}`).innerText = Math.floor(tt/3600) + "u " + Math.floor((tt%3600)/60) + "m";
+            document.getElementById(`d-${t.id}`).innerText = (d/1000).toFixed(1) + " km";
+            document.getElementById(`t-${t.id}`).innerText = Math.floor(tt/3600) + "u " + Math.floor((tt%3600)/60) + "m";
         }
     });
 }
 
-function updateGlobalMetrics() {
-    let totalD = Object.values(globalDistances).reduce((a, b) => a + b, 0);
-    let totalT = Object.values(globalTimes).reduce((a, b) => a + b, 0);
-    document.getElementById("total-dist").innerText = (totalD/1000).toFixed(1) + " km";
-    document.getElementById("total-time").innerText = Math.floor(totalT/3600) + "u " + Math.floor((totalT%3600)/60) + "m";
-}
-
-function copyN(id) {
-    const t = window.final.find(x => x.id === id);
-    const nos = t.stops.flatMap(s => s.items.map(i => i.no)).join(";");
+function copy(id) {
+    const t = window.lastResult.find(x => x.id === id);
+    const nos = [...new Set(t.stops.flatMap(s => s.items.map(i => i.no)))].join(";");
     navigator.clipboard.writeText(nos);
-    alert("Transportnummers gekopieerd voor Vrachtwagen " + id);
+    alert("Transportnummers gekopieerd!");
 }
 </script>
 </body>
