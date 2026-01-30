@@ -14,10 +14,11 @@ body { background: var(--bg); color: var(--text); padding: 20px; }
 .container { max-width: 1440px; margin: 0 auto; }
 header { text-align: center; margin-bottom: 30px; }
 header h1 { font-size: 2.2rem; font-weight: 800; color: #0f172a; }
-.upload-area { display: grid; grid-template-columns: 1fr 350px; gap: 20px; margin-bottom: 30px; }
-#dropZone { background: var(--card); border: 2px dashed var(--border); border-radius: 20px; padding: 40px; text-align: center; cursor: pointer; transition: 0.2s; }
+.upload-area { display: grid; grid-template-columns: 1fr 400px; gap: 20px; margin-bottom: 30px; }
+#dropZone { background: var(--card); border: 2px dashed var(--border); border-radius: 20px; padding: 40px; text-align: center; cursor: pointer; transition: 0.2s; height: 210px; display: flex; flex-direction: column; justify-content: center; }
 #dropZone.active { border-color: var(--accent); background: #f0fdf4; }
 .control-card { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 15px; font-weight: 600; color: var(--text); }
 .btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
 .btn:disabled { background: #cbd5e1; cursor: not-allowed; }
 #resultsGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
@@ -34,21 +35,28 @@ header h1 { font-size: 2.2rem; font-weight: 800; color: #0f172a; }
 .copy-footer { padding: 20px; background: #fff; border-top: 1px solid var(--border); }
 .btn-copy { width: 100%; padding: 12px; background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
 .btn-copy.success { background: var(--accent); color: white; }
-#status { color: var(--text-light); font-size: 0.9rem; margin-top: 10px; }
 </style>
 </head>
 <body>
 
 <div class="container">
-    <header><h1>Fleet Load Optimizer</h1><p>Balanced Stops, Volumes & Live Map Routing</p></header>
+    <header><h1>Fleet Load Optimizer</h1><p>Choose your strategy and balance your fleet</p></header>
     <div class="upload-area">
         <div id="dropZone">
             <div style="font-size:1.5rem">📄</div>
-            <div style="font-weight:700">Drop Excel Logistics File</div>
-            <div id="status">Waiting for file...</div>
+            <div style="font-weight:700">Drop Logistics Excel</div>
+            <div id="status" style="font-size:0.9rem; color:var(--text-light)">Waiting for file...</div>
         </div>
         <div class="control-card">
-            <button class="btn" id="calcBtn" disabled>Generate Balanced Routes</button>
+            <label style="font-size:0.7rem; font-weight:800; color:var(--text-light); text-transform:uppercase">Calculation Strategy</label>
+            <select id="strategy">
+                <option value="vol">Balanced m3 (Aggressive Split)</option>
+                <option value="stop">Balanced Stop Count (Fair Workload)</option>
+                <option value="route">Route Efficiency (Keep Locations Together)</option>
+                <option value="big">Big Order Dedication (1 Truck for Big Order)</option>
+                <option value="hybrid" selected>Hybrid Multi-Factor (Recommended)</option>
+            </select>
+            <button class="btn" id="calcBtn" disabled>Calculate Routes</button>
         </div>
     </div>
     <div id="resultsGrid"></div>
@@ -72,52 +80,56 @@ function handleFile(file) {
         const wb = XLSX.read(new Uint8Array(e.target.result), {type:"array"});
         const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:""});
         let hIdx = rows.findIndex(row => row.includes("Customer"));
-        const heads = rows[hIdx];
-        const data = rows.slice(hIdx + 1);
+        const heads = rows[hIdx], data = rows.slice(hIdx + 1);
         const colMap = { cust: heads.indexOf("Customer"), trans: heads.indexOf("Transport no."), m3: heads.indexOf("Expected mtr3") };
         
         let groups = {};
         data.forEach(row => {
             const id = row[colMap.cust]; if(!id) return;
-            const tNo = String(row[colMap.trans]);
-            const vol = parseFloat(String(row[colMap.m3]).replace(",", ".")) || 0;
+            const tNo = String(row[colMap.trans]), vol = parseFloat(String(row[colMap.m3]).replace(",", ".")) || 0;
             if(!groups[id]) groups[id] = { id, items: [], totalVol: 0, addr: clientAddresses[id] || id };
             groups[id].items.push({ no: tNo, vol: vol });
             groups[id].totalVol += vol;
         });
         rawLocations = Object.values(groups);
-        document.getElementById("status").innerText = `${rawLocations.length} locations loaded. Click calculate.`;
+        document.getElementById("status").innerText = `${rawLocations.length} locations ready.`;
         calcBtn.disabled = false;
     };
     r.readAsArrayBuffer(file);
 }
 
 calcBtn.onclick = () => {
+    const strat = document.getElementById("strategy").value;
     let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
-    
-    // Sort customers by volume (highest first)
     let customers = [...rawLocations].sort((a,b) => b.totalVol - a.totalVol);
 
     customers.forEach(cust => {
-        // Balance Logic: Find truck with lowest Load Factor (Mix of Vol + Stop Count)
-        let target = trucks.reduce((prev, curr) => {
-            let prevScore = (prev.vol / 21) + (prev.stops.length * 0.4);
-            let currScore = (curr.vol / 21) + (curr.stops.length * 0.4);
-            return currScore < prevScore ? curr : prev;
-        });
+        let target;
+        if(strat === 'vol') {
+            target = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
+        } else if(strat === 'stop') {
+            target = trucks.reduce((p, c) => c.stops.length < p.stops.length ? c : p);
+        } else if(strat === 'big' && cust.totalVol > 12) {
+            target = trucks[0]; // Always force big orders to Truck 1
+        } else {
+            // Hybrid/Route: Balance of volume and stop count
+            target = trucks.reduce((p, c) => {
+                let pScore = (p.vol / 21) + (p.stops.length * 0.6);
+                let cScore = (c.vol / 21) + (c.stops.length * 0.6);
+                return cScore < pScore ? c : p;
+            });
+        }
 
-        // Split Logic for massive orders (e.g. NEK118 > 21m3)
-        if (target.vol + cust.totalVol > 21 || cust.totalVol > 21) {
+        // Split Logic: If strategy is "route" or "big", we try NOT to split unless volume > 21
+        const shouldSplit = (strat === 'vol' || strat === 'hybrid') ? (target.vol + cust.totalVol > 21) : (cust.totalVol > 21);
+
+        if (shouldSplit) {
             cust.items.forEach(item => {
-                let emptiest = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
-                let existingStop = emptiest.stops.find(s => s.id === cust.id);
-                if (existingStop) {
-                    existingStop.items.push(item);
-                    existingStop.currentVol += item.vol;
-                } else {
-                    emptiest.stops.push({ id: cust.id, addr: cust.addr, items: [item], currentVol: item.vol });
-                }
-                emptiest.vol += item.vol;
+                let bestT = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
+                let exist = bestT.stops.find(s => s.id === cust.id);
+                if (exist) { exist.items.push(item); exist.currentVol += item.vol; }
+                else { bestT.stops.push({ id: cust.id, addr: cust.addr, items: [item], currentVol: item.vol }); }
+                bestT.vol += item.vol;
             });
         } else {
             target.stops.push({ id: cust.id, addr: cust.addr, items: [...cust.items], currentVol: cust.totalVol });
@@ -139,77 +151,51 @@ function renderTrucks(trucks) {
             <div id="map-${t.id}" class="map-view"></div>
             <div class="metrics">
                 <div class="metric-box"><span class="m-label">Volume</span><span class="m-val">${t.vol.toFixed(2)} m³</span></div>
-                <div class="metric-box"><span class="m-label">Drop Count</span><span class="m-val">${t.stops.length}</span></div>
-                <div class="metric-box"><span class="m-label">Distance</span><span class="m-val" id="dist-${t.id}">...</span></div>
-                <div class="metric-box"><span class="m-label">Est. Time</span><span class="m-val" id="time-${t.id}">...</span></div>
+                <div class="metric-box"><span class="m-label">Drops</span><span class="m-val">${t.stops.length}</span></div>
+                <div class="metric-box"><span class="m-label">KM</span><span class="m-val" id="dist-${t.id}">...</span></div>
+                <div class="metric-box"><span class="m-label">Time</span><span class="m-val" id="time-${t.id}">...</span></div>
             </div>
             <div class="stop-list">
-                ${t.stops.map(s => `
-                    <div class="stop-card">
-                        <div>
-                            <div class="stop-name">${s.id}</div>
-                            <div class="stop-trans">Nos: ${s.items.map(i => i.no).join(", ")}</div>
-                        </div>
-                        <div style="font-weight:800; color:var(--primary)">${s.currentVol.toFixed(2)}</div>
-                    </div>
-                `).join("")}
+                ${t.stops.map(s => `<div class="stop-card">
+                    <div><div class="stop-name">${s.id}</div><div class="stop-trans">Nos: ${s.items.map(i=>i.no).join(", ")}</div></div>
+                    <div style="font-weight:800; color:var(--primary)">${s.currentVol.toFixed(2)}</div>
+                </div>`).join("")}
             </div>
             <div class="copy-footer"><button class="btn-copy" id="btn-${t.id}" onclick="copyToClip(${t.id})">Copy Transport Nos</button></div>
         `;
         grid.appendChild(card);
     });
-
-    window.currentSolution = trucks;
-    
-    // DELAY MAP INITIALIZATION to ensure elements exist in DOM
-    setTimeout(() => {
-        trucks.forEach(t => initTruckRoute(t));
-    }, 500);
+    window.currentSol = trucks;
+    setTimeout(() => trucks.forEach(t => initMap(t)), 600);
 }
 
-function initTruckRoute(t) {
-    const mapEl = document.getElementById(`map-${t.id}`);
-    if (!mapEl || typeof google === "undefined") return;
-
-    const map = new google.maps.Map(mapEl, { zoom: 9, center: {lat: 51.81, lng: 4.67}, disableDefaultUI: true });
-    const ds = new google.maps.DirectionsService();
-    const dr = new google.maps.DirectionsRenderer({ map, suppressMarkers: false });
-
+function initMap(t) {
+    const el = document.getElementById(`map-${t.id}`);
+    if(!el || typeof google === "undefined") return;
+    const map = new google.maps.Map(el, { zoom: 10, center: {lat: 51.81, lng: 4.67}, disableDefaultUI: true });
+    const ds = new google.maps.DirectionsService(), dr = new google.maps.DirectionsRenderer({ map });
     const waypoints = t.stops.map(s => ({ location: s.addr, stopover: true }));
 
-    if (waypoints.length > 0) {
-        ds.route({
-            origin: START_LOC,
-            destination: START_LOC,
-            waypoints: waypoints,
-            optimizeWaypoints: true,
-            travelMode: google.maps.TravelMode.DRIVING
-        }, (result, status) => {
-            if (status === "OK") {
-                dr.setDirections(result);
-                let totalDist = 0;
-                let totalTime = 0;
-                result.routes[0].legs.forEach(leg => {
-                    totalDist += leg.distance.value;
-                    totalTime += leg.duration.value;
-                });
-                document.getElementById(`dist-${t.id}`).innerText = (totalDist / 1000).toFixed(1) + " km";
-                document.getElementById(`time-${t.id}`).innerText = Math.floor(totalTime / 3600) + "h " + Math.floor((totalTime % 3600) / 60) + "m";
-            } else {
-                document.getElementById(`dist-${t.id}`).innerText = "N/A";
-                document.getElementById(`time-${t.id}`).innerText = "N/A";
+    if(waypoints.length > 0) {
+        ds.route({ origin: START_LOC, destination: START_LOC, waypoints, optimizeWaypoints: true, travelMode: 'DRIVING' }, (res, stat) => {
+            if(stat === 'OK') {
+                dr.setDirections(res);
+                let d = 0, tt = 0;
+                res.routes[0].legs.forEach(l => { d += l.distance.value; tt += l.duration.value; });
+                document.getElementById(`dist-${t.id}`).innerText = (d/1000).toFixed(1) + " km";
+                document.getElementById(`time-${t.id}`).innerText = Math.floor(tt/3600) + "h " + Math.floor((tt%3600)/60) + "m";
             }
         });
     }
 }
 
 async function copyToClip(id) {
-    const truck = window.currentSolution.find(x => x.id === id);
-    const nos = truck.stops.flatMap(s => s.items.map(i => i.no)).join(";");
+    const t = window.currentSol.find(x => x.id === id);
+    const nos = t.stops.flatMap(s => s.items.map(i => i.no)).join(";");
     await navigator.clipboard.writeText(nos);
-    const btn = document.getElementById(`btn-${id}`);
-    btn.innerText = "✓ Copied!"; btn.classList.add("success");
-    setTimeout(() => { btn.innerText = "Copy Transport Nos"; btn.classList.remove("success"); }, 2000);
+    const b = document.getElementById(`btn-${id}`);
+    b.innerText = "✓ Copied!"; b.classList.add("success");
+    setTimeout(() => { b.innerText = "Copy Transport Nos"; b.classList.remove("success"); }, 2000);
 }
 </script>
 </body>
