@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-<meta name="robots" content="noindex, nofollow">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BNL Optimizer</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -50,6 +50,7 @@
         <div class="control-card">
             <label class="m-label">Berekeningsmethode</label>
             <select id="strategy">
+                <option value="regio">Regio-First (Stad bij Stad + Balans)</option>
                 <option value="hybrid">Wetenschappelijke Mix (Volume & Afstand)</option>
                 <option value="vol">Strikte Volume Balans (Gelijke m3)</option>
                 <option value="stops">Fairness Balans (Gelijk aantal stops)</option>
@@ -115,7 +116,7 @@ function handleFile(file) {
         data.forEach(row => {
             const custId = row[col.cust]; if(!custId) return;
             const vol = parseFloat(String(row[col.m3]).replace(",", ".")) || 0;
-            const addr = ADRES_MAPPING[custId] || custId; // Gebruik gemapt adres als sleutel
+            const addr = ADRES_MAPPING[custId] || custId;
             
             if(!groups[addr]) groups[addr] = { addr: addr, customers: new Set(), items: [], totalVol: 0 };
             groups[addr].customers.add(custId);
@@ -132,18 +133,30 @@ function handleFile(file) {
 calcBtn.onclick = () => {
     const strat = document.getElementById("strategy").value;
     let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
-    let sortedGroups = [...addressGroups].sort((a,b) => b.totalVol - a.totalVol);
+    let sortedGroups = [...addressGroups];
+
+    // Sortering aanpassen op basis van strategie
+    if (strat === 'regio') {
+        sortedGroups.sort((a, b) => a.addr.localeCompare(b.addr));
+    } else {
+        sortedGroups.sort((a,b) => b.totalVol - a.totalVol);
+    }
 
     sortedGroups.forEach(group => {
-        
         let target;
-        if(strat === 'greedy') target = trucks.find(t => t.vol + group.totalVol <= MAX_VOL) || trucks.reduce((p, c) => c.vol < p.vol ? c : p);
-        else if(strat === 'vol') target = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
-        else if(strat === 'stops') target = trucks.reduce((p, c) => c.stops.length < p.stops.length ? c : p);
-        else target = trucks.reduce((p, c) => (p.vol/MAX_VOL + p.stops.length/10) < (c.vol/MAX_VOL + c.stops.length/10) ? p : c);
+        if(strat === 'regio') {
+            target = trucks.filter(t => t.vol + group.totalVol <= MAX_VOL).sort((a,b) => a.vol - b.vol)[0] || trucks.reduce((p, c) => c.vol < p.vol ? c : p);
+        } else if(strat === 'greedy') {
+            target = trucks.find(t => t.vol + group.totalVol <= MAX_VOL) || trucks.reduce((p, c) => c.vol < p.vol ? c : p);
+        } else if(strat === 'vol') {
+            target = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
+        } else if(strat === 'stops') {
+            target = trucks.reduce((p, c) => c.stops.length < p.stops.length ? c : p);
+        } else {
+            target = trucks.reduce((p, c) => (p.vol/MAX_VOL + p.stops.length/10) < (c.vol/MAX_VOL + c.stops.length/10) ? p : c);
+        }
 
-        
-                if (group.totalVol > MAX_VOL || target.vol + group.totalVol > MAX_VOL + 2) { // 2m3 marge
+        if (group.totalVol > MAX_VOL || target.vol + group.totalVol > MAX_VOL + 2) {
             group.items.forEach(item => {
                 let pool = [trucks[0], trucks[1]];
                 let chosen = pool.reduce((p, c) => c.vol < p.vol ? c : p);
