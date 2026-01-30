@@ -2,9 +2,9 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Ultimate Fleet Optimizer - V4 (Stable)</title>
+    <title>BNL Optimizer</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCFoZNk73X4CY1RG3xghjxbAPTnx0JXmO8&libraries=geometry"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -34,25 +34,27 @@
         .cust-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
         .tag { font-size: 0.65rem; background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
         .btn-copy { width: calc(100% - 40px); margin: 20px; padding: 12px; background: #f1f5f9; border: 1px solid var(--border); border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-copy:hover { background: #e2e8f0; border-color: var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header><h1>Fleet Master Optimizer <span style="font-weight: 400; color: var(--text-light);">v4.0</span></h1></header>
+    <header><h1>BNL <span style="font-weight: 400; color: var(--text-light);">OPTIMIZER</span></h1></header>
     <div class="upload-area">
         <div id="dropZone">
             <div style="font-size: 2.5rem; margin-bottom: 10px;">📦</div>
             <div id="status" style="font-weight: 700;">Sleep Excel-bestand hierheen</div>
+            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 5px;">(Adressen worden automatisch gegroepeerd)</div>
         </div>
         <div class="control-card">
             <label class="m-label">Berekeningsmethode</label>
             <select id="strategy">
-                <option value="regio">1. Regio-First (Houdt regio's compact)</option>
-                <option value="hybrid">2. Wetenschappelijke Mix</option>
-                <option value="vol">3. Strikte Volume Balans</option>
-                <option value="stops">4. Fairness Balans (Stops)</option>
-                <option value="greedy">5. Efficiency (Vuller)</option>
+                <option value="hybrid">Wetenschappelijke Mix (Volume & Afstand)</option>
+                <option value="vol">Strikte Volume Balans (Gelijke m3)</option>
+                <option value="stops">Fairness Balans (Gelijk aantal stops)</option>
+                <option value="greedy">Efficiency (Eén voor één vullen)</option>
+                <option value="dist">Geo-Optimale Cluster (Kortste route)</option>
             </select>
             <button class="btn" id="calcBtn" disabled>Bereken Optimale Planning</button>
         </div>
@@ -77,7 +79,7 @@ const ADRES_MAPPING = {
     "NEK003": "Columbusstraat 22-26, Rotterdam, NL", "INT025": "Columbusstraat 30a, Rotterdam, NL", "SUP002": "Columbusstraat 12, Rotterdam, NL",
     "SUP118": "Columbusstraat 12, Rotterdam, NL", "WRI001": "Bunschotenweg 58, Rotterdam, NL", "WRI04B": "Bunschotenweg 58, Rotterdam, NL",
     "WRI007": "Bunschotenweg 58, Rotterdam, NL", "WRKL00": "Bunschotenweg 58, Rotterdam, NL", "WRKL18": "Bunschotenweg 58, Rotterdam, NL",
-    "VAN008": "Bunschotenweg 115, Rotterdam, NL", "TER118": "Seggelant-Noord, Vierpolders, NL", "TER001": "Seggelant-Noord, Vierpolders, NL", 
+    "VAN008": "Bunschotenweg 115, Rotterdam, NL", "TER118": "Seggelant-Noord 17, Vierpolders, NL", "TER001": "Seggelant-Noord 17, Vierpolders, NL", 
     "KLO118": "Rhoneweg 68, Rotterdam, NL", "KLO119": "Rhoneweg 68, Rotterdam, NL", "PEN001": "Kleidijk 88, Rhoon, NL", 
     "SCH018": "Van Hennaertweg 1, Alblasserdam, NL", "ROT003": "Transportweg 20, Barendrecht, NL", "MEE002": "Donk 15, Barendrecht, NL", 
     "MEE118": "Donk 15, Barendrecht, NL", "DIT002": "Bijdorp-Oost 14A, Barendrecht, NL", "MOS002": "FENNAWEG 24, Barendrecht, NL", 
@@ -113,7 +115,7 @@ function handleFile(file) {
         data.forEach(row => {
             const custId = row[col.cust]; if(!custId) return;
             const vol = parseFloat(String(row[col.m3]).replace(",", ".")) || 0;
-            const addr = ADRES_MAPPING[custId] || custId;
+            const addr = ADRES_MAPPING[custId] || custId; // Gebruik gemapt adres als sleutel
             
             if(!groups[addr]) groups[addr] = { addr: addr, customers: new Set(), items: [], totalVol: 0 };
             groups[addr].customers.add(custId);
@@ -130,30 +132,18 @@ function handleFile(file) {
 calcBtn.onclick = () => {
     const strat = document.getElementById("strategy").value;
     let trucks = [{id:1, stops:[], vol:0}, {id:2, stops:[], vol:0}, {id:3, stops:[], vol:0}];
-    let sortedGroups = [...addressGroups];
-
-    // NIEUWE SORTERING VOOR REGIO LOGICA
-    if (strat === 'regio') {
-        sortedGroups.sort((a, b) => a.addr.localeCompare(b.addr));
-    } else {
-        sortedGroups.sort((a, b) => b.totalVol - a.totalVol);
-    }
+    let sortedGroups = [...addressGroups].sort((a,b) => b.totalVol - a.totalVol);
 
     sortedGroups.forEach(group => {
+        
         let target;
-        if (strat === 'regio') {
-            target = trucks.find(t => (t.vol + group.totalVol) <= MAX_VOL) || trucks.reduce((p, c) => c.vol < p.vol ? c : p);
-        } else if(strat === 'greedy') {
-            target = trucks.find(t => t.vol + group.totalVol <= MAX_VOL) || trucks.reduce((p, c) => c.vol < p.vol ? c : p);
-        } else if(strat === 'vol') {
-            target = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
-        } else if(strat === 'stops') {
-            target = trucks.reduce((p, c) => c.stops.length < p.stops.length ? c : p);
-        } else {
-            target = trucks.reduce((p, c) => (p.vol/MAX_VOL + p.stops.length/10) < (c.vol/MAX_VOL + c.stops.length/10) ? p : c);
-        }
+        if(strat === 'greedy') target = trucks.find(t => t.vol + group.totalVol <= MAX_VOL) || trucks.reduce((p, c) => c.vol < p.vol ? c : p);
+        else if(strat === 'vol') target = trucks.reduce((p, c) => c.vol < p.vol ? c : p);
+        else if(strat === 'stops') target = trucks.reduce((p, c) => c.stops.length < p.stops.length ? c : p);
+        else target = trucks.reduce((p, c) => (p.vol/MAX_VOL + p.stops.length/10) < (c.vol/MAX_VOL + c.stops.length/10) ? p : c);
 
-        if (group.totalVol > MAX_VOL || (strat !== 'regio' && target.vol + group.totalVol > MAX_VOL + 2)) {
+        
+                if (group.totalVol > MAX_VOL || target.vol + group.totalVol > MAX_VOL + 2) { // 2m3 marge
             group.items.forEach(item => {
                 let pool = [trucks[0], trucks[1]];
                 let chosen = pool.reduce((p, c) => c.vol < p.vol ? c : p);
