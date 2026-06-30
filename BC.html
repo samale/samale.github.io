@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>PDF Shipping Extractor V6</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+}
+
+.dropzone {
+  border: 2px dashed #64748b;
+  padding: 30px;
+  text-align: center;
+  border-radius: 12px;
+  cursor: pointer;
+  background: #111827;
+}
+
+.dropzone:hover {
+  border-color: #38bdf8;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.card {
+  background: #111827;
+  padding: 15px;
+  border-radius: 12px;
+}
+
+pre {
+  white-space: pre-wrap;
+  font-size: 12px;
+  color: #cbd5e1;
+}
+input {
+  display:none;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>📦 PDF Shipping Extractor V6</h1>
+
+<div class="dropzone" id="dropzone">
+  Drop PDF here or click to upload
+  <input type="file" id="fileInput" accept="application/pdf"/>
+</div>
+
+<div class="grid">
+
+  <div class="card">
+    <h3>📊 Extracted Data</h3>
+    <pre id="output">Waiting for PDF...</pre>
+  </div>
+
+  <div class="card">
+    <h3>🔍 Debug Text</h3>
+    <pre id="debug">No data yet</pre>
+  </div>
+
+</div>
+
+</div>
+
+<script>
+// =====================
+// PDF JS CONFIG FIX (CRITICAL)
+// =====================
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+// =====================
+// FILE HANDLING
+// =====================
+const dropzone = document.getElementById("dropzone");
+const fileInput = document.getElementById("fileInput");
+
+dropzone.addEventListener("click", () => fileInput.click());
+
+dropzone.addEventListener("dragover", e => {
+  e.preventDefault();
+  dropzone.style.borderColor = "#38bdf8";
+});
+
+dropzone.addEventListener("dragleave", () => {
+  dropzone.style.borderColor = "#64748b";
+});
+
+dropzone.addEventListener("drop", e => {
+  e.preventDefault();
+  handleFile(e.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener("change", e => {
+  handleFile(e.target.files[0]);
+});
+
+// =====================
+// MAIN PIPELINE
+// =====================
+async function handleFile(file) {
+  if (!file) return;
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+  let fullText = "";
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+
+    const pageText = content.items.map(i => i.str).join(" ");
+    fullText += "\n" + pageText;
+  }
+
+  fullText = normalize(fullText);
+
+  document.getElementById("debug").textContent = fullText;
+
+  const result = extract(fullText);
+
+  document.getElementById("output").textContent =
+    JSON.stringify(result, null, 2);
+}
+
+// =====================
+// NORMALIZATION LAYER (FIXES NULL ISSUES)
+// =====================
+function normalize(text) {
+  return text
+    .replace(/\s+/g, " ")
+    .replace(/,(\d)/g, ". $1")
+    .replace(/C\\F/g, "C")
+    .replace(/[–—]/g, "-")
+    .toUpperCase();
+}
+
+// =====================
+// ENGINE
+// =====================
+function extract(text) {
+  return {
+    booking_number: findBooking(text),
+    vessel: findVessel(text),
+    si_cutoff: findDate(text, ["SI", "SHIPPING INSTRUCTION"]),
+    vgm_cutoff: findDate(text, ["VGM"]),
+    cargo_cutoff: findDate(text, ["CARGO", "PORT CUT", "CLOSING"]),
+    containers: findContainers(text)
+  };
+}
+
+// =====================
+// BOOKING NUMBER (MULTI CARRIER)
+// =====================
+function findBooking(text) {
+  const patterns = [
+    /\bRTM\d{7}\b/,
+    /\b\d{9}\b/,
+    /\b\d{8}\b/,
+    /\b[A-Z0-9]{12}\b/
+  ];
+
+  let best = null;
+  patterns.forEach(p => {
+    const m = text.match(p);
+    if (m) best = m[0];
+  });
+
+  return best;
+}
+
+// =====================
+// VESSEL
+// =====================
+function findVessel(text) {
+  const match = text.match(/VESSEL\s+([A-Z0-9 \-]+)/);
+  if (!match) return null;
+
+  return match[1]
+    .split("VOY")[0]
+    .split("IMO")[0]
+    .trim();
+}
+
+// =====================
+// DATE EXTRACTION + NORMALIZATION
+// =====================
+function findDate(text, keywords) {
+  const dateRegex =
+    /\d{1,2}[-\/]\w{3,9}[-\/]\d{2,4}\s*\d{2}:\d{2}/g;
+
+  const matches = text.match(dateRegex);
+  if (!matches) return null;
+
+  // naive scoring: first match near keyword wins
+  for (let d of matches) {
+    for (let k of keywords) {
+      if (text.includes(k)) {
+        return formatDate(d);
+      }
+    }
+  }
+
+  return formatDate(matches[0]);
+}
+
+// =====================
+// DATE NORMALIZER
+// =====================
+function formatDate(str) {
+  const months = {
+    JAN: "01", FEB: "02", MAR: "03", APR: "04",
+    MAY: "05", JUN: "06", JUL: "07", AUG: "08",
+    SEP: "09", OCT: "10", NOV: "11", DEC: "12"
+  };
+
+  let parts = str
+    .replace(",", "")
+    .split(/[\s\/-]+/);
+
+  if (parts.length < 3) return str;
+
+  let d = parts[0];
+  let m = months[parts[1]?.slice(0,3)] || "01";
+  let y = parts[2].length === 2 ? "20"+parts[2] : parts[2];
+  let time = parts[3] || "00:00";
+
+  return `${d.padStart(2,"0")}/${m}/${y} ${time}`;
+}
+
+// =====================
+// CONTAINERS (REAL FIXED LOGIC)
+// =====================
+function findContainers(text) {
+  const regex = /(\d)\s*x\s*(\d{2})'?(\w+)/g;
+
+  let result = [];
+  let m;
+
+  while ((m = regex.exec(text)) !== null) {
+    let qty = parseInt(m[1]);
+    let size = m[2] + "ft";
+    let raw = m[3];
+
+    let type = "dry";
+    if (/RF|RH|RT|REEF/.test(raw)) type = "reefer";
+
+    let height = /96|9'?6/.test(raw) ? "HC" : "ST";
+    if (size === "40ft" && type === "reefer") height = "HC";
+
+    result.push({
+      quantity: qty,
+      size,
+      type,
+      height,
+      temperature_c: null
+    });
+  }
+
+  return result;
+}
+</script>
+
+</body>
+</html>
